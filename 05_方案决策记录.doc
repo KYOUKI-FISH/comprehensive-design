@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>方案决策记录</title>
+<style>
+body{font-family:"Microsoft YaHei","SimSun",sans-serif;font-size:12pt;color:#222;line-height:1.7;margin:2.5cm;}
+h1.title{text-align:center;font-size:20pt;color:#0D47A1;margin-bottom:4pt;}
+p.subtitle{text-align:center;color:#666;font-size:11pt;margin-top:0;}
+h2{font-size:15pt;color:#0D47A1;border-bottom:2px solid #1565C0;padding-bottom:4pt;margin-top:24pt;}
+table{border-collapse:collapse;width:100%;margin:10pt 0;}
+td,th{border:1px solid #999;padding:6pt 8pt;vertical-align:top;font-size:10.5pt;line-height:1.6;}
+th{background:#1565C0;color:#fff;font-weight:bold;text-align:center;}
+td.q{background:#E3F2FD;font-weight:bold;width:22%;}
+.decision-box{background:#E3F2FD;border:2px solid #1565C0;text-align:center;font-size:15pt;font-weight:bold;color:#0D47A1;padding:12pt;margin:12pt 0;}
+</style>
+</head>
+<body>
+
+<h1 class="title">方案决策记录</h1>
+<p class="subtitle">《智能会议室管理系统I》第3周实践作业二</p>
+
+<h2>一、最终决策声明</h2>
+<p>本组选择</p>
+<div class="decision-box">方案A：自由时间段预约</div>
+<p>作为“智能会议室管理系统 V1.0 —— 基础预约与管理平台”的实施方案。</p>
+<p>选择理由是：方案A允许用户自定义预约时间段，灵活度高、用户体验好，通过自动化的时间冲突检测保证预约不重复。方案比较表显示，方案B虽在实现容易度类维度上略占优（总分54比51），但其失分点——无法自定义时长、后续扩展受限——恰好命中系统面向真实场景的核心诉求；方案A在功能完整性、闭环完整性和后续扩展能力上优势明显，其实现难点（冲突检测、并发控制）算法成熟、技术可控。综合产品价值与长期成本，选择方案A。该方案能够完成用户登录、会议室查询、预约申请、时间冲突检测、我的预约管理以及管理员基础管理，满足任务书规定的最低运行闭环。</p>
+
+<h2>二、决策详情</h2>
+<table>
+<tr><th style="width:22%">决策问题</th><th>本组回答</th></tr>
+<tr><td class="q">1. 最终选择哪个方案？</td><td>方案A：自由时间段预约</td></tr>
+<tr><td class="q">2. 选择该方案的主要原因</td><td>（1）灵活度高：用户可自定义预约的开始和结束时间，满足不同时长的会议需求，更贴近真实使用场景；<br>（2）用户体验好：冲突检测自动化，用户操作自由度大，无需受限于固定时段；<br>（3）满足最低闭环：完整覆盖用户登录、会议室查询、预约申请、时间冲突检测、我的预约管理、管理员基础管理等全部要求；<br>（4）后续扩展性好：自由时间段模式更容易扩展重复预约、智能推荐、日历视图等高级功能，长期演进成本低；<br>（5）技术可行：时间冲突检测（区间重叠判断）算法成熟，小组成员经学习有能力实现，难度可控。</td></tr>
+<tr><td class="q">3. 该方案如何满足任务书规定的最低运行闭环？</td><td>方案A完整覆盖任务书规定的最低运行闭环：<br>● 用户登录和角色区分：支持普通用户和管理员两种角色；<br>● 会议室查询：用户可按日期、容量、位置筛选会议室；<br>● 预约申请：用户输入开始/结束时间后系统自动检测冲突，无冲突则提交成功；<br>● 时间冲突检测：通过时间区间重叠判断算法自动检测，防止重复预约；<br>● 我的预约管理：用户可查看、修改、取消自己的预约；<br>● 管理员基础管理：管理员可管理会议室、查看和处理全部预约、管理用户。<br>系统可启动运行并进行演示，满足验收要求。</td></tr>
+<tr><td class="q">4. 放弃方案B的主要原因</td><td>（1）灵活度不足：固定时段模式无法满足用户自定义时长的需求，如1.5小时、3小时等非常规时长会议；<br>（2）时段维护成本高：管理员需为每个会议室逐一配置时间段，增加管理负担；<br>（3）时间浪费风险：时段划分粒度过粗会导致时间浪费（如2小时段只用了30分钟），粒度过细又增加管理复杂度；<br>（4）扩展受限：后续如需支持自由时长预约，需大幅重构现有架构，长期改造成本高；<br>（5）适用场景窄：固定时段模式更适合高度规范化的场景，对学生社团、项目讨论等灵活需求适配性差。其实现容易的优势属于短期便利，无法弥补方向性缺陷。</td></tr>
+<tr><td class="q">5. 当前方案最大的风险是什么？</td><td>方案A最大的风险是<b>并发预约冲突</b>问题：当多个用户同时预约同一会议室的相同或重叠时间段时，可能出现数据不一致（两个预约同时通过冲突检测但实际存在冲突）。此外，时间校验的边界情况（跨天预约、零时长预约等）也需要充分测试。</td></tr>
+<tr><td class="q">6. 准备采用什么办法降低风险？</td><td>（1）并发控制：在提交预约时使用数据库事务+行锁（乐观锁或悲观锁），确保同一会议室同一时间段只有一个预约成功；<br>（2）边界校验：在前后端均添加时间合法性校验——开始时间须晚于当前时间、结束时间须晚于开始时间、单次预约不超过8小时、禁止跨天预约；<br>（3）充分测试：编写冲突检测的单元测试，覆盖重叠、相邻、包含、跨天等边界场景；<br>（4）友好提示：当检测到冲突时，系统不仅提示冲突信息，还推荐最近的可用时间段，降低用户挫败感；<br>（5）代码审查：核心冲突检测逻辑由两人交叉审查，确保算法正确性。</td></tr>
+</table>
+
+<h2>三、风险与对策小结</h2>
+<p>方案A的主要风险集中在并发冲突和时间边界校验两方面。通过数据库事务与锁机制、前后端双重校验、充分的单元测试以及核心代码交叉审查，可以有效控制上述风险，确保V1.0的稳定性和正确性。</p>
+
+<h2>四、小组成员签字</h2>
+<table>
+<tr><th style="width:20%">姓名</th><th style="width:25%">学号</th><th style="width:30%">分工</th><th style="width:25%">签字</th></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+</table>
+<p>决策日期：2026年____月____日</p>
+
+</body>
+</html>

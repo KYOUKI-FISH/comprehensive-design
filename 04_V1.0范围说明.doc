@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>V1.0范围说明</title>
+<style>
+body{font-family:"Microsoft YaHei","SimSun",sans-serif;font-size:12pt;color:#222;line-height:1.7;margin:2.5cm;}
+h1.title{text-align:center;font-size:20pt;color:#0D47A1;margin-bottom:4pt;}
+p.subtitle{text-align:center;color:#666;font-size:11pt;margin-top:0;}
+h2{font-size:15pt;color:#0D47A1;border-bottom:2px solid #1565C0;padding-bottom:4pt;margin-top:24pt;}
+table{border-collapse:collapse;width:100%;margin:10pt 0;}
+td,th{border:1px solid #999;padding:5pt 7pt;vertical-align:top;font-size:10pt;line-height:1.55;}
+th{background:#37474F;color:#fff;font-weight:bold;text-align:center;}
+td.center{text-align:center;font-weight:bold;}
+td.yes{background:#E8F5E9;color:#2E7D32;text-align:center;font-weight:bold;}
+td.no{background:#FFEBEE;color:#C62828;text-align:center;font-weight:bold;}
+tr.alt{background:#F7F7F7;}
+.note{color:#C62828;font-weight:bold;}
+</style>
+</head>
+<body>
+
+<h1 class="title">V1.0 范围说明</h1>
+<p class="subtitle">《智能会议室管理系统I》第3周实践作业二</p>
+
+<h2>一、范围说明概述</h2>
+<p>本文件明确“智能会议室管理系统 V1.0 —— 基础预约与管理平台”在本学期的实现范围，包括“必须实现”和“暂不实现”两部分。范围边界确保团队在有限时间内完成任务书规定的最低运行闭环，同时为后续扩展预留方向。</p>
+<p>本组最终采用<b>方案A（自由时间段预约）</b>作为V1.0实施方案。以下范围说明均基于方案A。</p>
+
+<h2>二、本学期必须实现的功能</h2>
+<p>以下功能构成V1.0的最低运行闭环，必须全部完成：</p>
+<p>● 用户登录和角色区分（普通用户/管理员）；<br>
+● 会议室信息管理（管理员增/改/删会议室）；<br>
+● 会议室查询（按日期、容量、位置筛选）；<br>
+● 预约申请（用户输入开始/结束时间，系统检测冲突后提交）；<br>
+● 时间冲突检测（时间区间重叠判断）；<br>
+● 我的预约管理（查看/修改/取消自己的预约）；<br>
+● 管理员管理用户（创建/禁用/启用用户）；<br>
+● 管理员管理会议室（增/改/删）；<br>
+● 管理员查看和处理预约（查看全部预约、取消异常预约）；<br>
+● 数据库设计（用户表、会议室表、预约表等）；<br>
+● 基本测试（核心功能测试、边界测试）；<br>
+● 系统能够启动和演示（本地运行、页面可操作）。</p>
+
+<h2>三、本学期暂不实现的功能</h2>
+<p>以下功能在V1.0中暂不实现，留待后续版本或项目迭代：</p>
+<p>● 人脸识别（需摄像头硬件和识别算法，超出本阶段范围）；<br>
+● 物联网设备控制（需IoT设备接入，超出本阶段范围）；<br>
+● 3D会议室场景（需3D建模和渲染，非核心功能）；<br>
+● 智能推荐（需数据积累和推荐算法，后续迭代）；<br>
+● 重复预约/周期预约（增加业务复杂度，V2.0扩展）；<br>
+● 多级审批流程（V1.0采用直接预约模式，无审批）；<br>
+● 消息推送（邮件/短信/APP通知，V2.0扩展）；<br>
+● 与学校统一身份认证系统对接（需学校接口，后续对接）；<br>
+● 移动端原生应用（V1.0为Web应用，响应式适配移动端）。</p>
+<p class="note">注意：暂不实现的内容不能替代任务书规定的基础闭环。以上暂不实现的功能不影响V1.0最低运行闭环的完整性。</p>
+
+<h2>四、范围边界表</h2>
+<table>
+<tr><th style="width:20%">功能或方向</th><th style="width:11%">V1.0是否实现</th><th style="width:37%">原因</th><th style="width:32%">后续扩展方向</th></tr>
+<tr><td>用户登录和角色区分</td><td class="yes">是</td><td>最低闭环要求，系统基础功能</td><td>接入学校统一身份认证</td></tr>
+<tr class="alt"><td>会议室信息管理</td><td class="yes">是</td><td>最低闭环要求，管理员需维护会议室</td><td>增加会议室设备信息</td></tr>
+<tr><td>会议室查询</td><td class="yes">是</td><td>最低闭环要求，用户需查找可用会议室</td><td>增加地图查询、智能推荐</td></tr>
+<tr class="alt"><td>预约申请</td><td class="yes">是</td><td>核心业务功能</td><td>增加重复预约、批量预约</td></tr>
+<tr><td>时间冲突检测</td><td class="yes">是</td><td>核心业务规则，保证预约不重复</td><td>增加智能推荐替代时段</td></tr>
+<tr class="alt"><td>我的预约管理</td><td class="yes">是</td><td>最低闭环要求，用户需管理自己的预约</td><td>增加预约提醒</td></tr>
+<tr><td>管理员管理用户</td><td class="yes">是</td><td>最低闭环要求</td><td>增加权限细分</td></tr>
+<tr class="alt"><td>管理员管理会议室</td><td class="yes">是</td><td>最低闭环要求</td><td>增加设备管理</td></tr>
+<tr><td>管理员查看处理预约</td><td class="yes">是</td><td>最低闭环要求</td><td>增加审批流程</td></tr>
+<tr class="alt"><td>数据库设计</td><td class="yes">是</td><td>系统数据持久化基础</td><td>增加数据备份与恢复</td></tr>
+<tr><td>基本测试</td><td class="yes">是</td><td>保证系统可运行和演示</td><td>增加自动化测试</td></tr>
+<tr class="alt"><td>系统启动和演示</td><td class="yes">是</td><td>验收最低要求</td><td>——</td></tr>
+<tr><td>人脸识别</td><td class="no">否</td><td>不属于本阶段重点，技术复杂度高</td><td>后续项目迭代</td></tr>
+<tr class="alt"><td>物联网设备控制</td><td class="no">否</td><td>超出本阶段范围，需硬件支持</td><td>后续项目迭代</td></tr>
+<tr><td>3D会议室场景</td><td class="no">否</td><td>超出本阶段范围，非核心功能</td><td>后续项目迭代</td></tr>
+<tr class="alt"><td>智能推荐</td><td class="no">否</td><td>超出本阶段范围，需数据积累</td><td>后续项目迭代</td></tr>
+<tr><td>重复预约</td><td class="no">否</td><td>超出本阶段范围，增加复杂度</td><td>V2.0 扩展</td></tr>
+<tr class="alt"><td>多级审批</td><td class="no">否</td><td>超出本阶段范围</td><td>V2.0 扩展</td></tr>
+<tr><td>消息推送</td><td class="no">否</td><td>超出本阶段范围</td><td>V2.0 扩展</td></tr>
+<tr class="alt"><td>统一身份认证对接</td><td class="no">否</td><td>超出本阶段范围，需学校接口</td><td>后续项目对接</td></tr>
+<tr><td>移动端原生应用</td><td class="no">否</td><td>超出本阶段范围，V1.0为Web应用</td><td>后续项目开发</td></tr>
+</table>
+
+<h2>五、补充说明</h2>
+<p>● V1.0采用Web应用形式，前端使用HTML/CSS/JavaScript，后端使用Java/Python，数据库使用MySQL；<br>
+● 所有“必须实现”功能完成后即可满足任务书规定的最低运行闭环要求；<br>
+● 暂不实现的功能不影响系统的基础可用性和完整性；<br>
+● 范围边界表将作为后续开发阶段的基线，新增需求需经小组讨论确认。</p>
+
+</body>
+</html>
