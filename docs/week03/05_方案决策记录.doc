@@ -43,13 +43,13 @@ td.q{background:#E3F2FD;font-weight:bold;width:22%;}
 <h2>四、小组成员签字</h2>
 <table>
 <tr><th style="width:20%">姓名</th><th style="width:25%">学号</th><th style="width:30%">分工</th><th style="width:25%">签字</th></tr>
-<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+<tr><td>李知渔</td><td>2025091203002</td><td>项目负责人。统筹方案决策与材料汇总；整理方案A（自由时间段预约）材料、《备选方案说明（A）》与方案A流程图；成稿《04_V1.0范围说明》《05_方案决策记录》；负责仓库归档</td><td>李知渔</td></tr>
+<tr><td>孙若普</td><td>2025091203003</td><td>需求与建模负责人。编写《V1.0范围说明》《V1.0角色说明》《方案决策记录》正式版，明确范围边界与方案取舍依据</td><td>孙若普</td></tr>
+<tr><td>虞业宸</td><td>2025091202009</td><td>技术与后端负责人。完成《03_方案比较表》13 项维度的评分与逐项评分依据，支撑最终决策</td><td>虞业宸</td></tr>
+<tr><td>刘宇轩</td><td>2025091205006</td><td>技术与文档负责人。绘制方案B普通用户流程图与管理员流程图，参与方案对比讨论</td><td>刘宇轩</td></tr>
+<tr><td>李牧远</td><td>2025091203020</td><td>前端与交互负责人。补充《备选方案说明（方案B）》细化说明（停用会议室管理、失败原因提示、并发二次校验）</td><td>李牧远</td></tr>
 </table>
-<p>决策日期：2026年____月____日</p>
+<p>决策日期：2026年9月21日</p>
 
 </body>
 </html>
