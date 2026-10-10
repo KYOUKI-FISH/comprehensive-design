@@ -1,0 +1,63 @@
+@startuml 图2_1层DFD
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam ArrowColor #37474F
+skinparam ArrowFontSize 11
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #37474F
+}
+skinparam usecase {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+}
+skinparam database {
+  BackgroundColor #F5F5F5
+  BorderColor #616161
+}
+skinparam nodesep 30
+skinparam ranksep 55
+left to right direction
+rectangle "E1\n普通用户" as E1
+rectangle "E2\n管理员" as E2
+rectangle "智能会议室管理系统" {
+  usecase "P1\n验证登录" as P1
+  usecase "P2\n查询会议室" as P2
+  usecase "P3\n提交预约" as P3
+  usecase "P4\n维护我的预约" as P4
+  usecase "P5\n管理用户" as P5
+  usecase "P6\n管理会议室" as P6
+  usecase "P7\n处理预约" as P7
+  database "D1\n用户信息" as D1
+  database "D2\n会议室信息" as D2
+  database "D3\n预约记录" as D3
+}
+E1 --> P1 : 账号、密码
+P1 --> E1 : 登录结果\n（成功/失败、角色）
+D1 --> P1 : 用户记录（读取验证）
+E1 --> P2 : 查询条件\n（位置、容量、日期时段）
+P2 --> E1 : 会议室列表\n（含当日可用时段）
+D2 --> P2 : 会议室信息
+D3 --> P2 : 已占用时段
+E1 --> P3 : 预约申请\n（会议室、日期、起止时间、用途）
+P3 --> E1 : 预约编号 / 冲突提示
+D3 --> P3 : 已有预约记录（冲突比对）
+P3 --> D3 : 新增预约记录
+E1 --> P4 : 查看/修改/取消请求
+P4 --> E1 : 我的预约列表、变更结果
+D3 --> P4 : 我的预约记录
+P4 --> D3 : 修改/取消更新
+E2 --> P5 : 用户信息、角色设置
+P5 --> E2 : 用户列表、维护结果
+D1 --> P5 : 用户数据
+P5 --> D1 : 用户更新
+E2 --> P6 : 会议室信息、启用状态
+P6 --> E2 : 会议室列表、维护结果
+D2 --> P6 : 会议室数据
+P6 --> D2 : 会议室更新
+E2 --> P7 : 处理决定\n（强制取消/更正）
+P7 --> E2 : 操作结果、全局预约视图
+D3 --> P7 : 待处理/异常预约
+P7 --> D3 : 预约状态更新
+@enduml

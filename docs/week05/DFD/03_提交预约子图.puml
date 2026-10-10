@@ -1,0 +1,43 @@
+@startuml 图3_提交预约子图
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam ArrowColor #37474F
+skinparam ArrowFontSize 12
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #37474F
+}
+skinparam usecase {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+}
+skinparam database {
+  BackgroundColor #F5F5F5
+  BorderColor #616161
+}
+skinparam note {
+  BackgroundColor #FFFDE7
+  BorderColor #F9A825
+}
+rectangle "E1\n普通用户" as E1
+rectangle "P3 提交预约" {
+  usecase "P3.1\n校验预约参数" as P31
+  usecase "P3.2\n检测时间冲突" as P32
+  usecase "P3.3\n写入预约记录" as P33
+}
+database "D3\n预约记录" as D3
+E1 --> P31 : 预约申请\n（会议室ID、日期、起止时间、用途）
+P31 --> E1 : 参数错误提示
+P31 --> P32 : 通过校验的预约数据
+P32 --> E1 : 冲突提示（已占用时段）
+P32 --> P33 : 通过（预约数据）
+D3 --> P32 : 已有预约记录（读取比对）
+P33 --> D3 : 新增预约记录
+P33 --> E1 : 预约编号（成功）
+note right of P32
+  冲突判定规则：半开区间 [start, end)
+  start_new < end_old 且 end_new > start_old → 冲突
+  首尾相接（end_new = start_old）不算冲突
+end note
+@enduml

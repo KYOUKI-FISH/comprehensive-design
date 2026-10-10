@@ -1,0 +1,24 @@
+@startuml 图1_系统上下文图
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam ArrowColor #37474F
+skinparam ArrowFontSize 12
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #37474F
+}
+skinparam usecase {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+}
+rectangle "E1\n普通用户" as E1
+rectangle "E2\n管理员" as E2
+rectangle "智能会议室管理系统" {
+  usecase "P0\n会议室预约与管理" as P0
+}
+E1 --> P0 : 登录信息、查询条件、\n预约申请、修改/取消请求
+P0 --> E1 : 登录结果、会议室空闲列表、\n预约编号/冲突提示、操作结果
+E2 --> P0 : 管理指令\n（用户/会议室/预约）
+P0 --> E2 : 管理结果、全局预约视图
+@enduml

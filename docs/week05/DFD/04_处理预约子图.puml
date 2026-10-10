@@ -1,0 +1,40 @@
+@startuml 图4_处理预约子图
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam ArrowColor #37474F
+skinparam ArrowFontSize 12
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #37474F
+}
+skinparam usecase {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+}
+skinparam database {
+  BackgroundColor #F5F5F5
+  BorderColor #616161
+}
+skinparam note {
+  BackgroundColor #FFFDE7
+  BorderColor #F9A825
+}
+rectangle "E2\n管理员" as E2
+rectangle "P7 处理预约" {
+  usecase "P7.1\n查询待处理预约" as P71
+  usecase "P7.2\n更新预约状态" as P72
+}
+database "D3\n预约记录" as D3
+E2 --> P71 : 查询请求\n（待处理/异常预约）
+D3 --> P71 : 预约记录（含状态）
+P71 --> E2 : 待处理/异常预约列表
+E2 --> P72 : 处理决定\n（强制取消 / 更正记录）
+D3 --> P72 : 原预约记录
+P72 --> D3 : 预约状态更新（写入）
+P72 --> E2 : 操作结果
+note bottom of P72
+  「处理」= 强制取消异常预约 / 更正错误记录，非逐条审批；
+  更正预约时间时，冲突判定复用半开区间 [start, end) 规则（见 P3.2）
+end note
+@enduml
