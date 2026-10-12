@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- D2 会议室信息表（meeting_room）与 D3 预约记录表（reservation）的 SQL -->
+<mapper namespace="com.meetingroom.mapper.MeetingRoomMapper">
+
+    <!-- 按条件查询会议室（DFD 加工 P2 查询会议室 / FR-05、FR-06） -->
+    <select id="selectByCondition" resultType="com.meetingroom.entity.MeetingRoom">
+        SELECT id, name, location, capacity, equipment, status, remark, created_at, updated_at
+        FROM meeting_room
+        <where>
+            <if test="location != null and location != ''">
+                AND (location LIKE CONCAT('%', #{location}, '%')
+                     OR name LIKE CONCAT('%', #{location}, '%'))
+            </if>
+            <if test="minCapacity != null">
+                AND capacity &gt;= #{minCapacity}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY id
+    </select>
+
+    <!--
+      查询一批会议室在某天的已占用时段（只读，供查询页展示）。
+      ★ 半开区间 [start, end) 的判定规则不在这里，这里只取"占用行"本身：
+        同一天、状态为待开始/进行中的预约，其 [start_time, end_time) 即为已占用。
+    -->
+    <select id="selectOccupiedSlots" resultType="com.meetingroom.dto.OccupiedSlotDTO">
+        SELECT room_id AS roomId, start_time AS startTime, end_time AS endTime
+        FROM reservation
+        WHERE reserve_date = #{date}
+          AND status IN ('PENDING', 'ONGOING')
+          AND room_id IN
+        <foreach collection="roomIds" item="roomId" open="(" separator="," close=")">
+            #{roomId}
+        </foreach>
+        ORDER BY room_id, start_time
+    </select>
+
+</mapper>

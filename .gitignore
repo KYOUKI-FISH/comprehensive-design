@@ -42,3 +42,7 @@ venv/
 dist/
 build/
 *.log
+# Java / Maven（第 6 周建 backend/ 后新增：Maven 构建产物 target/ 不得入库）
+target/
+*.class
+.mvn/wrapper/maven-wrapper.jar

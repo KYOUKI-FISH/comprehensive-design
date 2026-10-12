@@ -1,6 +1,187 @@
 # 智能会议室管理系统 V1.0 —— 基础预约与管理平台
 
-> 更新日期：2026-10-12 ｜ 当前阶段：**第 6 周进行中（技术选型报告与技术栈清单已定稿，工程骨架待建）**
+> 更新日期：2026-10-12 ｜ 当前阶段：**第 6 周进行中（技术选型报告与技术栈清单已定稿；后端骨架、数据库脚本已入库；前端与 README 实测待补）**
+
+---
+
+# 快速启动（Quick Start）
+
+> **验收标准**：一个**没参与搭建**的同学，照着下面的步骤在全新环境上把系统启动起来。
+> **各节负责人**（对应《第 6 周推进计划》§4.2）：环境与版本、常见问题 → 孙若普；启动步骤 → 刘宇轩；**数据库初始化、默认账号 → 虞业宸**；实测记录 → 李牧远（未参与搭建）。
+>
+> **⚠️ 实测状态（截至 2026-10-12）**：搭建本机**未安装 JDK 17 / Maven / MySQL**，故下列命令**尚未执行验证**，逐节以「实测状态」标注。按《周推进计划》§2 的降级方案要求——**不允许把未验证的步骤写成已验证**；验收前由李牧远照本机实测后回填本节实测记录。
+
+## 克隆仓库
+
+```bash
+git clone https://github.com/KYOUKI-FISH/comprehensive-design.git
+cd comprehensive-design
+```
+
+> 当前版本**可运行范围**：登录、查询会议室（含当日已占用时段）。
+> **尚未实现**：预约提交、时间冲突检测、我的预约、管理后台——按计划第 9～10 周开发（"环境验证通路"不算业务进度，见《周推进计划》§2）。
+
+## 环境与版本
+
+| 组件 | 版本 | 用途 | 下载地址 |
+|------|------|------|----------|
+| 操作系统 | Windows 10/11 64 位 | 本组验收环境（macOS / Linux 同理，仅命令略有差异） | — |
+| JDK | **17**（LTS） | 后端运行 | https://adoptium.net/temurin/releases/?version=17 |
+| Maven | **3.9.x** | 后端依赖下载与启动 | https://maven.apache.org/download.cgi |
+| MySQL | **8.0.16 及以上** | 数据库（CHECK 约束自 8.0.16 起才生效） | https://dev.mysql.com/downloads/mysql/ |
+| Node.js | **20.x LTS** | 前端（Vue3 + Vite） | https://nodejs.org/en/download |
+
+装完先自检三条命令，各有版本输出即过关：
+
+```bash
+java -version     # 期望含 17（★ 若显示 8/11，后端会报"无效的目标发行版"）
+mvn -v            # 期望含 Apache Maven 3.9
+mysql --version   # 期望含 8.0
+```
+
+**实测状态**：⚠️ 未实测（搭建本机无 JDK / Maven / MySQL）。
+
+## 初始化数据库
+
+两步：先建表，再灌种子数据。
+
+```bash
+# 第 1 步：建库建表（meeting_room 库 + user / meeting_room / reservation 三张表）
+mysql -u root -p < database/01_schema.sql
+
+# 第 2 步：灌入演示数据（默认账号 + 会议室 + 已占用时段）
+mysql -u root -p < database/02_seed.sql
+```
+
+第二步执行完会打印三张表的记录数、**默认账号一览**与**今日占用时段一览**；看到 `admin`、`user1` 即成功。
+
+三张表与第 5 周 DFD 数据存储的对应：`user` → **D1 用户信息**、`meeting_room` → **D2 会议室信息**、`reservation` → **D3 预约记录**。
+
+> ⚠️ 两个脚本均可重复执行，但**有破坏性**：`01_schema.sql` 删表重建、`02_seed.sql` 清空后重灌，仅影响这三张表，请勿在有真实数据时执行。
+> 种子数据的预约日期由 `CURDATE()` 动态生成，因此**任何一天执行，查询页都能看到"今天"的占用时段**。
+
+**实测状态**：⚠️ 未实测（本机无 MySQL）。
+
+## 启动后端
+
+后端 Spring Boot，端口 **8080**。
+
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+看到 `Tomcat started on port 8080` 即启动成功。
+
+**若本机 MySQL 不是 root / 123456**，设环境变量后启动即可，不必改代码：
+
+```bash
+# Windows PowerShell
+$env:DB_PASSWORD="你的密码"
+# macOS / Linux
+export DB_PASSWORD=你的密码
+```
+
+连接参数集中在 `backend/src/main/resources/application.yml`（默认库 `meeting_room`、端口 `3306`、账号 `root`）。
+
+**实测状态**：⚠️ 未实测（本机无 JDK / Maven）。
+
+## 启动前端
+
+前端 Vue3 + Vite，端口 **5173**。
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+浏览器打开终端提示的地址（默认 http://localhost:5173）。
+
+> **负责人**：刘宇轩。`frontend/` 的登录页与会议室查询页由其提交，本节步骤待其代码入库后补全。
+> 前后端分离需**同时启动两个进程**（后端 8080 + 前端 5173），只起一边页面会打不开——这正是《技术选型报告》预测的问题之一。
+
+**实测状态**：⚠️ 待补（`frontend/` 尚未入库）。
+
+## 默认账号
+
+默认账号由 `database/02_seed.sql` 写入，共两组（下表另列 1 个演示用账号）。
+
+| 账号 | 密码 | 姓名 | 角色 | 说明 |
+|------|------|------|------|------|
+| `admin` | `123456` | 系统管理员 | **ADMIN** 管理员 | 默认账号 · 管理员 |
+| `user1` | `123456` | 张三 | **USER** 普通用户 | 默认账号 · 普通用户 |
+| `user2` | `123456` | 李四 | **USER** 普通用户 | 补充账号，仅用于让种子预约分属不同用户、验证"我的预约"归属 |
+
+> **骨架阶段密码为明文存储**，仅用于打通登录通路；第 9～10 周实现完整登录功能时替换为 BCrypt 摘要并迁移种子数据（见 `database/01_schema.sql` 中 `user.password` 的字段注释）。
+
+## 判断是否跑通
+
+三条命令，逐条对期望结果：
+
+```bash
+# ① 环境与数据库：database 应为 UP
+curl http://localhost:8080/api/health
+
+# ② 登录通路：应返回 code=200，且 data.role=ADMIN
+curl -X POST http://localhost:8080/api/auth/login \
+     -H "Content-Type: application/json" \
+     -d "{\"username\":\"admin\",\"password\":\"123456\"}"
+
+# ③ 查询通路：应返回 3 间启用会议室，A101 带当日已占用时段
+curl "http://localhost:8080/api/rooms?status=ENABLED&date=2026-10-12"
+```
+
+Windows PowerShell 等价写法（`curl` 是别名、会吞引号，故用 `Invoke-RestMethod`）：
+
+```powershell
+Invoke-RestMethod http://localhost:8080/api/health
+Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/auth/login `
+  -ContentType "application/json" -Body '{"username":"admin","password":"123456"}'
+Invoke-RestMethod "http://localhost:8080/api/rooms?status=ENABLED"
+```
+
+**实测状态**：⚠️ 未实测（本机无 JDK / Maven / MySQL）。
+
+## 常见问题
+
+1. **端口被占用（8080 / 5173）**：改 `backend/src/main/resources/application.yml` 的 `server.port`；前端 `npm run dev -- --port 5174`。查占用：Windows `netstat -ano | findstr 8080`。
+2. **`Access denied for user 'root'@'localhost'`**：密码不对。按"启动后端"一节设 `DB_PASSWORD` 环境变量，或直接改 `application.yml`。
+3. **`Public Key Retrieval is not allowed`**：MySQL 8 默认认证插件所致。本项目 JDBC URL 已带 `allowPublicKeyRetrieval=true`；若你自行改过 URL，请补回该参数。
+4. **时间差 8 小时 / 中文变问号**：JDBC URL 必须保留 `characterEncoding=utf8&serverTimezone=Asia/Shanghai`。
+5. **★ 为什么 `09:00-10:00` 与 `10:00-11:00` 不算冲突？** 预约时间采用**半开区间 `[start, end)`**——含开始时刻、不含结束时刻。前一条的 `end` 恰好等于后一条的 `start`，两者首尾相接、并无重叠，因此**不判为冲突**（FR-09 / UC-U03 业务规则）。种子数据中 A101 今日就刻意放了这样一对，供验收时现场核对。
+6. **`mvn` 报"无效的目标发行版"或依赖下载极慢**：确认 `JAVA_HOME` 指向 JDK 17；下载慢可在 `~/.m2/settings.xml` 配置阿里云镜像。
+7. **`java` 可用但 `javac` 不可用**：装的是 JRE 而非 JDK，重装 JDK 17。
+
+## 第 6 周目标目录结构
+
+```text
+comprehensive-design/
+├── README.md                 # 本文件（快速启动置顶）
+├── backend/                  # 后端骨架（Spring Boot 3.2 + JDK 17 + MyBatis + MySQL 8.0）
+│   ├── pom.xml
+│   └── src/main/
+│       ├── java/com/meetingroom/
+│       │   ├── MeetingRoomApplication.java
+│       │   ├── common/       # 统一返回体、业务异常、全局异常处理
+│       │   ├── config/       # CORS 跨域配置
+│       │   ├── controller/   # AuthController / MeetingRoomController / HealthController
+│       │   ├── service/      # AuthService / MeetingRoomService
+│       │   ├── mapper/       # UserMapper / MeetingRoomMapper
+│       │   ├── entity/       # User（D1）/ MeetingRoom（D2）
+│       │   └── dto/          # LoginRequest / LoginResponse / RoomVO / OccupiedSlotDTO
+│       └── resources/
+│           ├── application.yml
+│           └── mapper/       # UserMapper.xml / MeetingRoomMapper.xml
+├── database/                 # ★ 虞业宸
+│   ├── 01_schema.sql         # user(D1) / meeting_room(D2) / reservation(D3)
+│   └── 02_seed.sql           # 默认账号 2 组 + 会议室 4 间（3 启用 / 1 停用）+ 已占用时段
+├── frontend/                 # 前端（Vue3 + TS + Element Plus + Vite，刘宇轩）
+├── tests/                    # 测试目录（第 7 周起填测试用例集）
+└── docs/                     # 每周过程材料
+```
+
+---
 
 ## 1. 小组信息
 
@@ -41,7 +222,7 @@
 | 第 3 周 | 可行性分析与方案决策 | 已完成 | `docs/week03/` |
 | 第 4 周 | 角色、用例与需求分析 | 已完成（2026-10-11 复查：9 项交付物全部到位，含追溯表与自查记录） | `docs/week04/` |
 | 第 5 周 | 数据流图与需求评审 | 已完成（6 项交付物全部到位，2026-10-11 结项） | `docs/week05/` |
-| **第 6 周** | **技术选型与工程骨架** | **进行中（报告与清单已成稿，工程骨架未建）** | `docs/week06/` |
+| **第 6 周** | **技术选型与工程骨架** | **进行中（选型报告、技术栈清单已定稿；后端骨架 + `database/` 脚本已入库；`frontend/` 与 README 实测待补）** | `docs/week06/` |
 
 ## 4. 第 2 周成果：现状走查与问题清单
 
@@ -305,7 +486,10 @@ comprehensive-design/
 │   │   └── DFD/                              # 4 张 DFD（PNG + .puml 源同目录）
 │   └── week06/                              # 技术选型与工程骨架（进行中）
 │                                            # 第 5、6 周任务书本机保留，不入库
-└── backend/ frontend/ database/ tests/      # 第 6 周后按需建立
+├── backend/                                 # 第 6 周：后端骨架（登录 + 查询最小通路）
+├── database/                                # 第 6 周：建表脚本 01_schema.sql + 种子数据 02_seed.sql
+├── frontend/                                # 第 6 周：前端骨架（刘宇轩，待入库）
+└── tests/                                   # 第 6 周：测试目录（第 7 周起填用例集）
 ```
 
 ## 10. 待整改事项

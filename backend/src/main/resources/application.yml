@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: meeting-room-backend
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 库名 meeting_room 由 database/01_schema.sql 创建；时区与编码参数不可省，否则中文乱码/时间差 8 小时
+    url: jdbc:mysql://localhost:3306/meeting_room?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    # ★ 换成你本机 MySQL 的密码；也可以不改文件，启动前设环境变量 DB_PASSWORD
+    password: ${DB_PASSWORD:123456}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 5000
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+
+mybatis:
+  # Mapper XML 位置（与 resources/mapper 对应）
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.meetingroom.entity
+  configuration:
+    # 下划线字段名（real_name）自动映射到驼峰属性（realName）
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    com.meetingroom: debug
