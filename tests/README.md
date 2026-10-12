@@ -18,6 +18,7 @@ Maven 约定测试代码必须放在被构建模块内部，才能被 `mvn test`
 - **后端单元测试**：`backend/src/test/java/com/meetingroom/`
   - 已有一条零依赖用例：`common/ApiResponseTest.java`（不连数据库，任何机器都能跑）
 - 运行方式：进入 `backend/` 执行 `mvn test`
+- **实测状态（2026-10-12）**：✅ 已在本机跑通——`Tests run: 3, Failures: 0, Errors: 0`，`BUILD SUCCESS`
 
 ## 3. 第 7 周计划（对应第 6 周《周推进计划》§6.4）
 
