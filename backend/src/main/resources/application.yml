@@ -1,0 +1,46 @@
+# =============================================================================
+# 智能会议室管理系统 V1.0 —— 后端配置（第 6 周工程骨架）
+# 小组：第 4 组 ｜ Spring Boot 3.2.x ｜ MySQL 8.0.x
+# -----------------------------------------------------------------------------
+# ⚠ 唯一需要你改的地方：下面 spring.datasource.password（改成你本机 MySQL 的 root 密码）。
+#   若你的 MySQL 端口或账号不同，一并改 url 与 username。
+# =============================================================================
+
+server:
+  # 后端端口。前端 Vite 开发服务器在 5173，两者不同端口 → 跨域，
+  # 已在 WebConfig 里按最小可用配好（见《技术选型报告》"选 A2 的预测问题"）。
+  port: 8080
+
+spring:
+  application:
+    name: meeting-room-backend
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 库名与 database/01_schema.sql 建的一致：meeting_room
+    # serverTimezone 指定为 Asia/Shanghai，避免容器/本机时区不一致导致时间偏移
+    url: jdbc:mysql://localhost:3306/meeting_room?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    # ← 改成你自己的 MySQL root 密码（用引号包起来，避免被 YAML 当数字解析）
+    password: "123456"
+
+  jackson:
+    # LocalDateTime 序列化成 ISO 字符串（如 2026-10-12T16:54:02），而不是时间戳数组
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: Asia/Shanghai
+
+# MyBatis（技术栈清单第 2 项）
+mybatis:
+  # XML 映射文件位置，与 resources/mapper/ 下两个文件对应
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: cn.edu.uestc.meeting.entity
+  configuration:
+    # user.real_name → User.realName 自动映射，省掉大量 resultMap
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    root: info
+    # 打开后可在控制台看到实际执行的 SQL —— 联调与演示"库能连、表能查"时很有用
+    cn.edu.uestc.meeting.mapper: debug

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  D1 用户信息 SQL 映射 —— 第 6 周工程骨架
+  库表：user（对应第 5 周 DFD 的 D1 用户信息）
+  列名与实体属性按下划线转驼峰自动映射（见 application.yml: map-underscore-to-camel-case）
+-->
+<mapper namespace="cn.edu.uestc.meeting.mapper.UserMapper">
+
+    <sql id="baseColumns">
+        id, username, password, real_name, role, status, created_at, updated_at
+    </sql>
+
+    <!-- 按账号查用户：登录通路（P1 验证登录）唯一需要的查询 -->
+    <select id="selectByUsername" resultType="cn.edu.uestc.meeting.entity.User">
+        SELECT
+        <include refid="baseColumns"/>
+        FROM `user`
+        WHERE username = #{username}
+        LIMIT 1
+    </select>
+
+    <!-- 连通性自检用 -->
+    <select id="countByStatus" resultType="int">
+        SELECT COUNT(*)
+        FROM `user`
+        WHERE status = #{status}
+    </select>
+
+</mapper>

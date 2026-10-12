@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+  D2 会议室信息 SQL 映射 —— 第 6 周工程骨架
+  库表：meeting_room（对应第 5 周 DFD 的 D2 会议室信息）
+  口径：前台查询只返回启用中的会议室（FR-06），停用的不出现。
+-->
+<mapper namespace="cn.edu.uestc.meeting.mapper.MeetingRoomMapper">
+
+    <sql id="baseColumns">
+        id, name, location, capacity, status, remark, created_at, updated_at
+    </sql>
+
+    <!-- 查询启用中的会议室列表（FR-05 按条件查询 + FR-06 只出启用的） -->
+    <select id="selectEnabled" resultType="cn.edu.uestc.meeting.entity.MeetingRoom">
+        SELECT
+        <include refid="baseColumns"/>
+        FROM `meeting_room`
+        <where>
+            status = 1
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') OR location LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="minCapacity != null">
+                AND capacity &gt;= #{minCapacity}
+            </if>
+        </where>
+        ORDER BY capacity ASC, id ASC
+    </select>
+
+    <!-- 连通性自检用：含停用会议室的总数 -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*)
+        FROM `meeting_room`
+    </select>
+
+</mapper>

@@ -1,6 +1,113 @@
 # 智能会议室管理系统 V1.0 —— 基础预约与管理平台
 
-> 更新日期：2026-10-12 ｜ 当前阶段：**第 6 周进行中（技术选型报告与技术栈清单已定稿，工程骨架待建）**
+> 更新日期：2026-10-12 ｜ 当前阶段：**第 6 周进行中（技术选型已定稿；工程骨架已建并已在本机实测：建表／灌数／后端启动／冒烟 18 项／浏览器端到端全部通过）**
+
+## 快速启动（第 6 周工程骨架）
+
+> ✅ **本章节所有命令已于 2026-10-12 在搭建机（Windows 11）按序跑通一遍**：建表灌数、后端编译启动、
+> 冒烟脚本 18 项断言、浏览器端到端登录与条件查询。截图证据见 `docs/week06/实测截图/`，
+> 逐项结果见 `docs/week06/04_阶段检查材料.md` §2.4。
+> 实测环境的 JDK／Maven／MySQL 为**便携版解压即用**（未走安装器）；「安装 JDK／MySQL」这两步的
+> 安装器路径仍待未参与搭建的同学在另一台机器复跑（见下方「实测记录」）。
+
+### 实测记录
+
+| 时间 | 执行人 | 范围 | 结果 |
+|------|--------|------|------|
+| 2026-10-12 | 李知渔（搭建机） | 建表 + 灌数 + 校验 SQL + 冲突判定 8 用例 + 后端编译启动 + 冒烟脚本 + 浏览器端到端 | 全部通过（18/18） |
+| 待补 | 李牧远（未参与搭建，另一台机器） | 只看本 README，从克隆开始独立复跑 | ⏳ 待执行（耗时、卡点、解决方式记录于此） |
+
+### 环境与版本（版本号写死，不要写"最新版"）
+
+| 组件 | 版本 | 下载地址 |
+|------|------|----------|
+| JDK | **17**（LTS） | https://adoptium.net/temurin/releases/?version=17 |
+| Maven | 3.9.x | https://maven.apache.org/download.cgi |
+| Node.js | **20.x 及以上**（本次验证用 22.22.2） | https://nodejs.org/en/download |
+| MySQL | **8.0.x**（注意不是 5.7） | https://dev.mysql.com/downloads/mysql/8.0.html |
+
+> 部署方式为**本机直接运行**，不需要 Docker Desktop／WSL2（见 `docs/week06/01_技术选型报告.md`）。
+
+### 1. 克隆仓库
+
+```bash
+git clone https://github.com/KYOUKI-FISH/comprehensive-design.git
+cd comprehensive-design
+```
+
+### 2. 初始化数据库（✅ 已实测）
+
+```bash
+mysql -u root -p --default-character-set=utf8mb4 < database/01_schema.sql
+mysql -u root -p --default-character-set=utf8mb4 meeting_room < database/02_seed.sql
+```
+
+> **必须带 `--default-character-set=utf8mb4`**，否则中文会变成乱码。
+> 第二条执行完会打印自检结果，期望 `user`=2、`meeting_room`=4、`reservation`=7 —— **实测输出与之一致**。
+> 可再跑 `tests/sql/01_verify_seed.sql` 做 8 段细校验（含半开区间教学样例）。
+
+### 3. 改一处配置
+
+打开 `backend/src/main/resources/application.yml`，把 `spring.datasource.password`
+改成你本机 MySQL 的 root 密码（仓库里默认写的是 `123456`）。
+
+### 4. 启动后端（✅ 已实测）
+
+```bash
+cd backend
+mvn spring-boot:run        # 首次运行会先下载依赖，实测 BUILD SUCCESS 约 3 分半（走国内镜像更快）
+```
+
+控制台出现 `Started MeetingApplication` 即成功（实测 8.8 秒），服务地址 `http://localhost:8080`。
+若只想编译打包不打进 IDE，可用 `mvn -B -DskipTests clean package`，产物在 `backend/target/meeting-room-backend-1.0.0.jar`。
+
+### 5. 启动前端
+
+```bash
+cd frontend
+npm install        # 已实测（Node 22.22.2 / npm 10.9.7）
+npm run dev        # 打开 http://localhost:5173
+```
+
+> 后端与前端是**两个进程**，需要各开一个终端窗口。只起一边页面会打不开——
+> 这是采用前后端分离（A2）的固有代价，也是《技术选型报告》里预测过的问题之一。
+
+### 6. 默认账号
+
+| 账号 | 密码 | 角色 | 姓名 |
+|------|------|------|------|
+| `student01` | `123456` | 普通用户 | 张同学 |
+| `admin01` | `123456` | 管理员 | 王管理员 |
+
+### 7. 一键自检（✅ 已实测：18 项断言全部通过）
+
+```bash
+curl http://localhost:8080/api/health
+# 期望：{"code":200,"message":"成功","data":{"status":"UP","database":"connected","userCount":2,"roomCount":4}}
+
+bash tests/smoke/login-and-rooms.sh     # 登录 + 查询通路 7 组共 18 项断言
+# 期望输出末行：全部通过：登录/查询最小通路可用。
+```
+
+### 8. 本周边界（别说漏了）
+
+- ✅ **已可用**：登录 `POST /api/auth/login`、查询会议室 `GET /api/rooms`、启动自检 `GET /api/health`
+- ❌ **未实现**（属第 9～10 周）：提交预约、**时间冲突检测（半开区间 `[start, end)`）**、我的预约、管理后台
+  （冲突判定 SQL 已在真库上用 8 个用例预验，见 `tests/sql/01_verify_seed.sql` 第 7 段）
+- 📌 本周只搭环境与最小通路，**不写业务代码**；预约等业务代码第 9～10 周开发。
+
+### 9. 常见问题
+
+| 现象 | 原因与处理 |
+|------|------------|
+| `ERROR 1045 (28000): Access denied` | root 密码与 `backend/src/main/resources/application.yml` 里的 `password` 不一致；改成你自己的密码即可 |
+| 中文乱码 | 执行 SQL 时漏了 `--default-character-set=utf8mb4` |
+| `Communications link failure`／后端起不来报数据库错误 | MySQL 服务没启动，或端口不是 3306；先 `mysql -u root -p` 能进再说 |
+| `Port 8080 was already in use` | 8080 被占（常见：别的 Java 进程或代理）。改 `application.yml` 的 `server.port`，并同步改 `frontend/.env.development` 的 `VITE_API_BASE_URL` 与后端 `WebConfig` 的 CORS 白名单 |
+| `Port 5173 is already in use` | 上一次 `npm run dev` 没退干净；结束对应 node 进程后重跑（Vite 配了 `strictPort: true`，不会自动换端口） |
+| 页面报「无法连接后端」 | 前后端是**两个进程**，必须各开一个终端；只起前端会出现这条提示 |
+| 后端明明写了 8080 却监听了别的端口 | 环境里存在 `SERVER_PORT`／`SERVER__PORT` 环境变量，被 Spring Boot 优先读取。`unset` 掉或用 `--server.port=8080` 显式覆盖（普通本机终端一般遇不到） |
+| `mvn` 报 JDK 版本不对 | 本项目要求 **JDK 17**；`java -version` 确认后设好 `JAVA_HOME` 再跑 |
 
 ## 1. 小组信息
 
@@ -41,7 +148,7 @@
 | 第 3 周 | 可行性分析与方案决策 | 已完成 | `docs/week03/` |
 | 第 4 周 | 角色、用例与需求分析 | 已完成（2026-10-11 复查：9 项交付物全部到位，含追溯表与自查记录） | `docs/week04/` |
 | 第 5 周 | 数据流图与需求评审 | 已完成（6 项交付物全部到位，2026-10-11 结项） | `docs/week05/` |
-| **第 6 周** | **技术选型与工程骨架** | **进行中（报告与清单已成稿，工程骨架未建）** | `docs/week06/` |
+| **第 6 周** | **技术选型与工程骨架** | **进行中（报告与清单已成稿；工程骨架 4 目录已建并已实测：建表／灌数／后端启动／冒烟 18 项／浏览器端到端全通过）** | `docs/week06/` ＋ 仓库根 4 目录 |
 
 ## 4. 第 2 周成果：现状走查与问题清单
 
@@ -303,9 +410,44 @@ comprehensive-design/
 │   │   ├── 04_需求清单V1.1.docx              # 20 FR + 15 NF + 3 QR + 变更对照表
 │   │   ├── 05_自查记录.md                    # 第 5 周自查（含节点检查答稿）
 │   │   └── DFD/                              # 4 张 DFD（PNG + .puml 源同目录）
-│   └── week06/                              # 技术选型与工程骨架（进行中）
-│                                            # 第 5、6 周任务书本机保留，不入库
-└── backend/ frontend/ database/ tests/      # 第 6 周后按需建立
+│   └── week06/                              # 技术选型与工程骨架
+│       ├── 周推进计划.md
+│       ├── 01_技术选型报告.md                # 架构 A1／A2、数据库 B1／B2 比较与结论
+│       ├── 02_技术栈清单.docx                # 前端／后端／数据库／部署方式 4 项
+│       └── 04_阶段检查材料.md                # 过程证据／当前版本／下一步计划
+│                                            # 第 6 周任务书本机保留，不入库
+├── backend/                                 # Spring Boot 3.2 + MyBatis 3.5 + JDK 17（REST API）
+│   ├── pom.xml
+│   └── src/main/
+│       ├── java/cn/edu/uestc/meeting/
+│       │   ├── MeetingApplication.java      # 启动类（@MapperScan）
+│       │   ├── common/                      # ApiResult／BusinessException／GlobalExceptionHandler
+│       │   ├── config/WebConfig.java        # CORS（放行 5173）+ BCrypt 密码编码器
+│       │   ├── controller/                  # AuthController／RoomController／HealthController
+│       │   ├── dto/                         # LoginRequest／LoginResponse
+│       │   ├── entity/                      # User（D1）／MeetingRoom（D2）
+│       │   ├── mapper/                      # UserMapper／MeetingRoomMapper
+│       │   └── service/                     # AuthService／RoomService
+│       └── resources/
+│           ├── application.yml              # ⚠ 只需改 datasource.password
+│           └── mapper/                      # UserMapper.xml／MeetingRoomMapper.xml
+├── frontend/                                # Vue3 3.4 + TS 5.4 + Element Plus 2.7 + Vite 5
+│   ├── package.json  vite.config.ts  tsconfig.json  index.html  env.d.ts
+│   └── src/
+│       ├── api/                             # http.ts（统一返回体拆壳）／auth.ts／room.ts
+│       ├── router/index.ts                  # 登录 / 会议室查询
+│       ├── store/session.ts                 # 登录态（仅内存，刷新即失效，待第 9～10 周改造）
+│       ├── types/api.ts
+│       ├── styles/main.css
+│       └── views/                           # LoginView.vue／RoomListView.vue
+├── database/                                # 建表脚本 + 种子数据（对应第 5 周 DFD 的 D1～D3）
+│   ├── 01_schema.sql                        # user（D1）／meeting_room（D2）／reservation（D3）
+│   ├── 02_seed.sql                          # 默认账号 2 个 + 会议室 4 间 + 占用时段 7 条
+│   └── README.md
+└── tests/                                   # 冒烟测试与数据校验
+    ├── smoke/login-and-rooms.sh             # 登录 + 查询通路 7 组断言
+    ├── sql/01_verify_seed.sql               # 种子数据校验 + 半开区间判定 SQL 演示
+    └── README.md
 ```
 
 ## 10. 待整改事项
@@ -337,9 +479,20 @@ comprehensive-design/
 | 23 | week04／week05《周推进计划》存在过期表述（§3 分工表 DFD 写作单文件、§4.2 FR 映射错位、UC-A03 表述与规约不符、§5 卡点状态未刷新、§4 口径表条数／扩展名） | 李知渔 | ✅ 已刷新（2026-10-11）：两份计划的归档路径、FR 映射、卡点状态、口径表均已对齐实际 |
 | 24 | NF-14 要求文本标点不规范（分号误接并列句） | 李知渔 | ✅ 已修正（2026-10-11）：分号改为句号 |
 | 25 | 第 6 周技术方案互斥：选型报告结论"单体应用、不选前后端分离"与《技术栈清单》"Vue3 SPA + Spring Boot REST"（分离形态）相矛盾；清单部署选 Docker Compose 与"换机器照 README 跑起来、不增加安装负担"的验收锚点冲突 | 李知渔 | ✅ 已整改（2026-10-12）：统一为**前后端分离（A2）＋ MySQL 8.0（B1）＋ 本机直接运行**；候选编号改为 A1／A2、B1／B2 以避开需求侧"方案 A／方案 B"撞名；报告依据补齐溯源，《技术栈清单》清除"设备"字样、禁写清单补足 9 项；两份文件按前缀归位（`01_技术选型报告.md`／`02_技术栈清单.docx`） |
+| 26 | 第 6 周工程骨架缺失：`backend/` `frontend/` `database/` `tests/` 4 目录、三表建表脚本、种子数据、登录/查询最小通路 | 虞业宸、刘宇轩 | ✅ 已建立并**实测通过**（2026-10-12）：建表灌数（MySQL 8.0.29）、种子校验 8 段、冲突判定 SQL 8 用例、后端 BUILD SUCCESS 并启动、冒烟脚本 18/18、浏览器端到端登录与条件查询；截图见 `docs/week06/实测截图/` |
+| 27 | README 快速启动章节（《周推进计划》§4 交付物 4）：环境与版本／克隆／数据库初始化／启动／默认账号已先行写入并置顶；**缺"常见问题 ≥3 条"与未参与者实测记录**，章节编号待统一 | 孙若普起草、李牧远实测 | ⏳ 基本就绪（2026-10-12）：全部命令已实测通过并逐条去掉了"未实测"标注，新增「实测记录」表与「常见问题」8 条；**剩李牧远在另一台机器的独立复跑记录**与章节编号整理 |
+| 28 | 阶段检查材料 `docs/week06/04_阶段检查材料.md` 缺失 | 李知渔、李牧远 | ✅ 已建立三块骨架（2026-10-12）：过程证据／当前版本／下一步计划；§5「待补录清单」7 项需在收尾前清空 |
 
-## 11. 下周预告（第 6 周）
+## 11. 下周预告（第 7 周）
 
-进入**系统设计阶段**：确定系统架构与分层（表现层／业务逻辑层／数据层）；依据第 5 周 DFD 的 D1～D3 数据存储细化 ER 图与表结构（字段、类型、约束、索引）形成建表脚本草案；依据用例规约与数据流定义前后端接口清单；确认工程结构（`backend/`、`frontend/`、`database/`、`tests/`）与技术栈定稿。
+**第 6 周成果**（详见 `docs/week06/04_阶段检查材料.md`）：技术选型报告（架构 A2＋数据库 B1＋本机运行）、技术栈清单、工程骨架 4 目录、三表建表脚本与种子数据、登录/查询最小通路、README 快速启动章节。
 
-> 第 6 周任务书下发后请放入 `docs/week06/`（任务书不纳入版本管理），README 再行对齐。
+**第 7 周进入详细设计**：
+
+1. **数据库详细设计**：依据建表脚本细化 ER 图与表结构（字段、类型、约束、索引），建表脚本定稿。
+2. **接口设计**：依据用例规约与 DFD 数据流定义接口清单（路径、入参、出参、错误码），并以 OpenAPI／Knife4j 文档固化——这是前后端分离（A2）首要风险（跨域与接口字段不一致）的对策。
+3. **页面流程与原型**：登录、查询、提交预约、我的预约、管理后台的页面跳转图。
+4. **测试计划**：登录 / 查询 / **冲突检测（半开区间 `[start, end)`）** 的最小测试用例集（骨架已列在 `tests/README.md` §三）。
+5. 补齐本周遗留整改项（见 §10 第 26～28 项），确保 `week06-final` 标签按时打上（GitHub Desktop 无法推标签，须命令行 `git push origin week06-final`）。
+
+> 第 6 周任务书本机保留，按约定不纳入版本管理。
