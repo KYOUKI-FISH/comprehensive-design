@@ -8,7 +8,8 @@
 -- 内容口径（第 6 周推进计划 §4.3）：
 --   1. 默认账号 2 组 —— 普通用户 1 组 + 管理员 1 组（见下方"默认账号"）
 --   2. 会议室 3 间（启用）+ 1 间（停用，用于验证 FR-06 前台查询过滤掉停用会议室）
---   3. 若干已占用时段，供查询页展示"当日占用时段"（DFD P2 的输出数据流）
+--   3. 密码统一以 BCrypt 摘要（cost=10，60 字符）存储，明文均为 123456；校验走 PasswordEncoder.matches()
+--   4. 若干已占用时段，供查询页展示"当日占用时段"（DFD P2 的输出数据流）
 --      其中 A101 的 09:00-10:00 与 10:00-11:00 刻意首尾相接，
 --      用于验证"首尾相接不算冲突"（FR-09 / UC-U03 业务规则）。
 --
@@ -30,13 +31,14 @@ ALTER TABLE `reservation`  AUTO_INCREMENT = 1;
 
 -- -----------------------------------------------------------------------------
 -- 1. 默认账号（★ README「快速启动」章节列出的默认账号就是这两组）
---    密码均为 123456；骨架阶段明文存储，第 9～10 周替换为 BCrypt 摘要。
+--    密码明文均为 123456，存的是 BCrypt 摘要（cost=10）。同一明文的密文每次生成都不同，
+--    因此三行密文各不相同 —— 这是正常的，不是写错。
 --    注：另补 1 个普通用户 user2，仅用于让种子预约分属不同用户、演示"我的预约"归属。
 -- -----------------------------------------------------------------------------
 INSERT INTO `user` (`id`, `username`, `password`, `real_name`, `role`, `phone`, `status`) VALUES
-  (1, 'admin', '123456', '系统管理员', 'ADMIN', '13800000001', 'ACTIVE'),
-  (2, 'user1', '123456', '张三',      'USER',  '13800000002', 'ACTIVE'),
-  (3, 'user2', '123456', '李四',      'USER',  '13800000003', 'ACTIVE');
+  (1, 'admin', '$2b$10$1gnhT.Gsljg61JJyMwvdtOp23nFC8Vhwxr3uWsQw9S4pQHPNa6cJu', '系统管理员', 'ADMIN', '13800000001', 'ACTIVE'),
+  (2, 'user1', '$2b$10$mRQrsAwrnNDnACz7m.9ps.xIHSXPGAjMAlzkEV99LUAMnSQVYPz5u', '张三',      'USER',  '13800000002', 'ACTIVE'),
+  (3, 'user2', '$2b$10$d/uqNvF8r6jpUBuiOPod/enxpsEy3WsQqwzDM4ORL4G/fsj1TIy2u', '李四',      'USER',  '13800000003', 'ACTIVE');
 
 
 -- -----------------------------------------------------------------------------
@@ -80,7 +82,12 @@ UNION ALL SELECT '会议室', COUNT(*) FROM `meeting_room`
 UNION ALL SELECT '预约',   COUNT(*) FROM `reservation`;
 
 -- 默认账号一览（README「默认账号」一节的来源）
-SELECT `username` AS `账号`, `password` AS `密码`, `real_name` AS `姓名`, `role` AS `角色`, `status` AS `状态`
+-- 密码列不打印密文本身：只校验"是否确为 BCrypt 摘要"，避免把哈希散到日志与截图里。
+-- 明文一律是 123456。若这一列出现「★非 BCrypt 摘要」，说明种子脚本被改回了明文。
+SELECT `username` AS `账号`,
+       CASE WHEN `password` LIKE '$2%' AND CHAR_LENGTH(`password`) = 60
+            THEN 'BCrypt 摘要 ✓' ELSE '★非 BCrypt 摘要' END AS `密码格式`,
+       `real_name` AS `姓名`, `role` AS `角色`, `status` AS `状态`
 FROM `user` ORDER BY `id`;
 
 -- 今日占用时段一览（查询页应展示的内容）
