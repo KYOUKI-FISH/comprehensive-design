@@ -5,6 +5,7 @@
 -- 对应成果: 第 5 周 DFD 数据存储 —— D1 用户信息 / D2 会议室信息 / D3 预约记录
 -- 对应需求: FR-01～FR-14（用户登录与角色区分、会议室管理、查询、预约申请与冲突检测、我的预约）
 -- 环境要求: MySQL 8.0.16 及以上（CHECK 约束自 8.0.16 起才被真正执行）
+-- 密码存储: user.password 存 BCrypt 摘要（cost=10，60 字符），种子数据见 02_seed.sql；后端用 BCryptPasswordEncoder.matches() 校验
 -- 执行方式: mysql -u root -p < database/01_schema.sql
 --
 -- ⚠️ 本脚本会 DROP 并重建三张表，会删除这三张表中的全部数据，仅用于初始化 / 重置。
@@ -40,7 +41,7 @@ DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
   `id`         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '用户ID，主键',
   `username`   VARCHAR(50)  NOT NULL                COMMENT '登录账号（唯一）',
-  `password`   VARCHAR(100) NOT NULL                COMMENT '登录密码。★骨架阶段为明文，仅用于打通登录通路；第 9～10 周业务开发时替换为 BCrypt 摘要并迁移种子数据',
+  `password`   VARCHAR(100) NOT NULL                COMMENT '登录密码的 BCrypt 摘要（cost=10，固定 60 字符）。不存明文；校验用 PasswordEncoder.matches()，不可用字符串相等比较',
   `real_name`  VARCHAR(50)  NOT NULL DEFAULT ''     COMMENT '姓名',
   `role`       VARCHAR(20)  NOT NULL                COMMENT '角色：USER=普通用户 / ADMIN=管理员（FR-02 角色区分与权限控制）',
   `phone`      VARCHAR(20)  DEFAULT NULL            COMMENT '联系电话',

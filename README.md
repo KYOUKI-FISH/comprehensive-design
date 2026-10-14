@@ -1,6 +1,6 @@
 # 智能会议室管理系统 V1.0 —— 基础预约与管理平台
 
-> 更新日期：2026-10-12 ｜ 当前阶段：**第 6 周进行中（技术选型报告与技术栈清单已定稿；后端骨架 + 数据库已在本机真实跑通，README 三条验证命令全部通过；前端待入库，李牧远独立实测待做）**
+> 更新日期：2026-10-14 ｜ 当前阶段：**第 6 周收口中（技术选型已定稿；后端骨架 + 数据库 + 前端已全部入库，并在同一套代码上整链实测通过：建表灌数、后端编译运行与单元测试、冒烟 21 项、浏览器端到端；李牧远独立实测已完成 2026-10-13）**
 
 ---
 
@@ -9,8 +9,8 @@
 > **验收标准**：一个**没参与搭建**的同学，照着下面的步骤在全新环境上把系统启动起来。
 > **各节负责人**（对应《第 6 周推进计划》§4.2）：环境与版本、常见问题 → 孙若普；启动步骤 → 刘宇轩；**数据库初始化、默认账号 → 虞业宸**；实测记录 → 李牧远（未参与搭建）。
 >
-> **实测状态（2026-10-12）**：**除「启动前端」外，本节所有步骤已由虞业宸在本机逐条真实跑通**，命令、返回结果与卡点见下方「实测记录」。
-> ⚠️ 但按任务书要求 **"由搭建者本人自己走一遍不算通过"**——本节仍需 **李牧远（未参与搭建）独立照本 README 走一遍**并回填卡点，方为最终通过。
+> **实测状态（2026-10-14）**：**本节所有步骤（含「启动前端」）已在同一套代码上逐条真实跑通**——后端与数据库 2026-10-12 由虞业宸实测，前端 2026-10-14 由李知渔入库并整链复测；命令、返回结果与卡点见下方「实测记录」。
+> ✅ 李牧远（未参与搭建）已于 2026-10-13 在另一台机器独立照本 README 走完并回填卡点（见「实测记录 · 八」）；前端当时未入库，其入库后由李知渔补测（见「实测记录 · 九」）。
 
 ## 克隆仓库
 
@@ -30,7 +30,7 @@ cd comprehensive-design
 | JDK | **17**（LTS） | 后端运行 | https://adoptium.net/temurin/releases/?version=17 |
 | Maven | **3.9.x** | 后端依赖下载与启动 | https://maven.apache.org/download.cgi |
 | MySQL | **8.0.16 及以上** | 数据库（CHECK 约束自 8.0.16 起才生效） | https://dev.mysql.com/downloads/mysql/ |
-| Node.js | **20.x LTS** | 前端（Vue3 + Vite） | https://nodejs.org/en/download |
+| Node.js | **20.x 及以上** | 前端（Vue3 + Vite） | https://nodejs.org/en/download |
 
 装完先自检三条命令，各有版本输出即过关：
 
@@ -38,6 +38,8 @@ cd comprehensive-design
 java -version     # 期望含 17（★ 若显示 8/11，后端会报"无效的目标发行版"）
 mvn -v            # 期望含 Apache Maven 3.9
 mysql --version   # 期望含 8.0
+node -v           # 期望 ≥ 20（前端构建用）
+npm -v
 ```
 
 **实测状态**：✅ 已通过（2026-10-12，虞业宸本机）——本机实为 **JDK 21.0.7（JetBrains Runtime）/ Maven 3.9.16 / MySQL 8.0.46 / Node.js 22.22.2**，三条自检命令均正常输出版本号。
@@ -102,10 +104,10 @@ npm run dev
 
 浏览器打开终端提示的地址（默认 http://localhost:5173）。
 
-> **负责人**：刘宇轩。`frontend/` 的登录页与会议室查询页由其提交，本节步骤待其代码入库后补全。
+> **前端页面来源**：`frontend/` 由李知渔提供并于 2026-10-14 入库（登录页 + 会议室查询页，Vue3 + TS + Element Plus + Vite）。
 > 前后端分离需**同时启动两个进程**（后端 8080 + 前端 5173），只起一边页面会打不开——这正是《技术选型报告》预测的问题之一。
 
-**实测状态**：⚠️ 待补（`frontend/` 尚未入库）。后端侧已就绪：**跨域配置实测生效**——来自 `http://localhost:5173` 的预检请求返回 `Access-Control-Allow-Origin: http://localhost:5173`、`Access-Control-Allow-Methods: GET,POST,PUT,DELETE,OPTIONS`；前端页面代码入库后即可直接联调。
+**实测状态**：✅ 已通过（2026-10-14）——`npm install`、`npm run build`（`vue-tsc --noEmit` 类型检查 0 错误，`✓ 1669 modules transformed`）、`npm run dev` 均成功；**真实浏览器端到端**：登录页预填 `admin` → 登录成功跳转 `/rooms` → 表格返回 3 间启用会议室（停用的 C102 不出现）→ A101 的当日占用时段以标签展示 → 位置关键字「逸夫楼」筛选后只剩 2 间。跨域预检返回 `Access-Control-Allow-Origin: http://localhost:5173`。截图见 `docs/week06/实测截图/`。
 
 ## 默认账号
 
@@ -117,7 +119,7 @@ npm run dev
 | `user1` | `123456` | 张三 | **USER** 普通用户 | 默认账号 · 普通用户 |
 | `user2` | `123456` | 李四 | **USER** 普通用户 | 补充账号，仅用于让种子预约分属不同用户、验证"我的预约"归属 |
 
-> **骨架阶段密码为明文存储**，仅用于打通登录通路；第 9～10 周实现完整登录功能时替换为 BCrypt 摘要并迁移种子数据（见 `database/01_schema.sql` 中 `user.password` 的字段注释）。
+> **密码以 BCrypt 摘要存储**（cost=10，固定 60 字符），库中**不存明文**；上表所列为明文约定值，用于登录输入。BCrypt 每次编码混入随机盐，故三个账号在库中的密文**各不相同**，这是正常的；校验走 `PasswordEncoder.matches()`，不能用字符串相等比较（后端见 `AuthService`，种子见 `database/02_seed.sql`）。
 
 ## 判断是否跑通
 
@@ -133,7 +135,9 @@ curl -X POST http://localhost:8080/api/auth/login \
      -d "{\"username\":\"admin\",\"password\":\"123456\"}"
 
 # ③ 查询通路：应返回 3 间启用会议室，A101 带当日已占用时段
-curl "http://localhost:8080/api/rooms?status=ENABLED&date=2026-10-12"
+#    ★ 日期填"今天"（格式 yyyy-MM-dd）——种子数据的预约日期由 CURDATE() 动态生成，
+#      填别的日期会查到空的占用时段。Git Bash 可直接写 $(date +%F)。
+curl "http://localhost:8080/api/rooms?status=ENABLED&date=$(date +%F)"
 ```
 
 Windows PowerShell 等价写法（`curl` 是别名、会吞引号，故用 `Invoke-RestMethod`）：
@@ -160,7 +164,7 @@ Invoke-RestMethod "http://localhost:8080/api/rooms?status=ENABLED"
 7. **`java` 可用但 `javac` 不可用**：装的是 JRE 而非 JDK，重装 JDK 17。
 8. **★ 启动后端口不是 8080**：先查环境变量——若系统里存在 `SERVER_PORT` 或 `SERVER__PORT`，Spring Boot 的宽松绑定会把它当成 `server.port`，**优先级高于 `application.yml`**。查：Windows PowerShell `Get-ChildItem Env: | Where-Object Name -like "*PORT*"`；清：`Remove-Item Env:SERVER__PORT`（本机实测就撞上了这条，详见「实测记录」）。
 
-## 实测记录（2026-10-12）
+## 实测记录（2026-10-12 后端与数据库 ／ 2026-10-14 前端与整链）
 
 > **实测人**：虞业宸（**搭建者本人自测**）｜**机器**：本机 Windows，工具装在隔离目录，未装 Windows 服务、未改系统 PATH
 > ⚠️ **性质说明**：任务书明确「由搭建者本人自己走一遍不算通过」。本记录的作用是**在 10-14 前把 README 里所有"未实测"标注换成真实结果、把卡点提前暴露**；**李牧远（未参与搭建）的独立实测仍必须做**，见第八节。
@@ -172,7 +176,7 @@ Invoke-RestMethod "http://localhost:8080/api/rooms?status=ENABLED"
 | JDK | 17 | **21.0.7**（JetBrains Runtime） | Spring Boot 3.2 支持 17～21，21 下编译运行均通过；**技术栈仍以 17 为准** |
 | Maven | 3.9.x | **3.9.16** | 阿里云镜像 |
 | MySQL | 8.0.16+ | **8.0.46** | 便携版，未装 Windows 服务 |
-| Node.js | 20.x LTS | 22.22.2 | 仅记录；前端未测 |
+| Node.js | 20.x 及以上 | 22.22.2 | 前端构建实测用（见第九节） |
 
 ### 二、逐条实测结果
 
@@ -185,7 +189,7 @@ Invoke-RestMethod "http://localhost:8080/api/rooms?status=ENABLED"
 | 5 | 健康检查 | `GET /api/health` | ✅ `{"code":200,...,"database":"UP"}` |
 | 6 | 登录 | `POST /api/auth/login`（admin/123456） | ✅ `{"code":200,...,"role":"ADMIN"}` |
 | 7 | 查询会议室 | `GET /api/rooms?status=ENABLED&date=2026-10-12` | ✅ 3 间启用；A101 带 3 段占用时段 |
-| 8 | 启动前端 | `npm run dev` | ⛔ 未测（`frontend/` 未入库） |
+| 8 | 启动前端 | `npm run dev` | ⛔ 2026-10-12 未测（`frontend/` 未入库）→ ✅ 2026-10-14 已入库并实测（见第九节） |
 
 > 自动化执行时把交互式的 `-p` 写成 `-p123456 -h 127.0.0.1 -P 3306 --default-character-set=utf8mb4`，与 README 的 `-p` 写法等价。
 
@@ -261,6 +265,28 @@ Invoke-RestMethod "http://localhost:8080/api/rooms?status=ENABLED"
 
 最终结果：数据库初始化成功，后端在 8080 端口启动成功，健康检查和登录接口验证成功；前端因 `frontend/` 目录尚未入库，暂无法测试。
 
+> **2026-10-14 补记**：`frontend/` 已于当日入库；其登录与查询已由李知渔在本机整链实测通过（见「九」），上述"前端暂无法测试"的缺口已补上。
+
+### 九、前端入库后的整链复测（2026-10-14，李知渔）
+
+| # | 步骤 | 命令 | 结果 |
+|---|------|------|------|
+| 1 | 前端类型检查 + 构建 | `npm run build` | ✅ `vue-tsc --noEmit` 0 错误，`✓ 1669 modules transformed` |
+| 2 | 启动前端 | `npm run dev` | ✅ `http://localhost:5173/` 返回 200，各模块零错误编译下发 |
+| 3 | 数据库重建 + 重灌 | `01_schema.sql` → `02_seed.sql` | ✅ 3 用户 / 4 会议室 / 5 预约；密码格式列全为"BCrypt 摘要 ✓" |
+| 4 | 种子校验 SQL | `tests/sql/01_verify_seed.sql` | ✅ 9 段全部符合预期 |
+| 5 | 后端重新编译 + 打包 | `mvn -B -DskipTests clean package` | ✅ `BUILD SUCCESS`（19 个源文件，含新增 `config/PasswordConfig`） |
+| 6 | 后端单元测试 | `mvn test` | ✅ `Tests run: 3, Failures: 0, Errors: 0` |
+| 7 | 冒烟脚本 | `bash tests/smoke/login-and-rooms.sh` | ✅ **21 项断言全部通过**（8 组） |
+| 8 | 半开区间冲突判定（真库 8 用例） | 见 `tests/README.md` §4 第 7 段 | ✅ 8/8 全对（首尾相接 0 条、部分重叠 1 条、跨两条相接处 2 条、空闲段与紧贴边界 0 条） |
+| 9 | **浏览器端到端** | 登录 → `/rooms` → 筛选 | ✅ 3 间启用会议室 + A101 占用时段标签；「逸夫楼」筛选后 2 间；停用 C102 不出现。截图 `docs/week06/实测截图/` 3 张 |
+
+> **本轮改动（骨架收敛 + 密码口径统一）**：
+> 1. `frontend/` 入库，接口层按后端实际口径适配（统一返回体 `ApiResponse`、`RoomVO` 含 `occupiedSlots`、查询参数 `location/minCapacity/status/date`）；
+> 2. **密码存储由明文改为 BCrypt 摘要**（cost=10）：`database/02_seed.sql` 三个账号密文各不相同（随机盐），`AuthService` 改走 `PasswordEncoder.matches()`，新增依赖 `spring-security-crypto` 与 `config/PasswordConfig`；
+> 3. 冒烟脚本与种子校验 SQL 入库（`tests/smoke/`、`tests/sql/`）。
+> 后端与数据库的其余代码**未改动**。
+
 ---
 ## 第 6 周目标目录结构
 
@@ -283,10 +309,10 @@ comprehensive-design/
 │           ├── application.yml
 │           └── mapper/       # UserMapper.xml / MeetingRoomMapper.xml
 ├── database/                 # ★ 虞业宸
-│   ├── 01_schema.sql         # user(D1) / meeting_room(D2) / reservation(D3)
-│   └── 02_seed.sql           # 默认账号 2 组 + 会议室 4 间（3 启用 / 1 停用）+ 已占用时段
-├── frontend/                 # 前端（Vue3 + TS + Element Plus + Vite，刘宇轩）
-├── tests/                    # 测试目录（第 7 周起填测试用例集）
+│   ├── 01_schema.sql         # user(D1) / meeting_room(D2) / reservation(D3)，密码为 BCrypt 摘要
+│   └── 02_seed.sql           # 默认账号 3 个 + 会议室 4 间（3 启用 / 1 停用）+ 已占用时段
+├── frontend/                 # 前端（Vue3 + TS + Element Plus + Vite）★ 李知渔提供，2026-10-14 入库
+├── tests/                    # 冒烟脚本 + 种子校验 SQL（第 7 周起补完整用例集）
 └── docs/                     # 每周过程材料
 ```
 
@@ -597,7 +623,7 @@ comprehensive-design/
 │                                            # 第 5、6 周任务书本机保留，不入库
 ├── backend/                                 # 第 6 周：后端骨架（登录 + 查询最小通路）
 ├── database/                                # 第 6 周：建表脚本 01_schema.sql + 种子数据 02_seed.sql
-├── frontend/                                # 第 6 周：前端骨架（刘宇轩，待入库）
+├── frontend/                                # 第 6 周：前端骨架（李知渔提供，2026-10-14 入库）
 └── tests/                                   # 第 6 周：测试目录（第 7 周起填用例集）
 ```
 
@@ -631,6 +657,8 @@ comprehensive-design/
 | 24 | NF-14 要求文本标点不规范（分号误接并列句） | 李知渔 | ✅ 已修正（2026-10-11）：分号改为句号 |
 | 25 | 第 6 周技术方案互斥：选型报告结论"单体应用、不选前后端分离"与《技术栈清单》"Vue3 SPA + Spring Boot REST"（分离形态）相矛盾；清单部署选 Docker Compose 与"换机器照 README 跑起来、不增加安装负担"的验收锚点冲突 | 李知渔 | ✅ 已整改（2026-10-12）：统一为**前后端分离（A2）＋ MySQL 8.0（B1）＋ 本机直接运行**；候选编号改为 A1／A2、B1／B2 以避开需求侧"方案 A／方案 B"撞名；报告依据补齐溯源，《技术栈清单》清除"设备"字样、禁写清单补足 9 项；两份文件按前缀归位（`01_技术选型报告.md`／`02_技术栈清单.docx`） |
 | 26 | 本机实测发现的代码缺陷：请求**不存在的接口**返回 `code 500`（应为 404）——Spring Boot 3.2 对未匹配路径抛 `NoResourceFoundException`，被兜底 `Exception` 处理器一并吞掉，前端无法区分"接口写错"与"后端崩了" | 虞业宸 | ✅ 已修正（2026-10-12）：`GlobalExceptionHandler` 增加 `NoResourceFoundException → 404`、`HttpRequestMethodNotSupportedException → 400` 两个处理器；复测返回 `404 请求的接口不存在`，三条主命令回归正常。证据见 README「实测记录」第六节 |
+| 27 | 第 6 周工程骨架并行推进产生两套同职责实现（后端/数据库一条线、前端一条线），需收敛为单一实现 | 李知渔 | ✅ 已收敛（2026-10-14）：后端与数据库以 `main` 已实测版本为准，前端补齐入库并适配接口口径，收敛后整链复测通过（`docs/week06/04_阶段检查材料.md` §2.4） |
+| 28 | 种子数据密码原为明文存储（README 自认骨架期技术债） | 李知渔 | ✅ 已统一为 BCrypt 摘要（2026-10-14）：`02_seed.sql` 密文各不相同（随机盐），`AuthService` 走 `PasswordEncoder.matches()`；种子自检与冒烟 T2 均验证通过 |
 
 ## 11. 下周预告（第 6 周）
 
@@ -656,7 +684,7 @@ comprehensive-design/
 | 依赖 | 版本要求 | 用途 | 校验命令 |
 |---|---|---|---|
 | JDK | **17**（LTS） | 运行后端 Spring Boot 3.2.x | `java -version` |
-| Node.js | **20.x** | 前端 Vite 5.x 开发服务器与构建 | `node -v` |
+| Node.js | **20.x 及以上** | 前端 Vite 5.x 开发服务器与构建 | `node -v` |
 | MySQL | **8.0.x** | 数据存储 | `mysql --version` |
 | 浏览器 | Chrome / Edge 近两个主要版本 | 前端访问（NF-11） | — |
 
@@ -680,9 +708,10 @@ comprehensive-design/
 **后端**
 ```bash
 # 1. 建库建表（utf8mb4 字符集）
-mysql -u root -p < sql/schema.sql
-# 2. 修改配置 application.yml 中的数据库连接
-# 3. 启动（JDK 17）
+mysql -u root -p < database/01_schema.sql
+# 2. 灌入种子数据
+mysql -u root -p < database/02_seed.sql
+# 3. 启动（JDK 17）；数据库连接参数在 backend/src/main/resources/application.yml
 mvn spring-boot:run
 ```
 
@@ -703,13 +732,15 @@ npm run build # 生产构建
 
 ## 二、默认账号
 
-系统分**两类角色**，权限严格隔离（FR-01 / FR-02 / NF-03）。以下初始口令为项目约定的演示值，入库时一律**加密存储，禁止明文**（NF-05）。
+系统分**两类角色**，权限严格隔离（FR-01 / FR-02 / NF-03）。以下初始口令为项目约定的演示值，库中一律存 **BCrypt 摘要**、不存明文（NF-05）。
+
+> ⚠️ **本表以 `database/02_seed.sql` 实际种子数据为准**（2026-10-14 统一口径）；任何旧稿里的 `Admin@123`／`User@123`／`user01`／`user02` 写法以本表覆盖。
 
 | 角色 | 账号 | 初始密码（约定值） | 可用功能范围 |
 |---|---|---|---|
-| 管理员 | `admin` | `Admin@123` | 用户管理（新建/启用/停用）、会议室管理（增删改、启用停用）、查看全部预约、处理异常预约、利用率概览 |
-| 普通用户 | `user01` | `User@123` | 查询会议室、提交预约、查看/修改/取消我的预约 |
-| 普通用户 | `user02` | `User@123` | 同上（用于验证"只能看本人预约"的数据隔离） |
+| 管理员 | `admin` | `123456` | 用户管理（新建/启用/停用）、会议室管理（增删改、启用停用）、查看全部预约、处理异常预约、利用率概览 |
+| 普通用户 | `user1` | `123456` | 查询会议室、提交预约、查看/修改/取消我的预约 |
+| 普通用户 | `user2` | `123456` | 同上（用于验证"只能看本人预约"的数据隔离） |
 
 **使用须知**
 
@@ -726,7 +757,7 @@ npm run build # 生产构建
 ### A. 启动与环境
 
   **Q1：换一台机器就起不来？**
-按顺序检查前置依赖：`java -version` 必须是 17，`node -v` 必须是 20.x，MySQL 必须是 8.0.x。Spring Boot 3.2.x 在 JDK 17 以下会直接报类文件版本不兼容。
+按顺序检查前置依赖：`java -version` 必须是 17，`node -v` 须为 20 及以上，MySQL 必须是 8.0.x。Spring Boot 3.2.x 在 JDK 17 以下会直接报类文件版本不兼容。
 
   **Q2：为什么不做成 Docker 一键启动？**
 本组验收环境为同学 Windows 本机，容器化需额外安装 Docker Desktop / WSL2 并联网拉镜像，与验收标准"不增加安装负担"直接冲突，故选择本机直接运行，前后端各一条命令启动。

@@ -1,0 +1,21 @@
+# =============================================================================
+# 行尾规范（第 6 周建 backend/ frontend/ tests/ 后新增）
+# -----------------------------------------------------------------------------
+# 背景：Windows 上若 core.autocrlf=true，git 检出时会把文本文件的行尾由 LF 转成
+#       CRLF。对 .sh 脚本是致命的 —— bash 会把行尾的 \r 当成命令的一部分，报
+#       "$'\r': command not found" 或 "bad interpreter"，导致
+#       `bash tests/smoke/login-and-rooms.sh` 直接失败。
+#       本仓库根 README 的验收标准是「换一台机器照 README 跑起来」，
+#       因此脚本必须锁死为 LF。
+# =============================================================================
+
+# 默认：交给 git 自动判定二进制 / 文本
+* text=auto
+
+# Shell 脚本一律以 LF 入库并检出，不受 core.autocrlf 影响（全体平台一致）
+*.sh   text eol=lf
+*.bash text eol=lf
+
+# Windows 批处理反过来必须是 CRLF，否则 cmd 解析异常（当前仓库暂无 .bat/.cmd，预留）
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
