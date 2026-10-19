@@ -1,0 +1,111 @@
+@startuml
+' ===================================================================
+' 时序图 1 —— 登录（FR-01、FR-02、FR-14、NF-05）
+' 失败分支画在产生错误的那一步，不堆在末尾
+' ===================================================================
+
+title 时序图 1：登录（FR-01 / FR-02 / NF-05）
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Noto Sans CJK SC
+skinparam defaultFontSize 15
+skinparam ArrowFontName Noto Sans CJK SC
+skinparam ArrowFontSize 13
+skinparam ParticipantPadding 14
+skinparam BoxPadding 8
+skinparam LifeLineWidth 1.4
+skinparam sequence {
+  ArrowColor #333333
+  LifeLineBorderColor #333333
+  LifeLineBackgroundColor #FFFFFF
+  ParticipantBorderColor #333333
+  ParticipantFontSize 14
+  LifeLineFontSize 13
+  ParticipantBackgroundColor #F5F5F5
+  ActorBorderColor #333333
+  ActorBackgroundColor #F5F5F5
+}
+hide footbox
+
+actor "用户（浏览器）" as U
+participant "前端\nLoginView.vue" as FE
+participant "前端 api\napi/http.ts" as HTTP
+participant "后端\nAuthController" as CTRL
+participant "后端\nAuthService" as SVC
+participant "后端\nUserMapper" as MAPPER
+database "MySQL\nuser 表" as DB
+
+== 路径 1：成功 ==
+
+U -> FE : 输入账号密码，点「登录」
+FE -> FE : Element Plus 表单校验\n（行内提示，FR-01）
+FE -> HTTP : login({username, password})\nPOST /api/auth/login
+HTTP -> CTRL : HTTP POST /api/auth/login\nHeader: Content-Type: application/json
+CTRL -> CTRL : @RequestBody 反序列化 LoginRequest
+CTRL -> SVC : login(request)
+SVC -> SVC : ① 非空校验\n账号/密码为空 → 失败 A
+SVC -> MAPPER : selectByUsername(username)
+MAPPER -> DB : SELECT id, username, password,\nreal_name, role, status FROM user\nWHERE username = ?
+DB --> MAPPER : 一行记录（或空集）
+MAPPER --> SVC : User / null
+SVC -> SVC : ② BCrypt 校验\nPasswordEncoder.matches(明文, 摘要)\n不通过 → 失败 B
+SVC -> SVC : ③ 账号状态校验\nstatus ≠ ACTIVE → 失败 C
+SVC --> CTRL : LoginResponse(userId, username,\nrealName, role)
+CTRL --> HTTP : 200 { code:200, message:"ok", data:{...} }
+HTTP --> FE : 剥掉 ApiResponse 外壳，返回 data
+FE -> FE : setSession(user) 存入内存\n（token 由第 9 周实现）
+FE --> U : 跳转 /rooms（管理员→ /admin）
+note right of FE : **成功在这一步返回**\n返回令牌与角色，前端据此\n渲染对应的菜单入口（FR-02）
+
+== 路径 2：失败（三个失败点各自所在的位置） ==
+
+U -> FE : 再次登录，这次密码输错
+FE -> HTTP : POST /api/auth/login
+HTTP -> CTRL : HTTP POST
+CTRL -> SVC : login(request)
+SVC -> MAPPER : selectByUsername(username)
+MAPPER -> DB : SELECT ... WHERE username = ?
+DB --> MAPPER : 一行记录
+MAPPER --> SVC : User
+SVC -> SVC : BCrypt 校验不通过
+SVC -> CTRL : throw BusinessException\n401「账号或密码错误」
+note right of SVC
+  **失败 B：密码错误**
+  ★ 账号不存在与密码错误
+  返回**同一提示**，
+  防止被枚举账号
+end note
+CTRL --> HTTP : 401 { code:401, message:"账号或密码错误" }
+HTTP --> FE : 抛出，toFriendlyMessage\n翻译为中文业务提示
+FE --> U : ElMessage 提示「账号或密码错误」
+
+U -> FE : 用一个已停用的账号登录
+FE -> HTTP : POST /api/auth/login
+HTTP -> CTRL : HTTP POST
+CTRL -> SVC : login(request)
+SVC -> MAPPER : selectByUsername(username)
+MAPPER -> DB : SELECT ...
+DB --> MAPPER : 一行记录（status = DISABLED）
+MAPPER --> SVC : User
+SVC -> SVC : BCrypt 通过，但 status = DISABLED
+SVC -> CTRL : throw BusinessException\n403「该账号已被停用，\n请联系管理员」
+note right of SVC
+  **失败 C：账号停用**
+  与密码错误分开提示，
+  便于用户知道该找管理员
+  （FR-14 / NF-05）
+end note
+CTRL --> HTTP : 403 { code:403, message:"该账号已被停用…" }
+HTTP --> FE : 抛出并翻译
+FE --> U : ElMessage 提示「该账号已被停用，请联系管理员」
+
+== 异常统一出口 ==
+
+note over CTRL,SVC
+  三条失败路径全部经 GlobalExceptionHandler
+  转成 ApiResponse{code, message, data:null}，
+  **不把 HTTP 500 或堆栈丢给用户**（NF-10）
+end note
+
+@enduml

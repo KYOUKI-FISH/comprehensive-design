@@ -1,0 +1,154 @@
+@startuml
+' ===================================================================
+' 时序图 2 —— 提交预约（含冲突检测）
+' 覆盖 FR-07必填 / FR-08 时间规则 / FR-09 半开区间冲突 / FR-10 提示占用时段 /
+' FR-06 停用不可约 / FR-18 失败保留已填信息 / NF-07 并发不超订
+' 失败分支画在产生错误的那一步
+' ===================================================================
+
+title 时序图 2：提交预约（含冲突检测，FR-07～FR-10）
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Noto Sans CJK SC
+skinparam defaultFontSize 15
+skinparam ArrowFontName Noto Sans CJK SC
+skinparam ArrowFontSize 13
+skinparam ParticipantPadding 14
+skinparam BoxPadding 8
+skinparam LifeLineWidth 1.4
+skinparam sequence {
+  ArrowColor #333333
+  LifeLineBorderColor #333333
+  LifeLineBackgroundColor #FFFFFF
+  ParticipantBorderColor #333333
+  ParticipantBackgroundColor #F5F5F5
+  ParticipantFontSize 14
+  LifeLineFontSize 13
+  ActorBorderColor #333333
+  ActorBackgroundColor #F5F5F5
+}
+hide footbox
+
+actor "用户" as U
+participant "前端\nBookingView.vue" as FE
+participant "前端 api\napi/booking.ts" as HTTP
+participant "后端\nBookingController" as CTRL
+participant "后端\nBookingService\n（冲突检测）" as SVC
+participant "后端\nMeetingRoomMapper" as RM
+participant "后端\nReservationMapper" as RV
+database "MySQL\nreservation 表" as DB
+
+== 步骤 1-2：前端校验与提交 ==
+
+U -> FE : 选会议室，填主题、参会人数、\n联系人、起止时间，点「提交」
+FE -> FE : **必填项校验**（FR-07）\n主题/参会人数/联系人/起止时间\n缺失 → 行内红字提示，**不发请求**
+note right of FE
+  **失败①在浏览器内就返回**
+  校验错误显示在对应输入框行内，
+  不跳新页面（NF-09）
+end note
+
+FE -> HTTP : createBooking({roomId, date,\nstartTime, endTime, topic,\nattendeeCount, contact, purpose})
+HTTP -> CTRL : POST /api/bookings\n（Bearer token）
+CTRL -> CTRL : 鉴权：token 有效？\n无效 → 401「未登录」
+CTRL -> SVC : createBooking(userId, request)
+activate SVC
+
+== 步骤 3：会议室可预约性 ==
+
+SVC -> RM : selectById(roomId)
+RM -> DB : SELECT id, status FROM meeting_room
+DB --> RM : MeetingRoom
+RM --> SVC : MeetingRoom
+SVC -> SVC : **status = DISABLED？**
+note right of SVC
+  **失败②在第 3 步返回**
+  停用会议室不能作为
+  新预约选项（FR-06 / FR-04）
+  → 400「该会议室已停用，无法预约」
+end note
+
+== 步骤 4：时间规则校验 ==
+
+SVC -> SVC : **时间规则校验**（FR-08）\n① startTime ≥ 当前时间？\n② endTime > startTime？\n③ 同一自然日（不跨天）？\n④ 时长 ≤ 8 小时？
+note right of SVC
+  **失败③在第 4 步返回**
+  → 400「预约不能跨天，且单次\n不能超过 8 小时」
+  → 400「结束时间必须晚于开始时间」
+  （FR-08）
+end note
+
+== 步骤 5：半开区间冲突检测 ==
+
+SVC -> RV : **冲突检测（事务内）**\nSELECT COUNT(*) FROM reservation\nWHERE room_id = ? AND reserve_date = ?\n AND status NOT IN ('CANCELLED')\n AND start_time < :endNew\n AND end_time > :startNew
+note right of RV
+  ★ **半开区间 [start, end)**（FR-09）
+  重叠条件：start_new < end_old
+            AND end_new > start_old
+  **首尾相接不算冲突**：
+  09:00-10:00 与 10:00-11:00 可共存
+  （由 idx_reservation_room_time 支撑）
+end note
+
+activate RV
+RV -> DB : SELECT ... FOR UPDATE\n（行锁，防并发超订 NF-07）
+DB --> RV : count = 0 或 count ≥ 1
+RV --> SVC : count
+deactivate RV
+
+alt count ≥ 1（有冲突）
+  SVC -> RV : 查出占用时段（用于提示）
+  RV -> DB : SELECT start_time, end_time
+  DB --> RV : 冲突时段列表
+  RV --> SVC : List<冲突时段>
+  SVC -> CTRL : throw BusinessException\n409「该会议室在此时间段已被占用」\n+ occupiedSlots
+  note right of SVC
+    **失败④在第 5 步返回**
+    提示中**必须带被占用时段**，
+    让用户知道该改到什么时候
+    （FR-10）
+    ★ 只提示占用时段、用户自行另选，
+    **不做自动推荐替代时段**
+    （第 3 周评审降级口径）
+  end note
+  CTRL --> HTTP : 409 { code:409,\nmessage:"该时段已被占用",\ndata:{occupiedSlots:[...]}}
+  HTTP --> FE : 抛出，toFriendlyMessage
+  FE -> FE : **保留用户已填的全部内容**\n只高亮时间字段
+  note right of FE
+    **失败⑤在前端回显**
+    FR-18：预约失败后
+    **保留已填信息**，
+    便于改时间后重提
+  end note
+  FE --> U : 红色提示「该时段已被占用」\n+ 展示被占用时段列表
+else count = 0（无冲突）
+  == 步骤 6-7：落库与返回 ==
+
+  SVC -> RV : insert(...)
+  activate RV
+  RV -> DB : INSERT INTO reservation\n(status='PENDING', reservation_no=…)
+  DB --> RV : 主键 id
+  RV --> SVC : id
+  deactivate RV
+  SVC --> CTRL : Reservation(id, reservationNo, status)
+  deactivate SVC
+  CTRL --> HTTP : 200 { code:200, message:"ok",\ndata:{reservationNo:"MR2026…"}}
+  HTTP --> FE : 返回 data
+  FE --> U : 成功提示 + 显示预约编号\n跳「我的预约」
+  note right of FE : **成功在这一步返回**\n返回预约编号，\n用户可凭编号查询（FR-07）
+end
+
+== 边界说明 ==
+
+note over CTRL,SVC
+  · 冲突检测与 INSERT 在**同一事务**内，
+    SELECT ... FOR UPDATE 加行锁，
+    保证同一会议室同一时段只有一条有效预约（NF-07）
+  · status 取值：PENDING 待开始 / ONGOING 进行中 /
+    FINISHED 已结束 / CANCELLED 已取消（NF-08 四态）
+  · 状态流转在读取时按当前时间推导、落库时校正，
+    不引入定时器组件
+end note
+
+@enduml

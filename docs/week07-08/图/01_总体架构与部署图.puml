@@ -1,0 +1,71 @@
+@startuml
+' ===================================================================
+' 智能会议室管理系统 —— 总体架构与部署图（第 7 周）
+' 口径：技术选型 A2 前后端分离 + MySQL 8.0 + 本机运行（第 6 周定稿）
+' ===================================================================
+
+title 总体架构与部署图（架构 A2：前后端分离）
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Noto Sans CJK SC
+skinparam componentStyle rectangle
+skinparam rectangleBorderThickness 1
+skinparam nodesep 90
+skinparam ranksep 80
+skinparam defaultFontSize 13
+skinparam ArrowFontName Noto Sans CJK SC
+skinparam ArrowFontSize 12
+skinparam rectangle {
+  BorderColor #555555
+  FontColor #111111
+  BackgroundColor #FAFAFA
+}
+
+rectangle "① 浏览器（用户界面）\n不含业务逻辑" as CLIENT
+
+rectangle "② Node.js 进程 · 端口 5173\nVite dev server" as VITE {
+  component "前端 SPA\nVue 3.4 + TypeScript 5.4 + Element Plus 2.7\nAxios 1.7" as FE
+}
+
+rectangle "③ JVM 进程 · 端口 8080\nSpring Boot 3.2.5 / Java 17\n包名 com.meetingroom" as JVM {
+  component "后端 REST 服务\ncontroller → service → mapper\nconfig / common" as BE
+}
+
+rectangle "④ mysqld 进程 · 端口 3306" as MYD {
+  database "MySQL 8.0.16+\n库 meeting_room（utf8mb4）\nuser / meeting_room\nreservation / operation_log" as DB
+}
+
+CLIENT --> FE : 加载页面（静态资源 GET /）
+CLIENT --> BE : HTTP + CORS\nGET POST PUT DELETE\nhttp://localhost:8080/api/**
+BE --> DB : JDBC / MyBatis\nSELECT / INSERT / UPDATE / DELETE\nlocalhost:3306
+
+note left of BE
+  **跨域边界在这里**
+  前端 5173 与后端 8080 不同源，
+  浏览器默认拦截
+  → 由后端 CorsConfig 放行
+  http://localhost:*
+end note
+
+note right of FE
+  **架构约束：前端不直连数据库**
+  所有数据访问一律经后端，
+  数据库凭据不出现在前端
+end note
+
+note bottom of DB
+  **部署方式＝本机运行**
+  四个部件在同一台开发机上，
+  按根 README 逐条启动
+end note
+
+note as N1
+  **结论：本组为前后端分离（A2），不是单体。**
+  1. 前端独立构建、独立进程（Node 5173），与后端只是 HTTP 调用关系
+  2. 后端只提供 REST 接口，不渲染页面、不直接面向浏览器出HTML
+  3. 数据库只被后端访问，前端拿不到也不需要数据库连接
+  4. 四者跑在同一台开发机（不容器化），与根 README 启动步骤一一对应
+end note
+
+@enduml
