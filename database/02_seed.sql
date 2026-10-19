@@ -1,100 +1,138 @@
 -- =============================================================================
--- 智能会议室管理系统 V1.0 —— 种子数据（第 6 周 · 工程骨架）
+-- 智能会议室管理系统 V1.0 —— 种子数据脚本（第 7—8 周 · 数据库定稿 / 拆分版 · 数据部分）
 -- 文件    : database/02_seed.sql
 -- 负责人  : 虞业宸（2025091202009，Git: yycyuyechen）
 -- 前置条件: 已执行 database/01_schema.sql 建库建表
--- 执行方式: mysql -u root -p < database/02_seed.sql
+-- 执行方式: mysql -u root -p --default-character-set=utf8mb4 < database/02_seed.sql
 --
--- 内容口径（第 6 周推进计划 §4.3）：
---   1. 默认账号 2 组 —— 普通用户 1 组 + 管理员 1 组（见下方"默认账号"）
---   2. 会议室 3 间（启用）+ 1 间（停用，用于验证 FR-06 前台查询过滤掉停用会议室）
---   3. 密码统一以 BCrypt 摘要（cost=10，60 字符）存储，明文均为 123456；校验走 PasswordEncoder.matches()
---   4. 若干已占用时段，供查询页展示"当日占用时段"（DFD P2 的输出数据流）
---      其中 A101 的 09:00-10:00 与 10:00-11:00 刻意首尾相接，
---      用于验证"首尾相接不算冲突"（FR-09 / UC-U03 业务规则）。
+-- ★ 本文件是"数据"拆分版：只清空并重灌演示数据，不动表结构。
+--   第 7—8 周的正式交付物是自包含版 docs/week07-08/schema.sql
+--   （建库 + 建表 + 约束 + 索引 + 初始化数据在同一个文件里，供课堂"干净库一次跑通"演示）。
+--   两份内容同源同表，改数据时须同步改。
 --
--- ⚠️ 本脚本会先清空三张表再灌入，可重复执行；仅用于演示数据初始化 / 重置。
---    预约日期使用 CURDATE() 动态生成，因此任何一天执行都能在查询页看到"今天"的占用时段。
+-- ⚠️ 本脚本会清空 4 张表的全部数据后重灌，仅用于初始化 / 重置。
 -- =============================================================================
 
-USE `meeting_room`;
 SET NAMES utf8mb4;
+USE `meeting_room`;
 
--- 按外键依赖倒序清空（保留表结构）
-DELETE FROM `reservation`;
-DELETE FROM `meeting_room`;
-DELETE FROM `user`;
-ALTER TABLE `user`         AUTO_INCREMENT = 1;
-ALTER TABLE `meeting_room` AUTO_INCREMENT = 1;
-ALTER TABLE `reservation`  AUTO_INCREMENT = 1;
-
+-- 按外键依赖倒序清空（先关外键检查，避免顺序约束），并重置自增
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE `operation_log`;
+TRUNCATE TABLE `reservation`;
+TRUNCATE TABLE `meeting_room`;
+TRUNCATE TABLE `user`;
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- -----------------------------------------------------------------------------
--- 1. 默认账号（★ README「快速启动」章节列出的默认账号就是这两组）
---    密码明文均为 123456，存的是 BCrypt 摘要（cost=10）。同一明文的密文每次生成都不同，
---    因此三行密文各不相同 —— 这是正常的，不是写错。
---    注：另补 1 个普通用户 user2，仅用于让种子预约分属不同用户、演示"我的预约"归属。
+-- 1. 用户（1 管理员 + 2 普通用户）
+--    口令口径：password 只存 BCrypt 摘要（cost=10，各账号独立盐值），本文件不出现明文。
+--    演示账号 admin / user1 / user2 的初始口令只写在根 README.md。
+--    多给 1 个 user2：任务书口径是下限（1 管理员 + 1 普通用户），
+--    第 3 个账号用于让冲突组两条预约分属不同用户，从而能验证 FR-11
+--    "我的预约只显示本人记录"（同一账号的两条预约看不出归属隔离）。
 -- -----------------------------------------------------------------------------
 INSERT INTO `user` (`id`, `username`, `password`, `real_name`, `role`, `phone`, `status`) VALUES
-  (1, 'admin', '$2b$10$1gnhT.Gsljg61JJyMwvdtOp23nFC8Vhwxr3uWsQw9S4pQHPNa6cJu', '系统管理员', 'ADMIN', '13800000001', 'ACTIVE'),
-  (2, 'user1', '$2b$10$mRQrsAwrnNDnACz7m.9ps.xIHSXPGAjMAlzkEV99LUAMnSQVYPz5u', '张三',      'USER',  '13800000002', 'ACTIVE'),
-  (3, 'user2', '$2b$10$d/uqNvF8r6jpUBuiOPod/enxpsEy3WsQqwzDM4ORL4G/fsj1TIy2u', '李四',      'USER',  '13800000003', 'ACTIVE');
-
-
--- -----------------------------------------------------------------------------
--- 2. 会议室（3 间启用 + 1 间停用）
--- -----------------------------------------------------------------------------
-INSERT INTO `meeting_room` (`id`, `name`, `location`, `capacity`, `equipment`, `status`, `remark`) VALUES
-  (1, '逸夫楼A101会议室', '逸夫楼A座1层', 20, '投影仪、白板、视频会议终端', 'ENABLED',  '常用于项目组例会'),
-  (2, '逸夫楼A205研讨室', '逸夫楼A座2层',  8, '白板、电视屏',               'ENABLED',  '小规模讨论用'),
-  (3, '图书馆B301培训室', '图书馆B座3层',  50, '投影仪、音响、录播设备',     'ENABLED',  '大容量，可培训'),
-  (4, '学生活动中心C102洽谈室', '学生活动中心C座1层', 6, '电视屏、茶水', 'DISABLED', '装修中，已停用 —— 用于验证 FR-06 前台查询过滤');
-
+  (1, 'admin', '$2a$10$6l2Y.jlb5dFfu5dxJ3MMxehZ.ZdS0zPkjul8hDtf2/jvIrxEMoqEe', '系统管理员', 'ADMIN', '13800000001', 'ACTIVE'),
+  (2, 'user1', '$2a$10$5g8hM1oUiZoB9HI1kaYjIulDurZJLxQGYsEW9j/wOE2JYi1HrAbYW', '张三',       'USER',  '13800000002', 'ACTIVE'),
+  (3, 'user2', '$2a$10$g4wqnD6pV68YvQJUHUW3/OY81Ic.SqsEp/qN7W1t5cr35OJuBXkf2', '李四',       'USER',  '13800000003', 'ACTIVE');
 
 -- -----------------------------------------------------------------------------
--- 3. 已占用时段（今日 3 条 + 明日 2 条，状态均为待开始 PENDING）
---    预约编号规则：MR + yyyyMMdd + 三位流水号
+-- 2. 会议室（3 间：2 间 ENABLED + 1 间 DISABLED）
+--    DISABLED 那间用于验证 FR-06：查询结果标"不可用"，且不能作为新预约选项。
+-- -----------------------------------------------------------------------------
+INSERT INTO `meeting_room` (`id`, `name`, `building`, `room_no`, `capacity`, `equipment`, `purpose`, `status`, `remark`) VALUES
+  (1, '逸夫楼A101会议室', '逸夫楼A座', '101', 20, '投影仪、白板、视频会议终端', '项目组例会、需求评审', 'ENABLED',  '本组演示主用会议室'),
+  (2, '逸夫楼A202会议室', '逸夫楼A座', '202', 12, '投影仪、白板',               '小组讨论、技术评审',   'ENABLED',  '容量较小，适合小组讨论'),
+  (3, '图书馆B301报告厅', '图书馆B座',  '301', 40, '投影仪、音响、话筒',         '培训、讲座',           'DISABLED', '维修中，已停用；用于验证 FR-06 停用过滤');
+
+-- -----------------------------------------------------------------------------
+-- 3. 预约（7 条）
+--    a) A101（room_id=1）2026-11-02 09:00-11:00 与 10:00-12:00 → 时间重叠，**冲突组**（FR-09）
+--    b) A202（room_id=2）2026-11-02 09:00-10:00 与 10:00-11:00 → **首尾相接，不算冲突**（FR-09）
+--    c) A101 2026-11-02 14:00-15:00 → status=3 已取消，时段已释放（NF-08）
+--    d) A202 2026-10-12 09:00-10:00 → status=2 已结束（覆盖第三种状态）
+--    e) 图书馆 B301 2026-11-02 09:00-10:00 → 挂在已停用会议室上的历史预约（FR-04 停用保留已有预约）
+--    日期用固定值 2026-11-02 保证可复现；演示时把预约日期选 2026-11-02 即可复现冲突。
 -- -----------------------------------------------------------------------------
 INSERT INTO `reservation`
-  (`reservation_no`, `room_id`, `user_id`, `reserve_date`, `start_time`, `end_time`, `purpose`, `status`) VALUES
-  -- A101 今日 09:00-10:00 与 10:00-11:00 首尾相接：两者不冲突，可同时存在
-  (CONCAT('MR', DATE_FORMAT(CURDATE(), '%Y%m%d'), '001'), 1, 2, CURDATE(),
-   TIMESTAMP(CURDATE(), '09:00:00'), TIMESTAMP(CURDATE(), '10:00:00'), '项目组周例会', 'PENDING'),
-  (CONCAT('MR', DATE_FORMAT(CURDATE(), '%Y%m%d'), '002'), 1, 3, CURDATE(),
-   TIMESTAMP(CURDATE(), '10:00:00'), TIMESTAMP(CURDATE(), '11:00:00'), '需求评审会',   'PENDING'),
-  -- A101 今日 14:00-16:00：验证"冲突查询能命中"
-  (CONCAT('MR', DATE_FORMAT(CURDATE(), '%Y%m%d'), '003'), 1, 2, CURDATE(),
-   TIMESTAMP(CURDATE(), '14:00:00'), TIMESTAMP(CURDATE(), '16:00:00'), '技术方案讨论', 'PENDING'),
-  -- B301 今日 16:00-18:00
-  (CONCAT('MR', DATE_FORMAT(CURDATE(), '%Y%m%d'), '004'), 3, 2, CURDATE(),
-   TIMESTAMP(CURDATE(), '16:00:00'), TIMESTAMP(CURDATE(), '18:00:00'), '新技术培训',   'PENDING'),
-  -- A205 明日 13:30-15:00（跨到"明天"，用于验证按日期查询）
-  (CONCAT('MR', DATE_FORMAT(CURDATE() + INTERVAL 1 DAY, '%Y%m%d'), '001'), 2, 3, CURDATE() + INTERVAL 1 DAY,
-   TIMESTAMP(CURDATE() + INTERVAL 1 DAY, '13:30:00'), TIMESTAMP(CURDATE() + INTERVAL 1 DAY, '15:00:00'),
-   '小组讨论', 'PENDING');
-
+  (`booking_no`, `user_id`, `room_id`, `booking_date`, `start_time`, `end_time`,
+   `topic`, `attendee_count`, `contact`, `purpose`, `status`, `cancel_reason`) VALUES
+  ('BK202611020001', 2, 1, '2026-11-02', '2026-11-02 09:00:00', '2026-11-02 11:00:00',
+   '项目组周例会', 8, '张三', '同步本周进度', 0, NULL),
+  ('BK202611020002', 3, 1, '2026-11-02', '2026-11-02 10:00:00', '2026-11-02 12:00:00',
+   '需求评审会', 10, '李四', '评审 V1.1 需求清单', 0, NULL),
+  ('BK202611020003', 2, 2, '2026-11-02', '2026-11-02 09:00:00', '2026-11-02 10:00:00',
+   '技术方案讨论', 6, '张三', '接口边界讨论', 0, NULL),
+  ('BK202611020004', 3, 2, '2026-11-02', '2026-11-02 10:00:00', '2026-11-02 11:00:00',
+   '数据库设计评审', 5, '李四', '表结构与索引评审', 0, NULL),
+  ('BK202611020005', 2, 1, '2026-11-02', '2026-11-02 14:00:00', '2026-11-02 15:00:00',
+   '临时沟通会', 3, '张三', '因主讲人有事取消', 3, '主讲人临时出差，管理员强制取消'),
+  ('BK202610120006', 2, 2, '2026-10-12', '2026-10-12 09:00:00', '2026-10-12 10:00:00',
+   '第 6 周阶段自查', 5, '张三', '第 6 周收尾检查', 2, NULL),
+  ('BK202611020007', 3, 3, '2026-11-02', '2026-11-02 09:00:00', '2026-11-02 10:00:00',
+   '新技术培训', 25, '李四', '停用前已订下，保留记录', 0, NULL);
 
 -- -----------------------------------------------------------------------------
--- 4. 自带验证：核对灌入结果
+-- 4. 操作日志示例（NF-14：管理员敏感操作留痕）
 -- -----------------------------------------------------------------------------
-SELECT '用户'   AS `表`, COUNT(*) AS `条数` FROM `user`
-UNION ALL SELECT '会议室', COUNT(*) FROM `meeting_room`
-UNION ALL SELECT '预约',   COUNT(*) FROM `reservation`;
+INSERT INTO `operation_log`
+  (`operator_id`, `operator_username`, `operation_type`, `target_type`, `target_id`,
+   `before_data`, `after_data`, `operated_at`, `remark`) VALUES
+  (1, 'admin', 'BOOKING_FORCE_CANCEL', 'BOOKING', 5,
+   JSON_OBJECT('status', 0, 'bookingNo', 'BK202611020005'),
+   JSON_OBJECT('status', 3, 'cancelReason', '主讲人临时出差，管理员强制取消'),
+   '2026-11-02 09:30:00', '演示数据：管理员强制取消异常预约');
 
--- 默认账号一览（README「默认账号」一节的来源）
--- 密码列不打印密文本身：只校验"是否确为 BCrypt 摘要"，避免把哈希散到日志与截图里。
--- 明文一律是 123456。若这一列出现「★非 BCrypt 摘要」，说明种子脚本被改回了明文。
-SELECT `username` AS `账号`,
-       CASE WHEN `password` LIKE '$2%' AND CHAR_LENGTH(`password`) = 60
-            THEN 'BCrypt 摘要 ✓' ELSE '★非 BCrypt 摘要' END AS `密码格式`,
-       `real_name` AS `姓名`, `role` AS `角色`, `status` AS `状态`
+
+-- =============================================================================
+-- 灌入结果自检（不打印任何口令或摘要，可安全投屏）
+-- =============================================================================
+SELECT '① 各表记录数' AS `校验项`, '' AS `结果`;
+SELECT 'user'          AS `表`, COUNT(*) AS `条数` FROM `user`
+UNION ALL SELECT 'meeting_room',  COUNT(*) FROM `meeting_room`
+UNION ALL SELECT 'reservation',   COUNT(*) FROM `reservation`
+UNION ALL SELECT 'operation_log', COUNT(*) FROM `operation_log`;
+
+SELECT '② 默认账号一览（不显示口令）' AS `校验项`, '' AS `结果`;
+SELECT `username` AS `账号`, `real_name` AS `姓名`, `role` AS `角色`, `status` AS `状态`
 FROM `user` ORDER BY `id`;
 
--- 今日占用时段一览（查询页应展示的内容）
-SELECT r.`reservation_no` AS `预约编号`, m.`name` AS `会议室`,
-       DATE_FORMAT(r.`start_time`, '%H:%i') AS `开始`, DATE_FORMAT(r.`end_time`, '%H:%i') AS `结束`,
-       r.`purpose` AS `用途`, r.`status` AS `状态`
-FROM `reservation` r
-JOIN `meeting_room` m ON m.`id` = r.`room_id`
-WHERE r.`reserve_date` = CURDATE()
-ORDER BY r.`room_id`, r.`start_time`;
+SELECT '③ 会议室一览' AS `校验项`, '' AS `结果`;
+SELECT `id`, `name` AS `名称`, `building` AS `楼栋`, `room_no` AS `房间号`,
+       `capacity` AS `容量`, `status` AS `状态`
+FROM `meeting_room` ORDER BY `id`;
+
+SELECT '④ 预约状态分布' AS `校验项`, '' AS `结果`;
+SELECT `status` AS `状态值`,
+       CASE `status` WHEN 0 THEN '待开始' WHEN 1 THEN '进行中'
+                     WHEN 2 THEN '已结束' WHEN 3 THEN '已取消' END AS `含义`,
+       COUNT(*) AS `条数`
+FROM `reservation` GROUP BY `status` ORDER BY `status`;
+
+SELECT '⑤ 冲突组实证：A101 在 2026-11-02' AS `校验项`, '' AS `结果`;
+SELECT '新预约 10:30-11:30（与 09:00-11:00 重叠，应判冲突）' AS `场景`, COUNT(*) AS `命中冲突条数`
+FROM `reservation`
+WHERE `room_id` = 1 AND `booking_date` = '2026-11-02' AND `status` IN (0, 1)
+  AND `start_time` < '2026-11-02 11:30:00' AND `end_time` > '2026-11-02 10:30:00'
+UNION ALL
+SELECT '新预约 14:00-15:00（原预约已取消 status=3，应判不冲突）', COUNT(*)
+FROM `reservation`
+WHERE `room_id` = 1 AND `booking_date` = '2026-11-02' AND `status` IN (0, 1)
+  AND `start_time` < '2026-11-02 15:00:00' AND `end_time` > '2026-11-02 14:00:00';
+
+SELECT '⑥ 首尾相接实证：A202 在 2026-11-02（现有 09:00-10:00 与 10:00-11:00）' AS `校验项`, '' AS `结果`;
+SELECT '新预约 11:00-12:00（接尾部，应判不冲突）' AS `场景`, COUNT(*) AS `命中冲突条数`
+FROM `reservation`
+WHERE `room_id` = 2 AND `booking_date` = '2026-11-02' AND `status` IN (0, 1)
+  AND `start_time` < '2026-11-02 12:00:00' AND `end_time` > '2026-11-02 11:00:00'
+UNION ALL
+SELECT '新预约 08:00-09:00（接头，应判不冲突）', COUNT(*)
+FROM `reservation`
+WHERE `room_id` = 2 AND `booking_date` = '2026-11-02' AND `status` IN (0, 1)
+  AND `start_time` < '2026-11-02 09:00:00' AND `end_time` > '2026-11-02 08:00:00'
+UNION ALL
+SELECT '新预约 09:30-10:30（真重叠，应判冲突）', COUNT(*)
+FROM `reservation`
+WHERE `room_id` = 2 AND `booking_date` = '2026-11-02' AND `status` IN (0, 1)
+  AND `start_time` < '2026-11-02 10:30:00' AND `end_time` > '2026-11-02 09:30:00';
