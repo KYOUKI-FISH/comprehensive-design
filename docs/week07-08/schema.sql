@@ -35,13 +35,13 @@ SET NAMES utf8mb4;
 --   ★ 首尾相接不算冲突：09:00-10:00 与 10:00-11:00 可以同时存在。
 --   支撑查询（第 9 周实现，本脚本只提供索引与数据）：
 --       SELECT 1 FROM reservation
---        WHERE room_id = ? AND booking_date = ?
+--        WHERE room_id = ? AND reserve_date = ?
 --          AND status IN (0, 1)                              -- 0 待开始 / 1 进行中 才算占位
 --          AND start_time < ?   -- 新预约的 end_time
 --          AND end_time   > ?   -- 新预约的 start_time
 --        LIMIT 1;
---   索引 idx_reservation_room_time(room_id, booking_date, start_time, end_time)
---   正好覆盖该查询的等值列（room_id、booking_date）与范围列（start_time、end_time）。
+--   索引 idx_reservation_room_time(room_id, reserve_date, start_time, end_time)
+--   正好覆盖该查询的等值列（room_id、reserve_date）与范围列（start_time、end_time）。
 --   并发下单靠"事务 + 命中级行锁"兜底（NF-07），不靠应用层先查后插。
 -- -----------------------------------------------------------------------------
 
@@ -91,33 +91,31 @@ CREATE TABLE `user` (
 -- =============================================================================
 -- 表 2／4：meeting_room　会议室表
 -- 需求依据：FR-03 会议室信息管理、FR-04 启用停用、FR-05 按条件查询、FR-06 显示可用状态
--- 设计说明：楼栋 building 与房间号 room_no 拆成两列，是为支撑 FR-03 的
---           "相同楼栋和房间号的会议室已存在时拒绝重复新增"——用 UNIQUE(building, room_no) 直接兜住。
+-- 设计说明：定位字段沿用第 6 周既有骨架的 location（位置），不拆成"楼栋 + 房间号"两列——
+--           既有后端实体 MeetingRoom 与 MeetingRoomMapper.xml 已按 location 联调通过，
+--           改列名会让第 6 周已跑通的查询直接报错。FR-03「拒绝重复新增」由 UNIQUE(name) 兜住。
 --           实体关系：meeting_room 1 : N reservation（见 reservation.room_id 外键）。
 -- =============================================================================
 CREATE TABLE `meeting_room` (
   `id`         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '会议室ID，主键，自增',
-  `name`       VARCHAR(100)    NOT NULL                COMMENT '会议室名称，如"逸夫楼A101会议室"，仅用于展示（唯一性由楼栋+房间号保证）',
-  `building`   VARCHAR(50)     NOT NULL                COMMENT '楼栋，如"逸夫楼A座"。与 room_no 组成唯一键（FR-03）',
-  `room_no`    VARCHAR(20)     NOT NULL                COMMENT '房间号，如"101"。与 building 组成唯一键（FR-03）',
+  `name`       VARCHAR(100)    NOT NULL                COMMENT '会议室名称（唯一）。FR-03 同名会议室拒绝重复新增，由 uk_room_name 兜住',
+  `location`   VARCHAR(100)    NOT NULL                COMMENT '位置，如"逸夫楼A座1层"。FR-05 按位置或名称模糊查询的筛选字段（与第 6 周既有后端实体 MeetingRoom 同源）',
   `capacity`   INT UNSIGNED    NOT NULL                COMMENT '可容纳人数，FR-05 按容量筛选的比较字段',
   `equipment`  VARCHAR(255)    NOT NULL DEFAULT ''     COMMENT '设备描述（投影仪、白板、视频会议终端等），仅作展示',
-  `purpose`    VARCHAR(100)    NOT NULL DEFAULT ''     COMMENT '会议室用途说明，如"项目组例会/培训"，仅作展示与筛选提示',
   `status`     VARCHAR(20)     NOT NULL DEFAULT 'ENABLED' COMMENT '会议室状态枚举：ENABLED=可用 / DISABLED=停用（FR-04）。停用后保留已有预约，但不作为新预约选项（FR-06）',
   `remark`     VARCHAR(255)    DEFAULT NULL            COMMENT '备注',
   `created_at` DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_room_building_no` (`building`, `room_no`),
+  UNIQUE KEY `uk_room_name` (`name`),
   KEY `idx_room_status` (`status`),
   KEY `idx_room_capacity` (`capacity`),
-  KEY `idx_room_building` (`building`),
   CONSTRAINT `ck_room_status`   CHECK (`status` IN ('ENABLED', 'DISABLED')),
   CONSTRAINT `ck_room_capacity` CHECK (`capacity` > 0)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci
-  COMMENT = '会议室表；楼栋+房间号唯一（FR-03），停用后不作为新预约选项（FR-06）';
+  COMMENT = '会议室表；名称唯一（FR-03），停用后不作为新预约选项（FR-06）';
 
 
 -- =============================================================================
@@ -126,13 +124,15 @@ CREATE TABLE `meeting_room` (
 --           FR-11 我的预约、FR-12 修改、FR-13 取消、FR-15 全部预约、FR-16 处理异常、NF-08 状态流转
 --
 -- ★ 时间怎么存：start_time / end_time 均为 DATETIME NOT NULL，占用区间为半开区间 [start_time, end_time)。
---   booking_date 冗余存 DATE，用于按日查询、占用日历（FR-17）与按日聚合（FR-20），
+--   reserve_date 冗余存 DATE，用于按日查询、占用日历（FR-17）与按日聚合（FR-20），
 --   并由 ck_reservation_date_match 保证它永远等于 DATE(start_time)，不会与 start_time 漂移。
 --   为什么用 DATETIME 而不是 TIMESTAMP：DATETIME 不带时区转换，存的是"墙上时间"，
 --   本系统全部在本机时区运行、不做跨时区协作，用 DATETIME 更稳妥（不受服务器 time_zone 影响）。
 --
--- ★ 状态怎么存：status 用 TINYINT 而非字符串，取值口径见 NF-08（4 态）：
---   0 待开始 / 1 进行中 / 2 已结束 / 3 已取消
+-- ★ 状态怎么存：status 用 VARCHAR(20) 字符串枚举（与第 6 周既有骨架、后端 SQL 写法同源），取值口径见 NF-08（4 态）：
+--   PENDING 待开始 / ONGOING 进行中 / FINISHED 已结束 / CANCELLED 已取消
+--   ★ 不可改回 TINYINT：既有后端 MeetingRoomMapper.xml 第 35 行写的是
+--     AND status IN ('PENDING', 'ONGOING')，改成数字会让已跑通的查询直接报错。
 --   注意：任务书第三节示例给的是 3 态（0 已预约 / 1 已取消 / 2 已结束），那是格式参照；
 --   本组按需求清单 V1.1 的 NF-08 落 4 态，任务书明确"图和表只是格式参照，照抄不算完成"。
 --   "待开始→进行中→已结束"不在数据库里定时翻转（不引入定时任务，不属需求清单），
@@ -144,35 +144,35 @@ CREATE TABLE `meeting_room` (
 --   user 同理（fk_reservation_user 为 RESTRICT），不因停用或删除用户而毁掉历史预约记录（FR-11、FR-16）。
 -- =============================================================================
 CREATE TABLE `reservation` (
-  `id`             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '预约主键ID，自增；对外不暴露，对外用 booking_no',
-  `booking_no`     VARCHAR(32)     NOT NULL                COMMENT '预约编号，全局唯一，对外展示（FR-07）。生成规则：BK + yyyyMMdd + 4位序号，如 BK202611020001，由业务层生成（第 9 周实现）',
+  `id`             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '预约主键ID，自增；对外不暴露，对外用 reservation_no',
+  `reservation_no`     VARCHAR(32)     NOT NULL                COMMENT '预约编号，全局唯一，对外展示（FR-07）。生成规则：BK + yyyyMMdd + 4位序号，如 MR202611020001，由业务层生成（第 9 周实现）',
   `user_id`        BIGINT UNSIGNED NOT NULL                COMMENT '预约人ID → user(id)，ON DELETE RESTRICT（FR-11 我的预约归属）',
   `room_id`        BIGINT UNSIGNED NOT NULL                COMMENT '会议室ID → meeting_room(id)，ON DELETE RESTRICT（FR-03 删除保护）',
-  `booking_date`   DATE            NOT NULL                COMMENT '预约日期，恒等于 DATE(start_time)，由 CHECK 保证；用于按日查询与占用日历（FR-17、FR-20）',
+  `reserve_date`   DATE            NOT NULL                COMMENT '预约日期，恒等于 DATE(start_time)，由 CHECK 保证；用于按日查询与占用日历（FR-17、FR-20）',
   `start_time`     DATETIME        NOT NULL                COMMENT '开始时间，★含本时刻（半开区间左闭）；不得早于当前时间（FR-08）',
   `end_time`       DATETIME        NOT NULL                COMMENT '结束时间，★不含本时刻（半开区间右开）；须晚于 start_time（FR-08）',
   `topic`          VARCHAR(100)    NOT NULL                COMMENT '会议主题，必填（FR-07）',
   `attendee_count` INT UNSIGNED    NOT NULL                COMMENT '参会人数，必填，须大于 0（FR-07）',
   `contact`        VARCHAR(50)     NOT NULL                COMMENT '联系人，必填（FR-07）',
   `purpose`        VARCHAR(255)    DEFAULT NULL            COMMENT '用途补充说明，选填（FR-07 只要求主题/人数/联系人/起止时间必填）',
-  `status`         TINYINT         NOT NULL DEFAULT 0       COMMENT '预约状态：0 待开始 / 1 进行中 / 2 已结束 / 3 已取消（NF-08，四态；不用任务书示例的三态）',
+  `status`         VARCHAR(20)     NOT NULL DEFAULT 'PENDING' COMMENT '预约状态：PENDING 待开始 / ONGOING 进行中 / FINISHED 已结束 / CANCELLED 已取消（NF-08 四态；VARCHAR 枚举与第 6 周既有骨架同源）',
   `cancel_reason`  VARCHAR(200)    DEFAULT NULL            COMMENT '取消原因。管理员强制取消异常预约时必填（FR-16）；用户自行取消可留空',
   `created_at`     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间（NF-08 状态一致性追溯）',
   `updated_at`     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_reservation_booking_no` (`booking_no`),
+  UNIQUE KEY `uk_reservation_no` (`reservation_no`),
   -- 冲突检测（FR-09）与"当日占用时段 / 占用日历"（FR-17）共用这个联合索引
-  KEY `idx_reservation_room_time` (`room_id`, `booking_date`, `start_time`, `end_time`),
-  KEY `idx_reservation_user_date` (`user_id`, `booking_date`),
-  KEY `idx_reservation_date_status` (`booking_date`, `status`),
+  KEY `idx_reservation_room_time` (`room_id`, `reserve_date`, `start_time`, `end_time`),
+  KEY `idx_reservation_user_date` (`user_id`, `reserve_date`),
+  KEY `idx_reservation_date_status` (`reserve_date`, `status`),
   -- FR-08 时间边界：结束晚于开始、禁止跨天、单次不超过 8 小时
   CONSTRAINT `ck_reservation_time_order` CHECK (`end_time` > `start_time`),
   CONSTRAINT `ck_reservation_same_day`   CHECK (DATE(`start_time`) = DATE(`end_time`)),
   CONSTRAINT `ck_reservation_max_8h`     CHECK (TIMESTAMPDIFF(MINUTE, `start_time`, `end_time`) <= 480),
-  -- booking_date 与 start_time 不得漂移
-  CONSTRAINT `ck_reservation_date_match` CHECK (`booking_date` = DATE(`start_time`)),
+  -- reserve_date 与 start_time 不得漂移
+  CONSTRAINT `ck_reservation_date_match` CHECK (`reserve_date` = DATE(`start_time`)),
   -- NF-08 四态
-  CONSTRAINT `ck_reservation_status`     CHECK (`status` IN (0, 1, 2, 3)),
+  CONSTRAINT `ck_reservation_status`     CHECK (`status` IN ('PENDING', 'ONGOING', 'FINISHED', 'CANCELLED')),
   -- FR-07 参会人数必须为正
   CONSTRAINT `ck_reservation_attendee`   CHECK (`attendee_count` > 0),
   -- FR-03：有预约的会议室删不掉（RESTRICT）
@@ -248,48 +248,48 @@ INSERT INTO `user` (`id`, `username`, `password`, `real_name`, `role`, `phone`, 
 
 -- 2. 会议室（3 间：2 间 ENABLED + 1 间 DISABLED）
 --    DISABLED 那间用于验证 FR-06：查询结果里显示"不可用"，且不能作为新预约选项。
-INSERT INTO `meeting_room` (`id`, `name`, `building`, `room_no`, `capacity`, `equipment`, `purpose`, `status`, `remark`) VALUES
-  (1, '逸夫楼A101会议室', '逸夫楼A座', '101', 20, '投影仪、白板、视频会议终端', '项目组例会、需求评审', 'ENABLED',  '本组演示主用会议室'),
-  (2, '逸夫楼A202会议室', '逸夫楼A座', '202', 12, '投影仪、白板',               '小组讨论、技术评审',   'ENABLED',  '容量较小，适合小组讨论'),
-  (3, '图书馆B301报告厅', '图书馆B座',  '301', 40, '投影仪、音响、话筒',         '培训、讲座',           'DISABLED', '维修中，已停用；用于验证 FR-06 停用过滤');
+INSERT INTO `meeting_room` (`id`, `name`, `location`, `capacity`, `equipment`, `status`, `remark`) VALUES
+  (1, '逸夫楼A101会议室', '逸夫楼A座1层', 20, '投影仪、白板、视频会议终端', 'ENABLED',  '本组演示主用会议室'),
+  (2, '逸夫楼A202会议室', '逸夫楼A座2层', 12, '投影仪、白板',               'ENABLED',  '容量较小，适合小组讨论'),
+  (3, '图书馆B301报告厅', '图书馆B座3层', 40, '投影仪、音响、话筒',         'DISABLED', '维修中，已停用；用于验证 FR-06 停用过滤');
 
 -- 3. 预约（6 条）
 --    a) A101（room_id=1）2026-11-02 09:00-11:00 与 10:00-12:00 → 时间重叠，**冲突组**（FR-09 判冲突）
 --    b) A202（room_id=2）2026-11-02 09:00-10:00 与 10:00-11:00 → **首尾相接，不算冲突**（FR-09 关键验收点）
---    c) A101 2026-11-02 14:00-15:00 → status=3 已取消，占用已释放（NF-08 取消后时段可再预约）
---    d) A202 2026-10-12 09:00-10:00 → status=2 已结束（覆盖第三种状态）
+--    c) A101 2026-11-02 14:00-15:00 → status=CANCELLED 已取消，占用已释放（NF-08 取消后时段可再预约）
+--    d) A202 2026-10-12 09:00-10:00 → status=FINISHED 已结束（覆盖第三种状态）
 --    e) 图书馆 B301 2026-11-02 09:00-10:00 → 挂在一间已停用的会议室上，
 --       用于验证 FR-04"停用会议室已有预约保留"：查得到历史记录，但不能新增预约。
 INSERT INTO `reservation`
-  (`booking_no`, `user_id`, `room_id`, `booking_date`, `start_time`, `end_time`,
+  (`reservation_no`, `user_id`, `room_id`, `reserve_date`, `start_time`, `end_time`,
    `topic`, `attendee_count`, `contact`, `purpose`, `status`, `cancel_reason`) VALUES
   -- a) 冲突组：同一会议室 A101，两条时间重叠
-  ('BK202611020001', 2, 1, '2026-11-02', '2026-11-02 09:00:00', '2026-11-02 11:00:00',
-   '项目组周例会', 8, '张三', '同步本周进度', 0, NULL),
-  ('BK202611020002', 3, 1, '2026-11-02', '2026-11-02 10:00:00', '2026-11-02 12:00:00',
-   '需求评审会', 10, '李四', '评审 V1.1 需求清单', 0, NULL),
+  ('MR202611020001', 2, 1, '2026-11-02', '2026-11-02 09:00:00', '2026-11-02 11:00:00',
+   '项目组周例会', 8, '张三', '同步本周进度', 'PENDING', NULL),
+  ('MR202611020002', 3, 1, '2026-11-02', '2026-11-02 10:00:00', '2026-11-02 12:00:00',
+   '需求评审会', 10, '李四', '评审 V1.1 需求清单', 'PENDING', NULL),
   -- b) 首尾相接组：同一会议室 A202，10:00 接 09:00，不算冲突
-  ('BK202611020003', 2, 2, '2026-11-02', '2026-11-02 09:00:00', '2026-11-02 10:00:00',
-   '技术方案讨论', 6, '张三', '接口边界讨论', 0, NULL),
-  ('BK202611020004', 3, 2, '2026-11-02', '2026-11-02 10:00:00', '2026-11-02 11:00:00',
-   '数据库设计评审', 5, '李四', '表结构与索引评审', 0, NULL),
+  ('MR202611020003', 2, 2, '2026-11-02', '2026-11-02 09:00:00', '2026-11-02 10:00:00',
+   '技术方案讨论', 6, '张三', '接口边界讨论', 'PENDING', NULL),
+  ('MR202611020004', 3, 2, '2026-11-02', '2026-11-02 10:00:00', '2026-11-02 11:00:00',
+   '数据库设计评审', 5, '李四', '表结构与索引评审', 'PENDING', NULL),
   -- c) 已取消（status=3）：时段已释放
-  ('BK202611020005', 2, 1, '2026-11-02', '2026-11-02 14:00:00', '2026-11-02 15:00:00',
-   '临时沟通会', 3, '张三', '因主讲人有事取消', 3, '主讲人临时出差，管理员强制取消'),
+  ('MR202611020005', 2, 1, '2026-11-02', '2026-11-02 14:00:00', '2026-11-02 15:00:00',
+   '临时沟通会', 3, '张三', '因主讲人有事取消', 'CANCELLED', '主讲人临时出差，管理员强制取消'),
   -- d) 已结束（status=2）
-  ('BK202610120006', 2, 2, '2026-10-12', '2026-10-12 09:00:00', '2026-10-12 10:00:00',
-   '第 6 周阶段自查', 5, '张三', '第 6 周收尾检查', 2, NULL),
+  ('MR202610120006', 2, 2, '2026-10-12', '2026-10-12 09:00:00', '2026-10-12 10:00:00',
+   '第 6 周阶段自查', 5, '张三', '第 6 周收尾检查', 'FINISHED', NULL),
   -- e) 挂在已停用会议室上的历史预约（FR-04：停用保留已有预约）
-  ('BK202611020007', 3, 3, '2026-11-02', '2026-11-02 09:00:00', '2026-11-02 10:00:00',
-   '新技术培训', 25, '李四', '停用前已订下，保留记录', 0, NULL);
+  ('MR202611020007', 3, 3, '2026-11-02', '2026-11-02 09:00:00', '2026-11-02 10:00:00',
+   '新技术培训', 25, '李四', '停用前已订下，保留记录', 'PENDING', NULL);
 
 -- 4. 操作日志示例（NF-14：管理员敏感操作留痕）
 INSERT INTO `operation_log`
   (`operator_id`, `operator_username`, `operation_type`, `target_type`, `target_id`,
    `before_data`, `after_data`, `operated_at`, `remark`) VALUES
   (1, 'admin', 'BOOKING_FORCE_CANCEL', 'BOOKING', 5,
-   JSON_OBJECT('status', 0, 'bookingNo', 'BK202611020005'),
-   JSON_OBJECT('status', 3, 'cancelReason', '主讲人临时出差，管理员强制取消'),
+   JSON_OBJECT('status', 'PENDING', 'reservationNo', 'MR202611020005'),
+   JSON_OBJECT('status', 'CANCELLED', 'cancelReason', '主讲人临时出差，管理员强制取消'),
    '2026-11-02 09:30:00', '演示数据：管理员强制取消异常预约');
 
 
@@ -310,36 +310,36 @@ UNION ALL SELECT 'meeting_room',  COUNT(*) FROM `meeting_room`
 UNION ALL SELECT 'reservation',   COUNT(*) FROM `reservation`
 UNION ALL SELECT 'operation_log', COUNT(*) FROM `operation_log`;
 
-SELECT '③ 预约状态分布（应为 0/2/3 三种，NF-08 四态中的 1 未造数据）' AS `校验项`, '' AS `结果`;
+SELECT '③ 预约状态分布（应为 PENDING/FINISHED/CANCELLED 三种，NF-08 四态中的 ONGOING 未造数据）' AS `校验项`, '' AS `结果`;
 SELECT `status` AS `状态值`,
-       CASE `status` WHEN 0 THEN '待开始' WHEN 1 THEN '进行中'
-                     WHEN 2 THEN '已结束' WHEN 3 THEN '已取消' END AS `含义`,
+       CASE `status` WHEN 'PENDING' THEN '待开始' WHEN 'ONGOING' THEN '进行中'
+                     WHEN 'FINISHED' THEN '已结束' WHEN 'CANCELLED' THEN '已取消' END AS `含义`,
        COUNT(*) AS `条数`
 FROM `reservation` GROUP BY `status` ORDER BY `status`;
 
 SELECT '④ 冲突组实证：A101 在 2026-11-02' AS `校验项`, '' AS `结果`;
 SELECT '新预约 10:30-11:30（与 09:00-11:00 重叠）' AS `场景`, COUNT(*) AS `命中冲突条数`
 FROM `reservation`
-WHERE `room_id` = 1 AND `booking_date` = '2026-11-02' AND `status` IN (0, 1)
+WHERE `room_id` = 1 AND `reserve_date` = '2026-11-02' AND `status` IN ('PENDING', 'ONGOING')
   AND `start_time` < '2026-11-02 11:30:00' AND `end_time` > '2026-11-02 10:30:00'
 UNION ALL
-SELECT '新预约 14:00-15:00（原预约已取消 status=3，应不冲突）', COUNT(*)
+SELECT '新预约 14:00-15:00（原预约已取消 status=CANCELLED，应不冲突）', COUNT(*)
 FROM `reservation`
-WHERE `room_id` = 1 AND `booking_date` = '2026-11-02' AND `status` IN (0, 1)
+WHERE `room_id` = 1 AND `reserve_date` = '2026-11-02' AND `status` IN ('PENDING', 'ONGOING')
   AND `start_time` < '2026-11-02 15:00:00' AND `end_time` > '2026-11-02 14:00:00';
 
 SELECT '⑤ 首尾相接实证：A202 在 2026-11-02（现有 09:00-10:00 与 10:00-11:00 两条）' AS `校验项`, '' AS `结果`;
 SELECT '新预约 11:00-12:00（接 10:00-11:00 的尾巴，应判不冲突）' AS `场景`, COUNT(*) AS `命中冲突条数`
 FROM `reservation`
-WHERE `room_id` = 2 AND `booking_date` = '2026-11-02' AND `status` IN (0, 1)
+WHERE `room_id` = 2 AND `reserve_date` = '2026-11-02' AND `status` IN ('PENDING', 'ONGOING')
   AND `start_time` < '2026-11-02 12:00:00' AND `end_time` > '2026-11-02 11:00:00'
 UNION ALL
 SELECT '新预约 08:00-09:00（接 09:00-10:00 的头，应判不冲突）', COUNT(*)
 FROM `reservation`
-WHERE `room_id` = 2 AND `booking_date` = '2026-11-02' AND `status` IN (0, 1)
+WHERE `room_id` = 2 AND `reserve_date` = '2026-11-02' AND `status` IN ('PENDING', 'ONGOING')
   AND `start_time` < '2026-11-02 09:00:00' AND `end_time` > '2026-11-02 08:00:00'
 UNION ALL
 SELECT '新预约 09:30-10:30（真重叠，应判冲突）', COUNT(*)
 FROM `reservation`
-WHERE `room_id` = 2 AND `booking_date` = '2026-11-02' AND `status` IN (0, 1)
+WHERE `room_id` = 2 AND `reserve_date` = '2026-11-02' AND `status` IN ('PENDING', 'ONGOING')
   AND `start_time` < '2026-11-02 10:30:00' AND `end_time` > '2026-11-02 09:30:00';

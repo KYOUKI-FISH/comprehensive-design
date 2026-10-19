@@ -1,0 +1,125 @@
+@startuml
+' =============================================================================
+' 智能会议室管理系统 —— E-R 图（第 8 周 · 数据库与接口设计）
+' 对应文档: docs/week07-08/02_数据库与接口设计.md §2
+' 实体表 4 张: user / meeting_room / reservation / operation_log
+' ★ role 不单独建表（需求清单无角色管理功能），以 user.role 枚举列承载
+' =============================================================================
+
+hide circle
+skinparam linetype ortho
+skinparam defaultFontSize 15
+skinparam defaultFontName "Noto Sans CJK SC"
+skinparam shadowing false
+skinparam rectangle {
+  BorderColor #4a5568
+  BackgroundColor #f7fafc
+  FontColor #1a202c
+}
+skinparam entity {
+  BorderColor #2c5282
+  BackgroundColor #ffffff
+  FontColor #1a202c
+}
+skinparam attribute {
+  FontColor #2d3748
+  BackgroundColor #ffffff
+}
+skinparam relationship {
+  FontColor #2c5282
+  FontStyle bold
+}
+
+entity "user\n用户表" as user {
+  * id : BIGINT UNSIGNED <<PK, AI>>
+  --
+  username : VARCHAR(50) <<UK>>
+  password : VARCHAR(100) <<BCrypt>>
+  real_name : VARCHAR(50)
+  role : VARCHAR(20) <<USER / ADMIN>>
+  phone : VARCHAR(20)
+  status : VARCHAR(20) <<ACTIVE|DISABLED>>
+  created_at : DATETIME
+  updated_at : DATETIME
+}
+
+entity "meeting_room\n会议室表" as room {
+  * id : BIGINT UNSIGNED <<PK, AI>>
+  --
+  name : VARCHAR(100) <<UK>>
+  location : VARCHAR(100)
+  capacity : INT UNSIGNED
+  equipment : VARCHAR(255)
+  status : VARCHAR(20) <<ENABLED|DISABLED>>
+  remark : VARCHAR(255)
+  created_at : DATETIME
+  updated_at : DATETIME
+}
+
+entity "reservation\n预约记录表" as resv {
+  * id : BIGINT UNSIGNED <<PK, AI>>
+  --
+  reservation_no : VARCHAR(32) <<UK>>
+  user_id : BIGINT UNSIGNED <<FK>>
+  room_id : BIGINT UNSIGNED <<FK>>
+  reserve_date : DATE
+  start_time : DATETIME
+  end_time : DATETIME
+  topic : VARCHAR(100) <<新增>>
+  attendee_count : INT UNSIGNED <<新增>>
+  contact : VARCHAR(50) <<新增>>
+  purpose : VARCHAR(255)
+  status : VARCHAR(20) <<四态>>
+  cancel_reason : VARCHAR(255)
+  operator_id : BIGINT UNSIGNED
+  created_at : DATETIME
+  updated_at : DATETIME
+}
+
+entity "operation_log\n操作日志表" as oplog {
+  * id : BIGINT UNSIGNED <<PK, AI>>
+  --
+  operator_id : BIGINT UNSIGNED <<FK,可空>>
+  operator_role : VARCHAR(20)
+  operation_type : VARCHAR(30)
+  target_type : VARCHAR(30)
+  target_id : BIGINT UNSIGNED
+  detail : VARCHAR(500)
+  ip : VARCHAR(45)
+  created_at : DATETIME
+}
+
+' ---- 关系 ----
+user ||--o{ resv : "1 : N\n预约人"
+room  ||--o{ resv : "1 : N"
+user ||--o{ oplog : "1 : N\n操作人（可空）"
+
+' ---- 关键约束注记 ----
+note right of resv
+  **半开区间 [start, end)**
+  start_time 含本时刻
+  end_time   不含本时刻
+  冲突：start_time < :endNew
+     AND end_time   > :startNew
+  ★ 首尾相接不算冲突
+
+  **room_id 外键 ON DELETE RESTRICT**
+  会议室已有预约时删不掉
+  → 由数据库直接拒绝
+  （FR-03）
+end note
+
+note bottom of oplog
+  **NF-14 操作日志**
+  对应接口 #13
+  GET /api/admin/logs
+  校验字段完整 + 普通用户被拒
+end note
+
+note left of user
+  **role 是枚举列，不是表**
+  需求清单无「角色管理」功能
+  故不建 role 表
+end note
+
+@enduml

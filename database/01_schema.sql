@@ -28,12 +28,12 @@ SET NAMES utf8mb4;
 --   ★ 首尾相接不算冲突：09:00-10:00 与 10:00-11:00 可以同时存在。
 --   支撑查询（第 9 周实现，本脚本只提供索引）：
 --       SELECT 1 FROM reservation
---        WHERE room_id = ? AND booking_date = ?
+--        WHERE room_id = ? AND reserve_date = ?
 --          AND status IN (0, 1)          -- 只有"待开始 / 进行中"才占位
 --          AND start_time < ?            -- 新预约的 end_time
 --          AND end_time   > ?            -- 新预约的 start_time
 --        LIMIT 1;
---   索引 idx_reservation_room_time(room_id, booking_date, start_time, end_time)
+--   索引 idx_reservation_room_time(room_id, reserve_date, start_time, end_time)
 --   覆盖上述查询的等值列与范围列。并发兜底靠事务 + 行锁（NF-07）。
 -- -----------------------------------------------------------------------------
 
@@ -80,31 +80,29 @@ CREATE TABLE `user` (
 -- =============================================================================
 -- 表 2／4：meeting_room　会议室表
 -- FR-03 会议室管理、FR-04 启用停用、FR-05 条件查询、FR-06 显示可用状态
--- UNIQUE(building, room_no) 支撑 FR-03"相同楼栋和房间号拒绝重复新增"
+-- UNIQUE(name) 支撑 FR-03「同名会议室拒绝重复新增」
+-- 定位字段为 location（位置），与第 6 周既有后端实体 MeetingRoom 及 MeetingRoomMapper.xml 同源
 -- =============================================================================
 CREATE TABLE `meeting_room` (
   `id`         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '会议室ID，主键，自增',
-  `name`       VARCHAR(100)    NOT NULL                COMMENT '会议室名称，如"逸夫楼A101会议室"，仅展示用',
-  `building`   VARCHAR(50)     NOT NULL                COMMENT '楼栋，如"逸夫楼A座"；与 room_no 组成唯一键（FR-03）',
-  `room_no`    VARCHAR(20)     NOT NULL                COMMENT '房间号，如"101"；与 building 组成唯一键（FR-03）',
+  `name`       VARCHAR(100)    NOT NULL                COMMENT '会议室名称（唯一），FR-03 同名拒绝重复新增',
+  `location`   VARCHAR(100)    NOT NULL                COMMENT '位置，如"逸夫楼A座1层"；FR-05 按位置或名称模糊查询的筛选字段',
   `capacity`   INT UNSIGNED    NOT NULL                COMMENT '可容纳人数，FR-05 按容量筛选的比较字段',
   `equipment`  VARCHAR(255)    NOT NULL DEFAULT ''     COMMENT '设备描述（投影仪、白板、视频会议终端等），仅展示',
-  `purpose`    VARCHAR(100)    NOT NULL DEFAULT ''     COMMENT '会议室用途说明，仅展示与筛选提示',
   `status`     VARCHAR(20)     NOT NULL DEFAULT 'ENABLED' COMMENT '会议室状态：ENABLED=可用 / DISABLED=停用（FR-04）；停用后不作为新预约选项（FR-06）',
   `remark`     VARCHAR(255)    DEFAULT NULL            COMMENT '备注',
   `created_at` DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_room_building_no` (`building`, `room_no`),
+  UNIQUE KEY `uk_room_name` (`name`),
   KEY `idx_room_status` (`status`),
   KEY `idx_room_capacity` (`capacity`),
-  KEY `idx_room_building` (`building`),
   CONSTRAINT `ck_room_status`   CHECK (`status` IN ('ENABLED', 'DISABLED')),
   CONSTRAINT `ck_room_capacity` CHECK (`capacity` > 0)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci
-  COMMENT = '会议室表；楼栋+房间号唯一（FR-03），停用后不作为新预约选项（FR-06）';
+  COMMENT = '会议室表；名称唯一（FR-03），停用后不作为新预约选项（FR-06）';
 
 
 -- =============================================================================
@@ -113,37 +111,37 @@ CREATE TABLE `meeting_room` (
 -- FR-12 修改、FR-13 取消、FR-15 全部预约、FR-16 处理异常、NF-08 状态流转
 --
 -- 时间存法：start_time / end_time 为 DATETIME NOT NULL，占用区间 [start_time, end_time)。
---   booking_date 冗余存 DATE，由 ck_reservation_date_match 保证恒等于 DATE(start_time)。
+--   reserve_date 冗余存 DATE，由 ck_reservation_date_match 保证恒等于 DATE(start_time)。
 --   用 DATETIME 而非 TIMESTAMP：存"墙上时间"、不做时区转换，本机单时区运行更稳。
 -- 状态存法：TINYINT，四态 0 待开始 / 1 进行中 / 2 已结束 / 3 已取消（NF-08，不用任务书示例的三态）。
 -- 删会议室：fk_reservation_room 为 ON DELETE RESTRICT，有预约就删不掉（FR-03）。
 -- =============================================================================
 CREATE TABLE `reservation` (
-  `id`             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '预约主键ID，自增；对外不暴露，对外用 booking_no',
-  `booking_no`     VARCHAR(32)     NOT NULL                COMMENT '预约编号，全局唯一，对外展示（FR-07）。规则：BK + yyyyMMdd + 4位序号，如 BK202611020001',
+  `id`             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '预约主键ID，自增；对外不暴露，对外用 reservation_no',
+  `reservation_no`     VARCHAR(32)     NOT NULL                COMMENT '预约编号，全局唯一，对外展示（FR-07）。规则：BK + yyyyMMdd + 4位序号，如 MR202611020001',
   `user_id`        BIGINT UNSIGNED NOT NULL                COMMENT '预约人ID → user(id)，ON DELETE RESTRICT（FR-11）',
   `room_id`        BIGINT UNSIGNED NOT NULL                COMMENT '会议室ID → meeting_room(id)，ON DELETE RESTRICT（FR-03）',
-  `booking_date`   DATE            NOT NULL                COMMENT '预约日期，恒等于 DATE(start_time)；用于按日查询与占用日历（FR-17、FR-20）',
+  `reserve_date`   DATE            NOT NULL                COMMENT '预约日期，恒等于 DATE(start_time)；用于按日查询与占用日历（FR-17、FR-20）',
   `start_time`     DATETIME        NOT NULL                COMMENT '开始时间，★含本时刻（半开区间左闭）；不得早于当前时间（FR-08）',
   `end_time`       DATETIME        NOT NULL                COMMENT '结束时间，★不含本时刻（半开区间右开）；须晚于 start_time（FR-08）',
   `topic`          VARCHAR(100)    NOT NULL                COMMENT '会议主题，必填（FR-07）',
   `attendee_count` INT UNSIGNED    NOT NULL                COMMENT '参会人数，必填，须大于 0（FR-07）',
   `contact`        VARCHAR(50)     NOT NULL                COMMENT '联系人，必填（FR-07）',
   `purpose`        VARCHAR(255)    DEFAULT NULL            COMMENT '用途补充说明，选填',
-  `status`         TINYINT         NOT NULL DEFAULT 0       COMMENT '预约状态：0 待开始 / 1 进行中 / 2 已结束 / 3 已取消（NF-08 四态）',
+  `status`         VARCHAR(20)         NOT NULL DEFAULT 'PENDING'       COMMENT '预约状态：PENDING 待开始 / ONGOING 进行中 / FINISHED 已结束 / CANCELLED 已取消（NF-08 四态）',
   `cancel_reason`  VARCHAR(200)    DEFAULT NULL            COMMENT '取消原因；管理员强制取消异常预约时必填（FR-16）',
   `created_at`     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at`     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_reservation_booking_no` (`booking_no`),
-  KEY `idx_reservation_room_time` (`room_id`, `booking_date`, `start_time`, `end_time`),
-  KEY `idx_reservation_user_date` (`user_id`, `booking_date`),
-  KEY `idx_reservation_date_status` (`booking_date`, `status`),
+  UNIQUE KEY `uk_reservation_no` (`reservation_no`),
+  KEY `idx_reservation_room_time` (`room_id`, `reserve_date`, `start_time`, `end_time`),
+  KEY `idx_reservation_user_date` (`user_id`, `reserve_date`),
+  KEY `idx_reservation_date_status` (`reserve_date`, `status`),
   CONSTRAINT `ck_reservation_time_order` CHECK (`end_time` > `start_time`),
   CONSTRAINT `ck_reservation_same_day`   CHECK (DATE(`start_time`) = DATE(`end_time`)),
   CONSTRAINT `ck_reservation_max_8h`     CHECK (TIMESTAMPDIFF(MINUTE, `start_time`, `end_time`) <= 480),
-  CONSTRAINT `ck_reservation_date_match` CHECK (`booking_date` = DATE(`start_time`)),
-  CONSTRAINT `ck_reservation_status`     CHECK (`status` IN (0, 1, 2, 3)),
+  CONSTRAINT `ck_reservation_date_match` CHECK (`reserve_date` = DATE(`start_time`)),
+  CONSTRAINT `ck_reservation_status`     CHECK (`status` IN ('PENDING', 'ONGOING', 'FINISHED', 'CANCELLED')),
   CONSTRAINT `ck_reservation_attendee`   CHECK (`attendee_count` > 0),
   CONSTRAINT `fk_reservation_room` FOREIGN KEY (`room_id`) REFERENCES `meeting_room` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_reservation_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
