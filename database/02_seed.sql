@@ -116,7 +116,7 @@ FROM `reservation`
 WHERE `room_id` = 1 AND `reserve_date` = '2026-11-02' AND `status` IN ('PENDING', 'ONGOING')
   AND `start_time` < '2026-11-02 11:30:00' AND `end_time` > '2026-11-02 10:30:00'
 UNION ALL
-SELECT '新预约 14:00-15:00（原预约已取消 status=3，应判不冲突）', COUNT(*)
+SELECT '新预约 14:00-15:00（原预约已取消 CANCELLED，应判不冲突）', COUNT(*)
 FROM `reservation`
 WHERE `room_id` = 1 AND `reserve_date` = '2026-11-02' AND `status` IN ('PENDING', 'ONGOING')
   AND `start_time` < '2026-11-02 15:00:00' AND `end_time` > '2026-11-02 14:00:00';
