@@ -145,7 +145,7 @@ CREATE TABLE `meeting_room` (
 -- =============================================================================
 CREATE TABLE `reservation` (
   `id`             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '预约主键ID，自增；对外不暴露，对外用 reservation_no',
-  `reservation_no`     VARCHAR(32)     NOT NULL                COMMENT '预约编号，全局唯一，对外展示（FR-07）。生成规则：BK + yyyyMMdd + 4位序号，如 MR202611020001，由业务层生成（第 9 周实现）',
+  `reservation_no`     VARCHAR(32)     NOT NULL                COMMENT '预约编号，全局唯一，对外展示（FR-07）。生成规则：MR + yyyyMMdd + 3位流水号，如 MR20261102001（13 位字符），由业务层生成（第 9 周实现）',
   `user_id`        BIGINT UNSIGNED NOT NULL                COMMENT '预约人ID → user(id)，ON DELETE RESTRICT（FR-11 我的预约归属）',
   `room_id`        BIGINT UNSIGNED NOT NULL                COMMENT '会议室ID → meeting_room(id)，ON DELETE RESTRICT（FR-03 删除保护）',
   `reserve_date`   DATE            NOT NULL                COMMENT '预约日期，恒等于 DATE(start_time)，由 CHECK 保证；用于按日查询与占用日历（FR-17、FR-20）',
@@ -264,23 +264,23 @@ INSERT INTO `reservation`
   (`reservation_no`, `user_id`, `room_id`, `reserve_date`, `start_time`, `end_time`,
    `topic`, `attendee_count`, `contact`, `purpose`, `status`, `cancel_reason`) VALUES
   -- a) 冲突组：同一会议室 A101，两条时间重叠
-  ('MR202611020001', 2, 1, '2026-11-02', '2026-11-02 09:00:00', '2026-11-02 11:00:00',
+  ('MR20261102001', 2, 1, '2026-11-02', '2026-11-02 09:00:00', '2026-11-02 11:00:00',
    '项目组周例会', 8, '张三', '同步本周进度', 'PENDING', NULL),
-  ('MR202611020002', 3, 1, '2026-11-02', '2026-11-02 10:00:00', '2026-11-02 12:00:00',
+  ('MR20261102002', 3, 1, '2026-11-02', '2026-11-02 10:00:00', '2026-11-02 12:00:00',
    '需求评审会', 10, '李四', '评审 V1.1 需求清单', 'PENDING', NULL),
   -- b) 首尾相接组：同一会议室 A202，10:00 接 09:00，不算冲突
-  ('MR202611020003', 2, 2, '2026-11-02', '2026-11-02 09:00:00', '2026-11-02 10:00:00',
+  ('MR20261102003', 2, 2, '2026-11-02', '2026-11-02 09:00:00', '2026-11-02 10:00:00',
    '技术方案讨论', 6, '张三', '接口边界讨论', 'PENDING', NULL),
-  ('MR202611020004', 3, 2, '2026-11-02', '2026-11-02 10:00:00', '2026-11-02 11:00:00',
+  ('MR20261102004', 3, 2, '2026-11-02', '2026-11-02 10:00:00', '2026-11-02 11:00:00',
    '数据库设计评审', 5, '李四', '表结构与索引评审', 'PENDING', NULL),
   -- c) 已取消（status=3）：时段已释放
-  ('MR202611020005', 2, 1, '2026-11-02', '2026-11-02 14:00:00', '2026-11-02 15:00:00',
+  ('MR20261102005', 2, 1, '2026-11-02', '2026-11-02 14:00:00', '2026-11-02 15:00:00',
    '临时沟通会', 3, '张三', '因主讲人有事取消', 'CANCELLED', '主讲人临时出差，管理员强制取消'),
   -- d) 已结束（status=2）
-  ('MR202610120006', 2, 2, '2026-10-12', '2026-10-12 09:00:00', '2026-10-12 10:00:00',
+  ('MR20261012006', 2, 2, '2026-10-12', '2026-10-12 09:00:00', '2026-10-12 10:00:00',
    '第 6 周阶段自查', 5, '张三', '第 6 周收尾检查', 'FINISHED', NULL),
   -- e) 挂在已停用会议室上的历史预约（FR-04：停用保留已有预约）
-  ('MR202611020007', 3, 3, '2026-11-02', '2026-11-02 09:00:00', '2026-11-02 10:00:00',
+  ('MR20261102007', 3, 3, '2026-11-02', '2026-11-02 09:00:00', '2026-11-02 10:00:00',
    '新技术培训', 25, '李四', '停用前已订下，保留记录', 'PENDING', NULL);
 
 -- 4. 操作日志示例（NF-14：管理员敏感操作留痕）
@@ -288,7 +288,7 @@ INSERT INTO `operation_log`
   (`operator_id`, `operator_username`, `operation_type`, `target_type`, `target_id`,
    `before_data`, `after_data`, `operated_at`, `remark`) VALUES
   (1, 'admin', 'BOOKING_FORCE_CANCEL', 'BOOKING', 5,
-   JSON_OBJECT('status', 'PENDING', 'reservationNo', 'MR202611020005'),
+   JSON_OBJECT('status', 'PENDING', 'reservationNo', 'MR20261102005'),
    JSON_OBJECT('status', 'CANCELLED', 'cancelReason', '主讲人临时出差，管理员强制取消'),
    '2026-11-02 09:30:00', '演示数据：管理员强制取消异常预约');
 
