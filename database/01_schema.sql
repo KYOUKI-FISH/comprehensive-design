@@ -113,7 +113,9 @@ CREATE TABLE `meeting_room` (
 -- 时间存法：start_time / end_time 为 DATETIME NOT NULL，占用区间 [start_time, end_time)。
 --   reserve_date 冗余存 DATE，由 ck_reservation_date_match 保证恒等于 DATE(start_time)。
 --   用 DATETIME 而非 TIMESTAMP：存"墙上时间"、不做时区转换，本机单时区运行更稳。
--- 状态存法：TINYINT，四态 0 待开始 / 1 进行中 / 2 已结束 / 3 已取消（NF-08，不用任务书示例的三态）。
+-- 状态存法：VARCHAR(20) 字符串枚举，四态 PENDING 待开始 / ONGOING 进行中 / FINISHED 已结束 / CANCELLED 已取消
+--   （NF-08 四态语义；存储类型与第 6 周既有骨架、后端 SQL 同源。任务书示例的 TINYINT 三态只是格式参照，不照抄——
+--    改成数字会让既有 MeetingRoomMapper.xml 的 status IN ('PENDING','ONGOING') 静默失效）。
 -- 删会议室：fk_reservation_room 为 ON DELETE RESTRICT，有预约就删不掉（FR-03）。
 -- =============================================================================
 CREATE TABLE `reservation` (
