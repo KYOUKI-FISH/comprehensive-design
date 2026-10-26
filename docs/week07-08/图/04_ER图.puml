@@ -69,9 +69,8 @@ entity "reservation\n预约记录表" as resv {
   attendee_count : INT UNSIGNED <<新增>>
   contact : VARCHAR(50) <<新增>>
   purpose : VARCHAR(255)
-  status : VARCHAR(20) <<四态>>
-  cancel_reason : VARCHAR(255)
-  operator_id : BIGINT UNSIGNED
+  status : VARCHAR(20) <<PENDING|ONGOING|FINISHED|CANCELLED>>
+  cancel_reason : VARCHAR(200)
   created_at : DATETIME
   updated_at : DATETIME
 }
@@ -79,20 +78,21 @@ entity "reservation\n预约记录表" as resv {
 entity "operation_log\n操作日志表" as oplog {
   * id : BIGINT UNSIGNED <<PK, AI>>
   --
-  operator_id : BIGINT UNSIGNED <<FK,可空>>
-  operator_role : VARCHAR(20)
-  operation_type : VARCHAR(30)
-  target_type : VARCHAR(30)
-  target_id : BIGINT UNSIGNED
-  detail : VARCHAR(500)
-  ip : VARCHAR(45)
-  created_at : DATETIME
+  operator_id : BIGINT UNSIGNED <<FK, NOT NULL>>
+  operator_username : VARCHAR(50) <<账号快照>>
+  operation_type : VARCHAR(50) <<9 种敏感操作>>
+  target_type : VARCHAR(30) <<USER|ROOM|BOOKING>>
+  target_id : BIGINT UNSIGNED <<可空>>
+  before_data : JSON <<变更前, 可空>>
+  after_data : JSON <<变更后, 可空>>
+  operated_at : DATETIME
+  remark : VARCHAR(255) <<可空>>
 }
 
 ' ---- 关系 ----
 user ||--o{ resv : "1 : N\n预约人"
 room  ||--o{ resv : "1 : N"
-user ||--o{ oplog : "1 : N\n操作人（可空）"
+user ||--o{ oplog : "1 : N\n操作人（必填 FK）"
 
 ' ---- 关键约束注记 ----
 note right of resv
