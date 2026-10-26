@@ -1,6 +1,6 @@
 # 智能会议室管理系统 V1.0 —— 基础预约与管理平台
 
-> 更新日期：2026-10-21 ｜ 当前阶段：**第 7—8 周设计收口中（系统设计说明书 + 数据库与接口设计 + E-R 图 + 建表脚本已定稿；数据库已从 3 张表扩为 4 张（新增 `operation_log`），接口锁定 14 条；干净库一次跑通已实测通过。第 9 周起按冻结接口写实现）**
+> 更新日期：2026-10-26 ｜ 当前阶段：**第 9 周最小原型已跑通（4 个页面 + 4 条接口 + 令牌机制全部落地；预约提交、冲突检测（半开区间）、会议室详情与占用时段已实现并实测通过；浏览器端到端提交预约已在库中查到，预约号三方一致；50 并发抢同一时段实测 1 成功 / 49 冲突 / 库内 1 条。第 10 周扩两条完整闭环）**
 >
 > **第 6 周基线（仍有效）**：技术选型已定稿；后端骨架 + 数据库 + 前端已全部入库，并在同一套代码上整链实测通过——建表灌数、后端编译运行与单元测试、冒烟 21 项、浏览器端到端；李牧远独立实测已完成 2026-10-13。
 
@@ -21,8 +21,24 @@ git clone https://github.com/KYOUKI-FISH/comprehensive-design.git
 cd comprehensive-design
 ```
 
-> 当前版本**可运行范围**：登录、查询会议室（含当日已占用时段）。
-> **尚未实现**：预约提交、时间冲突检测、我的预约、管理后台——按计划第 9～10 周开发（"环境验证通路"不算业务进度，见《周推进计划》§2）。
+> 当前版本**可运行范围**（第 9 周最小原型）：
+>
+> | 能力 | 状态 | 对应需求 |
+> |------|------|---------|
+> | 登录、签发会话令牌、登出 | ✅ 已实现 | FR-01、NF-04 |
+> | 角色区分（普通用户看不到管理入口）+ 后端鉴权拦截 | ✅ 已实现 | FR-02、NF-03 |
+> | 查询会议室（按位置／容量筛选，含当日已占用时段） | ✅ 已实现 | FR-05、FR-06 |
+> | 会议室详情 ＋ 所选日期的已占用时段 | ✅ 已实现 | FR-05、FR-10 |
+> | **提交预约**（落库、返回预约号、时间规则校验） | ✅ 已实现 | FR-07、FR-08 |
+> | **冲突检测**（半开区间 `[start, end)`，首尾相接不算冲突） | ✅ 已实现 | FR-09 |
+> | **冲突提示**（409 ＋ 返回被占用的具体时段） | ✅ 已实现 | FR-10 |
+> | 预约失败后保留已填信息 | ✅ 已实现 | FR-18 |
+> | 停用会议室不可被预约 | ✅ 已实现 | FR-06 |
+> | **我的预约、修改、取消、管理后台、操作日志** | ⏳ **第 10 周** | FR-11～FR-16、NF-14 |
+> | 占用日历（完整形态）、多维筛选、利用率概览 | ⏸ "有时间"项 | FR-17、FR-19、FR-20 |
+>
+> 四个页面：登录页 `/login`、会议室查询页 `/rooms`、会议室详情页 `/rooms/:id`、预约表单页 `/bookings/new`。
+> 角色菜单：普通用户只有「会议室查询」「提交预约」；管理员另有「全部预约」「会议室管理」「用户管理」「操作日志」（**属第 10 周，本周显示为"建设中"**）。
 
 ## 环境与版本
 
@@ -79,23 +95,30 @@ mysql -u root -p < database/02_seed.sql
 
 后端 Spring Boot，端口 **8080**。
 
+**★ 必须先设 `DB_PASSWORD` 环境变量**（第 9 周起 `application.yml` 里**不再有默认口令**——
+配置文件进了仓库，写死明文口令等于公开数据库凭据，NF-05／任务书第七节明确禁止）。
+把「设变量 ＋ 启动」合成一条命令，仍然是"一步一条命令"：
+
 ```bash
-cd backend
-mvn spring-boot:run
+# macOS / Linux（Git Bash 同）
+export DB_PASSWORD='你的MySQL root口令' && cd backend && mvn spring-boot:run
+```
+
+```powershell
+# Windows PowerShell
+$env:DB_PASSWORD='你的MySQL root口令'; cd backend; mvn spring-boot:run
 ```
 
 看到 `Tomcat started on port 8080` 即启动成功。
 
-**若本机 MySQL 不是 root / 123456**，设环境变量后启动即可，不必改代码：
-
-```bash
-# Windows PowerShell
-$env:DB_PASSWORD="你的密码"
-# macOS / Linux
-export DB_PASSWORD=你的密码
-```
+> ⚠️ **不设 `DB_PASSWORD` 时的表现很隐蔽**：Spring Boot 仍会**启动成功**（日志照样打印
+> `Tomcat started on port 8080`），因为占位符被解析成了空串；但**数据库连不上**——
+> 打 `/api/health` 会看到 `"database": "DOWN"`，所有需要库的接口都失败。
+> **所以判断是否跑通，必须看 `/api/health` 的 `database` 字段，不能只看「启动成功」。**
+> **数据库账号同理**：默认 `root`（`DB_USERNAME`），需要改时同样用环境变量。
 
 连接参数集中在 `backend/src/main/resources/application.yml`（默认库 `meeting_room`、端口 `3306`、账号 `root`）。
+**演示账号**（`admin`／`user1`／`user2`）的登录口令写在下方「默认账号」一节，与数据库口令是两回事。
 
 **实测状态**：✅ 已通过（2026-10-12）——`mvn spring-boot:run` 启动成功，日志出现 `Tomcat started on port 8080`，`/api/health` 返回 `"database": "UP"`。
 > ⚠️ 本机实测时曾出现端口变成 **51281** 而非 8080：原因是这台机器存在环境变量 `SERVER__PORT=51281`，被 Spring Boot 的宽松绑定当成了 `server.port` 覆盖配置文件。**属本机环境特殊变量，不是项目问题**；自查办法见「常见问题」第 8 条。
@@ -172,6 +195,9 @@ Invoke-RestMethod "http://localhost:8080/api/rooms?status=ENABLED"
 7. **`java` 可用但 `javac` 不可用**：装的是 JRE 而非 JDK，重装 JDK 17。
 8. **★ 启动后端口不是 8080**：先查环境变量——若系统里存在 `SERVER_PORT` 或 `SERVER__PORT`，Spring Boot 的宽松绑定会把它当成 `server.port`，**优先级高于 `application.yml`**。查：Windows PowerShell `Get-ChildItem Env: | Where-Object Name -like "*PORT*"`；清：`Remove-Item Env:SERVER__PORT`（本机实测就撞上了这条，详见「实测记录」）。
 
+9. **★ 提交预约报时间格式错误（`DateTimeParseException`）**：后端已兼容 `yyyy-MM-dd HH:mm` 与 `yyyy-MM-dd HH:mm:ss` 两种精度（见 `JacksonConfig`）；若你自己改过 `application.yml` 的 `spring.jackson.date-format`，注意**该项只对 `java.util.Date` 生效，对 `LocalDateTime` 无效**——请勿删 `JacksonConfig`。
+10. **★ 刷新页面后掉登录**：会话令牌有效期 30 分钟（NF-04），过期后下一次请求会返回 401，前端自动清理登录态并跳回登录页，属预期行为。**令牌存后端进程内存**，因此后端重启后需要重新登录（多实例部署需改为共享存储，本项目本机单实例运行，不影响使用）。
+11. **★ 并发提交同一时段为什么只有一条成功**：这是设计如此（FR-09、NF-07）。冲突检测在**同一个数据库事务**内完成，且查询使用**锁定读（`FOR UPDATE`）**——MySQL 默认的 `REPEATABLE READ` 隔离级别下，普通查询读的是旧快照，会导致并发时全部判"无冲突"而超卖。实测 50 并发：1 条成功、49 条返回冲突提示、库内仅 1 条。
 ## 实测记录（2026-10-12 后端与数据库 ／ 2026-10-14 前端与整链）
 
 > **实测人**：虞业宸（**搭建者本人自测**）｜**机器**：本机 Windows，工具装在隔离目录，未装 Windows 服务、未改系统 PATH
