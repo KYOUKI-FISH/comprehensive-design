@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 操作日志表（operation_log）SQL —— NF-14 可审计性 -->
+<mapper namespace="com.meetingroom.mapper.OperationLogMapper">
+
+    <!--
+      写入操作日志。
+      ★ operated_at 交给数据库默认值 CURRENT_TIMESTAMP，不在应用里取时间：
+        应用服务器与数据库时区不一致时，谁取时间谁说了算，统一由库取更可控。
+      ★ before_data / after_data 是 JSON 列，传 null 或合法 JSON 字符串；传空串会报错。
+    -->
+    <insert id="insert" parameterType="com.meetingroom.entity.OperationLog"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO operation_log
+            (operator_id, operator_username, operation_type, target_type, target_id,
+             before_data, after_data, remark)
+        VALUES
+            (#{operatorId}, #{operatorUsername}, #{operationType}, #{targetType}, #{targetId},
+             #{beforeData}, #{afterData}, #{remark})
+    </insert>
+
+</mapper>

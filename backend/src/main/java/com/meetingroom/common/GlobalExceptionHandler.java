@@ -18,11 +18,11 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    /** 业务异常：可直接展示给用户的提示 */
+    /** 业务异常：可直接展示给用户的提示；带 data 时一并回带（如 409 的被占用时段） */
     @ExceptionHandler(BusinessException.class)
-    public ApiResponse<Void> handleBusinessException(BusinessException e) {
+    public ApiResponse<Object> handleBusinessException(BusinessException e) {
         log.warn("业务异常：code={}, message={}", e.getCode(), e.getMessage());
-        return ApiResponse.error(e.getCode(), e.getMessage());
+        return ApiResponse.error(e.getCode(), e.getMessage(), e.getData());
     }
 
     /** 参数类异常：缺参、类型不匹配、请求体不是合法 JSON */

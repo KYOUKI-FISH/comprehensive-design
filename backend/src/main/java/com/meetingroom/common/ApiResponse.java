@@ -26,6 +26,8 @@ public class ApiResponse<T> {
     public static final int CODE_FORBIDDEN = 403;
     /** 资源不存在 */
     public static final int CODE_NOT_FOUND = 404;
+    /** 业务冲突：如预约时段已被占用（FR-09／FR-10），HTTP 仍返回 200，靠 code 区分 */
+    public static final int CODE_CONFLICT = 409;
     /** 服务器内部错误 */
     public static final int CODE_SERVER_ERROR = 500;
 
@@ -52,6 +54,13 @@ public class ApiResponse<T> {
 
     public static <T> ApiResponse<T> error(int code, String message) {
         return new ApiResponse<>(code, message, null);
+    }
+
+    /**
+     * 失败但需要回带业务数据（如 409 冲突时回带被占用时段，FR-10）。
+     */
+    public static <T> ApiResponse<T> error(int code, String message, T data) {
+        return new ApiResponse<>(code, message, data);
     }
 
     public int getCode() {

@@ -40,4 +40,15 @@
         ORDER BY room_id, start_time
     </select>
 
+    <!--
+      按ID查会议室并加行锁（提交预约时用，NF-07 并发不超订）。
+      FOR UPDATE 必须在事务内才有效：调用方 BookingService.create 标了 @Transactional。
+    -->
+    <select id="selectByIdForUpdate" resultType="com.meetingroom.entity.MeetingRoom">
+        SELECT id, name, location, capacity, equipment, status, remark, created_at, updated_at
+        FROM meeting_room
+        WHERE id = #{id}
+        FOR UPDATE
+    </select>
+
 </mapper>
