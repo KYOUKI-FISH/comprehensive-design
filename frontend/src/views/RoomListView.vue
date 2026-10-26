@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { listRooms } from '@/api/room'
 import type { RoomVO } from '@/types/api'
@@ -7,9 +8,13 @@ import type { RoomVO } from '@/types/api'
 /**
  * 会议室查询页 —— 对应 UC-U02 / FR-05 按条件查询、FR-06 只显示启用中的会议室。
  *
- * 骨架阶段边界：展示会议室基本信息与指定日期的**已占用时段**；
- * 不提供"去预约"入口，也不做替代时段推荐 —— 预约提交、冲突检测属第 9～10 周。
+ * <p>第 9 周变化：每行加了"进详情"入口（跳会议室详情页），
+ * 详情页展示该会议室所选日期的已占用时段，并提供"去预约"入口。
+ * 第 6 周的"骨架范围说明"提示条已移除——那时页面只有查询功能，
+ * 现在它已是完整的查询入口。</p>
  */
+const router = useRouter()
+
 const loading = ref(false)
 const rooms = ref<RoomVO[]>([])
 
@@ -50,6 +55,13 @@ function reset(): void {
   void load()
 }
 
+/** 进会议室详情页（第 9 周；把所选日期一并带过去，详情页默认查这天的占用） */
+function goDetail(roomId: number): void {
+  // ★ id 必须走 path 参数（/rooms/:id），不能放 query：
+  //   详情页用 route.params.id 取，路由定义是 '/rooms/:id'。
+  void router.push({ name: 'room-detail', params: { id: String(roomId) }, query: { date: query.date } })
+}
+
 onMounted(() => {
   void load()
 })
@@ -66,8 +78,8 @@ onMounted(() => {
       type="info"
       :closable="false"
       show-icon
-      title="第 6 周工程骨架范围说明"
-      description="本页仅用于验证「环境能跑、库能连、表能查」。预约提交、时间冲突检测（半开区间 [start, end)）、我的预约、管理后台均未实现，属第 9～10 周开发范围。"
+      title="第 9 周最小原型"
+      description="本页可按位置／容量／日期筛选会议室。点「进详情」看该会议室所选日期的已占用时段，再点「去预约」提交预约——提交时若时间重叠会给出明确提示与被占用的具体时段（FR-09、FR-10）。"
       style="margin-bottom: 16px"
     />
 
@@ -126,6 +138,11 @@ onMounted(() => {
             </el-tag>
           </template>
           <span v-else class="page-hint">当日无占用</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="110" align="center" fixed="right">
+        <template #default="{ row }">
+          <el-button link type="primary" @click="goDetail(row.id)">进详情</el-button>
         </template>
       </el-table-column>
       <template #empty>

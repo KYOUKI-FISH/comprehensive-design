@@ -26,6 +26,8 @@ public class ApiResponse<T> {
     public static final int CODE_FORBIDDEN = 403;
     /** 资源不存在 */
     public static final int CODE_NOT_FOUND = 404;
+    /** 资源冲突：预约时间重叠（FR-09、FR-10） */
+    public static final int CODE_CONFLICT = 409;
     /** 服务器内部错误 */
     public static final int CODE_SERVER_ERROR = 500;
 

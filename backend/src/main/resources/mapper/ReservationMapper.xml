@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- D3 预约记录表（reservation）的 SQL -->
+<mapper namespace="com.meetingroom.mapper.ReservationMapper">
+
+    <!--
+      插入预约（第 9 周；FR-07）。
+      ★ reservation_no 先写占位值 'PENDING_NO'，插入后用自增主键回填正式编号
+        （见 updateReservationNo）。理由：不用"当日流水号"，因为并发下流水号会撞
+        唯一键 uk_reservation_no，导致本该成功的请求报 500。
+      ★ useGeneratedKeys 拿到自增主键，供 Service 回填编号。
+      ★ status 固定 PENDING（待开始），四态流转由读取时推导 + 落库时校正（NF-08）。
+    -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO reservation (
+            reservation_no, user_id, room_id, reserve_date,
+            start_time, end_time, topic, attendee_count, contact, purpose, status
+        ) VALUES (
+            'PENDING_NO', #{userId}, #{roomId}, #{reserveDate},
+            #{startTime}, #{endTime}, #{topic}, #{attendeeCount}, #{contact}, #{purpose}, 'PENDING'
+        )
+    </insert>
+
+    <!--
+      按自增主键回填预约编号（第 9 周）。
+      规则：MR + yyyyMMdd + 左补零主键，如 MR20261012001。
+      自增主键全局唯一且递增 → 并发下不会撞唯一键。
+    -->
+    <update id="updateReservationNo">
+        UPDATE reservation
+        SET reservation_no = #{reservationNo}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 按ID查预约（第 9 周） -->
+    <select id="selectById" resultType="com.meetingroom.entity.Reservation">
+        SELECT id, reservation_no, user_id, room_id, reserve_date,
+               start_time, end_time, topic, attendee_count, contact, purpose,
+               status, cancel_reason, created_at, updated_at
+        FROM reservation
+        WHERE id = #{id}
+        LIMIT 1
+    </select>
+
+</mapper>

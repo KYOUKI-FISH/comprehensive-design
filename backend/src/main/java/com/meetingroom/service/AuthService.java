@@ -24,10 +24,12 @@ public class AuthService {
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final TokenStore tokenStore;
 
-    public AuthService(UserMapper userMapper, PasswordEncoder passwordEncoder) {
+    public AuthService(UserMapper userMapper, PasswordEncoder passwordEncoder, TokenStore tokenStore) {
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
+        this.tokenStore = tokenStore;
     }
 
     /**
@@ -35,6 +37,9 @@ public class AuthService {
      *
      * <p>失败提示一律为"账号或密码错误"，不区分"账号不存在"与"密码错误"，
      * 避免被用来枚举账号（NF 安全类需求）。</p>
+     *
+     * <p>第 9 周起：校验通过后<strong>签发会话令牌</strong>（NF-04）。
+     * 令牌是一串随机串，服务端保存映射，客户端通过 Authorization 头带回。</p>
      */
     public LoginResponse login(LoginRequest request) {
         if (request == null
@@ -55,6 +60,19 @@ public class AuthService {
             throw new BusinessException(ApiResponse.CODE_FORBIDDEN, "该账号已被停用，请联系管理员");
         }
 
-        return new LoginResponse(user.getId(), user.getUsername(), user.getRealName(), user.getRole());
+        LoginResponse response = LoginResponse.from(user);
+        response.setToken(tokenStore.issue(user.getId(), user.getUsername(), user.getRole()));
+        return response;
+    }
+
+    /**
+     * 登出：立即作废该令牌（NF-04「会话劫持场景下旧令牌失效」）。
+     *
+     * <p>登出后用旧令牌再发请求会被拦截器拒绝，必须重新登录。</p>
+     *
+     * @param token 当前令牌
+     */
+    public void logout(String token) {
+        tokenStore.revoke(token);
     }
 }

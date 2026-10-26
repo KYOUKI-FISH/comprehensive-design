@@ -20,8 +20,12 @@ public class GlobalExceptionHandler {
 
     /** 业务异常：可直接展示给用户的提示 */
     @ExceptionHandler(BusinessException.class)
-    public ApiResponse<Void> handleBusinessException(BusinessException e) {
+    public ApiResponse<Object> handleBusinessException(BusinessException e) {
         log.warn("业务异常：code={}, message={}", e.getCode(), e.getMessage());
+        // ★ 第 9 周起带上 data：409 冲突要把"被占用的时段"返回给前端（FR-10）
+        if (e.getData() != null) {
+            return new ApiResponse<>(e.getCode(), e.getMessage(), e.getData());
+        }
         return ApiResponse.error(e.getCode(), e.getMessage());
     }
 
