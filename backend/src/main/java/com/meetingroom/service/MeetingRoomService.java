@@ -117,7 +117,10 @@ public class MeetingRoomService {
         vo.setDate(date);
         List<OccupiedSlotVO> slots = new ArrayList<>();
         for (OccupiedSlotDTO slot : meetingRoomMapper.selectRoomOccupiedSlots(roomId, date)) {
-            slots.add(new OccupiedSlotVO(slot.getStartTime(), slot.getEndTime()));
+            // ★ OccupiedSlotVO 采用预约模块（虞业宸）的定义：startTime／endTime 为 "HH:mm" 字符串。
+            //   这里必须显式格式化——OccupiedSlotDTO 的时间是 LocalDateTime，直接传会编译不过。
+            slots.add(new OccupiedSlotVO(slot.getStartTime().format(TIME_FORMAT),
+                    slot.getEndTime().format(TIME_FORMAT)));
         }
         vo.setOccupiedSlots(slots);
         return vo;

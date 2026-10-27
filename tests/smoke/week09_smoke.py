@@ -59,7 +59,9 @@ def call(method, path, body=None, token=None):
 
 
 def fmt_slot(slot):
-    return "%s-%s" % (slot["startTime"][11:16], slot["endTime"][11:16])
+    # 兼容两种出参：完整 LocalDateTime（2026-11-02T09:00:00）与 "HH:mm"（融合后形态）。
+    # 取末 5 位，两种都能得到 HH:mm；写死 [11:16] 在 "09:00" 上会切出空串。
+    return "%s-%s" % ((slot.get("startTime") or "")[-5:], (slot.get("endTime") or "")[-5:])
 
 
 results = []
