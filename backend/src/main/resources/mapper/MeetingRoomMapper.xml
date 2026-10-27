@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<!-- D2 会议室信息表（meeting_room）与 D3 预约记录表（reservation）的 SQL -->
+<!--
+  D2 会议室信息表（meeting_room）与 D3 预约记录表（reservation）的 SQL。
+
+  ★ 第 9 周融合说明：本文件由两条并行开发线合并 ——
+    预约模块（虞业宸）的 selectByIdForUpdate，
+    详情页／占用时段接口（李知渔）的 selectById 与 selectRoomOccupiedSlots。
+    两边原本各有一个"锁会议室行"的方法（lockById / selectByIdForUpdate），
+    语义重复，合并后只保留后者。
+-->
 <mapper namespace="com.meetingroom.mapper.MeetingRoomMapper">
 
     <!-- 按条件查询会议室（DFD 加工 P2 查询会议室 / FR-05、FR-06） -->
@@ -38,6 +46,33 @@
             #{roomId}
         </foreach>
         ORDER BY room_id, start_time
+    </select>
+
+    <!-- 按ID查会议室（第 9 周详情页用；也用于确认会议室存在） -->
+    <select id="selectById" resultType="com.meetingroom.entity.MeetingRoom">
+        SELECT id, name, location, capacity, equipment, status, remark, created_at, updated_at
+        FROM meeting_room
+        WHERE id = #{id}
+        LIMIT 1
+    </select>
+
+    <!--
+      查某会议室某天的占用时段（只读版，供详情页展示）。
+
+      ★ 口径必须与上面的 selectOccupiedSlots 一致：只有 PENDING／ONGOING 算占用。
+        CANCELLED 已释放时段（NF-08）；FINISHED 的时段已经过去。
+        两个查询给同一次查询的两个页面供数，口径不一致会出现
+        "列表页说有占用、详情页说没有"这种自相矛盾。
+      ★ 这是普通 SELECT（快照读），纯展示用途。
+        冲突检测不能用它——见 ReservationMapper.selectOccupiedSlotsOfRoom（锁定读）。
+    -->
+    <select id="selectRoomOccupiedSlots" resultType="com.meetingroom.dto.OccupiedSlotDTO">
+        SELECT room_id AS roomId, start_time AS startTime, end_time AS endTime
+        FROM reservation
+        WHERE reserve_date = #{date}
+          AND room_id = #{roomId}
+          AND status IN ('PENDING', 'ONGOING')
+        ORDER BY start_time
     </select>
 
     <!--

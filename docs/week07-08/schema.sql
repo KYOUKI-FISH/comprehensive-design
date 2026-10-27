@@ -145,7 +145,7 @@ CREATE TABLE `meeting_room` (
 -- =============================================================================
 CREATE TABLE `reservation` (
   `id`             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '预约主键ID，自增；对外不暴露，对外用 reservation_no',
-  `reservation_no`     VARCHAR(32)     NOT NULL                COMMENT '预约编号，全局唯一，对外展示（FR-07）。生成规则：MR + yyyyMMdd + 3位流水号，如 MR20261102001（13 位字符），由业务层生成（第 9 周实现）',
+  `reservation_no`     VARCHAR(32)     NOT NULL                COMMENT '预约编号，全局唯一，对外展示（FR-07）。生成规则：MR + yyyyMMdd + 左补零的自增主键，如 MR20261102001（13 位字符），由业务层生成（第 9 周实现）。★ 不用「当日流水号」：并发提交时多个请求会算出同一流水号，撞唯一键 uk_reservation_no 导致本该成功的请求报 500；自增主键全局唯一且递增，天然规避',
   `user_id`        BIGINT UNSIGNED NOT NULL                COMMENT '预约人ID → user(id)，ON DELETE RESTRICT（FR-11 我的预约归属）',
   `room_id`        BIGINT UNSIGNED NOT NULL                COMMENT '会议室ID → meeting_room(id)，ON DELETE RESTRICT（FR-03 删除保护）',
   `reserve_date`   DATE            NOT NULL                COMMENT '预约日期，恒等于 DATE(start_time)，由 CHECK 保证；用于按日查询与占用日历（FR-17、FR-20）',

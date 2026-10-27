@@ -9,8 +9,14 @@ spring:
     # 库名 meeting_room 由 database/01_schema.sql 创建；时区与编码参数不可省，否则中文乱码/时间差 8 小时
     url: jdbc:mysql://localhost:3306/meeting_room?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: ${DB_USERNAME:root}
-    # ★ 换成你本机 MySQL 的密码；也可以不改文件，启动前设环境变量 DB_PASSWORD
-    password: ${DB_PASSWORD:123456}
+    # ★★ 第 9 周起去掉了默认值（原为 ${DB_PASSWORD:123456}）：
+    #    配置文件进了仓库，带默认值的明文口令等于把数据库口令公开（NF-05、任务书第七节
+    #    "仓库里不许出现明文口令、数据库账号和部署地址"）。
+    #    现在必须启动前设环境变量，README「启动后端」一节有具体写法：
+    #      Windows PowerShell : $env:DB_PASSWORD='你的口令'
+    #      macOS / Linux     : export DB_PASSWORD='你的口令'
+    #    演示账号（admin / user1 / user2）的登录口令写在根 README，与本项无关。
+    password: ${DB_PASSWORD}
     hikari:
       maximum-pool-size: 10
       connection-timeout: 5000

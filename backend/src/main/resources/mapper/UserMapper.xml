@@ -12,4 +12,16 @@
         LIMIT 1
     </select>
 
+    <!--
+      按用户ID查用户（第 9 周鉴权拦截器回查账号状态用，NF-05）。
+      ★ 每次带令牌的请求都会走这条：账号被管理员停用后，旧令牌必须立刻失效，
+        只看令牌自身的有效期是不够的。
+    -->
+    <select id="selectById" resultType="com.meetingroom.entity.User">
+        SELECT id, username, password, real_name, role, phone, status, created_at, updated_at
+        FROM `user`
+        WHERE id = #{id}
+        LIMIT 1
+    </select>
+
 </mapper>

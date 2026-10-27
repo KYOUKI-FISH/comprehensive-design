@@ -1,5 +1,5 @@
 import { request } from '@/api/http'
-import type { RoomVO } from '@/types/api'
+import type { OccupancyVO, RoomVO } from '@/types/api'
 
 /** 会议室查询条件（对应 DFD 中 P2 的输入数据流"查询条件"） */
 export interface RoomQuery {
@@ -24,5 +24,26 @@ export function listRooms(params: RoomQuery = {}): Promise<RoomVO[]> {
     url: '/rooms',
     method: 'get',
     params
+  })
+}
+
+/**
+ * 查会议室占用时段 —— 对应第 8 周接口清单第 4 条 / FR-17、FR-10。
+ *
+ * <p>★ 用途有二，数据同源：
+ * <ol>
+ *   <li>详情页展示"所选日期已被占用的时段"（FR-17，本周先做占位时段视图）；</li>
+ *   <li>提交预约冲突时，409 响应里的被占用时段（FR-10）——那是后端在事务里查的同一条数据。</li>
+ * </ol>
+ * 只含未取消的预约：已取消的预约时段已释放（NF-08）。</p>
+ *
+ * @param roomId 会议室ID
+ * @param date   日期 yyyy-MM-dd（必填）
+ */
+export function getOccupancy(roomId: number, date: string): Promise<OccupancyVO> {
+  return request<OccupancyVO>({
+    url: `/rooms/${roomId}/occupancy`,
+    method: 'get',
+    params: { date }
   })
 }

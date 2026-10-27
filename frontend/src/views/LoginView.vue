@@ -8,8 +8,10 @@ import { setSession } from '@/store/session'
 /**
  * 登录页 —— 对应 UC-U01 用户登录 / FR-01、FR-02。
  *
- * 骨架阶段目标：证明"前端能起、跨域配对、后端能连库、账号密码能校验"。
- * 登录成功后不签发令牌（后端本周不发），登录态仅存内存。
+ * <p>第 9 周变化：登录成功后后端会<strong>签发会话令牌</strong>，
+ * 前端把令牌与用户信息存入 localStorage（见 {@code store/session.ts}），
+ * 后续请求由请求拦截器自动带上 {@code Authorization: Bearer <token>}。
+ * 刷新页面不掉登录（NF-04）。</p>
  */
 const route = useRoute()
 const router = useRouter()
@@ -17,9 +19,12 @@ const router = useRouter()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 
-// 预填默认账号（database/02_seed.sql 里的 admin），省掉实测时的手工输入
+// 预填默认账号（database/02_seed.sql 里的 user1，普通用户）
+// ★ 预填普通用户而不是 admin：任务书第 9 周要演示"普通用户看不到管理入口"（FR-02），
+//   默认就登管理员的话，演示者容易直接用 admin，点不到角色隔离的效果。
+//   演示管理员功能时手动把账号改成 admin 即可。
 const form = reactive({
-  username: 'admin',
+  username: 'user1',
   password: '123456'
 })
 
@@ -93,7 +98,7 @@ async function onSubmit(): Promise<void> {
       </el-form>
 
       <p class="login-tip">
-        默认账号：<code>admin / 123456</code>（管理员）、<code>user1 / 123456</code>（普通用户）
+        演示账号与口令见仓库根目录 <code>README.md</code> 的「默认账号」一节。
       </p>
     </el-card>
   </div>

@@ -1,6 +1,9 @@
 package com.meetingroom.service;
 
 import com.meetingroom.dto.OccupiedSlotDTO;
+import com.meetingroom.dto.OccupiedSlotVO;
+import com.meetingroom.dto.OccupancyVO;
+import com.meetingroom.dto.RoomDetailVO;
 import com.meetingroom.dto.RoomVO;
 import com.meetingroom.entity.MeetingRoom;
 import com.meetingroom.mapper.MeetingRoomMapper;
@@ -68,5 +71,55 @@ public class MeetingRoomService {
             map.computeIfAbsent(slot.getRoomId(), key -> new ArrayList<>()).add(text);
         }
         return map;
+    }
+
+    /**
+     * 查会议室详情（第 9 周；对应 FR-05、FR-06）。
+     *
+     * @param id   会议室ID
+     * @param date 需要附带占用时段的日期，可为 null
+     * @return 详情；会议室不存在时返回 {@code null}（由 Controller 转 404）
+     */
+    public RoomDetailVO detail(Long id, LocalDate date) {
+        MeetingRoom room = meetingRoomMapper.selectById(id);
+        if (room == null) {
+            return null;
+        }
+        RoomDetailVO vo = RoomDetailVO.from(room);
+        if (date != null) {
+            List<String> slots = new ArrayList<>();
+            for (OccupiedSlotDTO slot : meetingRoomMapper.selectRoomOccupiedSlots(id, date)) {
+                slots.add(slot.getStartTime().format(TIME_FORMAT) + "-" + slot.getEndTime().format(TIME_FORMAT));
+            }
+            vo.setOccupiedSlots(slots);
+        }
+        return vo;
+    }
+
+    /**
+     * 查某会议室某天的占用时段（第 9 周；第 8 周冻结清单第 4 条）。
+     *
+     * <p>对应 FR-17（占用日历，本周先做占位时段视图）与 FR-10（冲突时展示被占用时段）——
+     * 两者数据同源，因此这里只写一份查询。</p>
+     *
+     * @param roomId 会议室ID
+     * @param date   日期，必填
+     * @return 占用时段响应
+     */
+    public OccupancyVO occupancy(Long roomId, LocalDate date) {
+        MeetingRoom room = meetingRoomMapper.selectById(roomId);
+        if (room == null) {
+            return null;
+        }
+        OccupancyVO vo = new OccupancyVO();
+        vo.setRoomId(roomId);
+        vo.setRoomName(room.getName());
+        vo.setDate(date);
+        List<OccupiedSlotVO> slots = new ArrayList<>();
+        for (OccupiedSlotDTO slot : meetingRoomMapper.selectRoomOccupiedSlots(roomId, date)) {
+            slots.add(new OccupiedSlotVO(slot.getStartTime(), slot.getEndTime()));
+        }
+        vo.setOccupiedSlots(slots);
+        return vo;
     }
 }

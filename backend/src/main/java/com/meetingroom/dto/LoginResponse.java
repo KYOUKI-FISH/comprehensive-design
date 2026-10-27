@@ -1,11 +1,15 @@
 package com.meetingroom.dto;
 
+import com.meetingroom.entity.User;
+
 /**
  * 登录响应体。
  *
- * <p>★ 本周只到"账号密码校验 + 返回角色"为止：
- * 会话 / JWT 令牌属于登录功能（FR-01／FR-02）的完整实现，按计划在第 9～10 周落地，
- * 因此这里的 {@code token} 字段暂不提供——前端本周把 userId 与 role 存本地即可完成页面跳转验证。</p>
+ * <p>第 9 周起本类<strong>带令牌</strong>（第 6 周骨架阶段不带，因为后端当时不发令牌）：
+ * 后端签发会话令牌并返回，前端存下来并在后续请求里通过
+ * {@code Authorization: Bearer <token>} 带回（FR-01、NF-04）。
+ *
+ * <p>★ 令牌不写进 Cookie，用 Header 传——避免 CSRF，也让"登出即失效"更直接。
  */
 public class LoginResponse {
 
@@ -14,6 +18,13 @@ public class LoginResponse {
     private String realName;
     /** 角色：USER / ADMIN，前端据此决定进用户端还是管理端（FR-02） */
     private String role;
+    /**
+     * 会话令牌（第 9 周新增；NF-04 有有效期 30 分钟，过期后需重新登录）。
+     *
+     * <p>⚠️ 令牌只在登录响应里出现一次，后续请求一律走 Authorization 头。
+     * 令牌本身不含任何用户信息，是一串随机串。</p>
+     */
+    private String token;
 
     public LoginResponse() {
     }
@@ -23,6 +34,13 @@ public class LoginResponse {
         this.username = username;
         this.realName = realName;
         this.role = role;
+    }
+
+    /**
+     * 从用户实体构造登录响应（不含令牌，令牌由 Service 签发后填入）。
+     */
+    public static LoginResponse from(User user) {
+        return new LoginResponse(user.getId(), user.getUsername(), user.getRealName(), user.getRole());
     }
 
     public Long getUserId() {
@@ -55,5 +73,13 @@ public class LoginResponse {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }
