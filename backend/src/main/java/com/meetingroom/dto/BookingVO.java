@@ -11,7 +11,7 @@ public class BookingVO {
 
     /** 预约主键（前端后续修改/取消用） */
     private Long id;
-    /** 预约编号，形如 MR20261027001（13 位） */
+    /** 预约编号，形如 MR20261027008（MR+日期+补零主键，主键超 999 自然变长） */
     private String reservationNo;
     /** 状态，新建恒为 PENDING */
     private String status;

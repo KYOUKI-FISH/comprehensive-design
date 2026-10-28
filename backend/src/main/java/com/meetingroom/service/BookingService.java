@@ -2,6 +2,7 @@ package com.meetingroom.service;
 
 import com.meetingroom.common.ApiResponse;
 import com.meetingroom.common.BusinessException;
+import com.meetingroom.dto.BookingItemVO;
 import com.meetingroom.dto.BookingRequest;
 import com.meetingroom.dto.BookingVO;
 import com.meetingroom.dto.ConflictPayload;
@@ -13,9 +14,9 @@ import com.meetingroom.mapper.MeetingRoomMapper;
 import com.meetingroom.mapper.ReservationMapper;
 import com.meetingroom.support.BookingTimeRules;
 import com.meetingroom.support.ReservationNoGenerator;
+import com.meetingroom.support.ReservationStatusPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,9 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 提交预约服务（{@code POST /api/bookings}，草案 #5）。
+ * 预约闭环服务（第 9/10 周 虞业宸）——提交、我的预约、修改、取消四条链路。
  *
- * <p>一条链路做四件事，顺序不能换：</p>
+ * <p><b>提交（{@code POST /api/bookings}）四步，顺序不能换：</b></p>
  * <ol>
  *   <li><b>校验</b>FR-07 必填 + FR-08 时间边界（跨天、8 小时、end &gt; start、不得早于当前时间）；</li>
  *   <li><b>锁</b>先对会议室行 {@code SELECT ... FOR UPDATE}：同一间会议室的提交被串行化，
@@ -36,8 +37,14 @@ import java.util.List;
  *   <li><b>判</b>取当天已占用时段，用 {@link BookingTimeRules#conflicts} 逐条比对。
  *       判定式只此一处实现，与 409 响应里的 {@code occupiedSlots} 共用同一份查询结果
  *       （第 9 周计划 §3.1「冲突判定只写一遍」）；</li>
- *   <li><b>写</b>生成 13 位预约编号并落库，状态固定 PENDING（后续由读取推导 ONGOING／FINISHED）。</li>
+ *   <li><b>写</b>占位编号插入 → 自增主键回填 → 派生正式编号回填（第 10 周改造，
+ *       见 {@link ReservationNoGenerator} 类注释），状态固定 PENDING。</li>
  * </ol>
+ *
+ * <p><b>修改／取消（第 10 周接口 #7／#8）共用同一套准入：</b>
+ * 本人 → 待开始（PENDING）→ 距开始超过 30 分钟（FR-12／FR-13），
+ * 三道关都在<b>行锁内</b>判，判定口径集中在 {@link ReservationStatusPolicy}；
+ * 修改还要在同一事务里对<b>新的时间段</b>重跑冲突检测并排除自身。</p>
  *
  * <p>★ 为什么整个方法要 {@code @Transactional}：行锁在事务外会立刻释放，锁等于没加；
  * 且"查冲突—插入"必须原子，否则中间被另一个事务插入就白查了。</p>
@@ -47,10 +54,9 @@ public class BookingService {
 
     private static final Logger log = LoggerFactory.getLogger(BookingService.class);
 
-    private static final String STATUS_PENDING = "PENDING";
+    private static final String STATUS_PENDING = ReservationStatusPolicy.PENDING;
+    private static final String STATUS_CANCELLED = ReservationStatusPolicy.CANCELLED;
     private static final String ROOM_ENABLED = "ENABLED";
-    /** 编号撞唯一键时的重试次数 */
-    private static final int MAX_ATTEMPTS = 3;
 
     private static final DateTimeFormatter SLOT_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -71,77 +77,187 @@ public class BookingService {
      */
     @Transactional(rollbackFor = Exception.class)
     public BookingVO create(BookingRequest request, Long userId) {
-        if (userId == null) {
-            throw new BusinessException(ApiResponse.CODE_UNAUTHORIZED, "未登录");
-        }
+        requireLogin(userId);
         validateRequired(request);
 
-        LocalDate date = BookingTimeRules.parseDate(request.getDate());
-        LocalDateTime start = BookingTimeRules.parseTime(request.getStartTime(), date);
-        LocalDateTime end = BookingTimeRules.parseTime(request.getEndTime(), date);
-
-        String windowError = BookingTimeRules.validateWindow(start, end, date, LocalDateTime.now());
-        if (windowError != null) {
-            throw new BusinessException(ApiResponse.CODE_PARAM_ERROR, windowError);
-        }
-
-        // ② 锁会议室行：顺带拿到 status，停用判断放在锁内，避免"查完才发现刚被停用"
-        MeetingRoom room = meetingRoomMapper.selectByIdForUpdate(request.getRoomId());
-        if (room == null) {
-            throw new BusinessException(ApiResponse.CODE_NOT_FOUND, "会议室不存在");
-        }
-        if (!ROOM_ENABLED.equals(room.getStatus())) {
-            throw new BusinessException(ApiResponse.CODE_PARAM_ERROR, "该会议室已停用，无法预约");
-        }
-
-        // ③ 冲突判定：半开区间 [start, end)，首尾相接不算冲突
-        List<OccupiedSlotDTO> occupied = reservationMapper.selectOccupiedSlotsOfRoom(room.getId(), date);
-        for (OccupiedSlotDTO slot : occupied) {
-            if (BookingTimeRules.conflicts(start, end, slot.getStartTime(), slot.getEndTime())) {
-                throw new BusinessException(ApiResponse.CODE_CONFLICT,
-                        "该会议室在此时间段已被占用", new ConflictPayload(toSlotVOs(occupied)));
-            }
-        }
+        ParsedTime time = parseAndValidateTime(request);
+        MeetingRoom room = lockEnabledRoom(request.getRoomId());
+        ensureNoConflict(room.getId(), time.date(), time.start(), time.end(), null);
 
         Reservation reservation = new Reservation();
         reservation.setUserId(userId);
         reservation.setRoomId(room.getId());
-        reservation.setReserveDate(date);
-        reservation.setStartTime(start);
-        reservation.setEndTime(end);
+        reservation.setReserveDate(time.date());
+        reservation.setStartTime(time.start());
+        reservation.setEndTime(time.end());
         reservation.setTopic(request.getTopic().trim());
         reservation.setAttendeeCount(request.getAttendeeCount());
         reservation.setContact(request.getContact().trim());
         reservation.setPurpose(blankToNull(request.getPurpose()));
         reservation.setStatus(STATUS_PENDING);
 
-        insertWithUniqueNo(reservation, date);
+        // 编号方案（第 10 周改造）：占位插入 → 主键回填 → 派生编号回填，无撞键窗口
+        reservation.setReservationNo(ReservationNoGenerator.placeholder());
+        reservationMapper.insert(reservation);
+        String no = ReservationNoGenerator.derive(time.date(), reservation.getId());
+        reservationMapper.updateReservationNo(reservation.getId(), no);
+        reservation.setReservationNo(no);
+
         log.info("提交预约成功：no={}, userId={}, roomId={}, {} ~ {}",
-                reservation.getReservationNo(), userId, room.getId(), start, end);
-        return new BookingVO(reservation.getId(), reservation.getReservationNo(), reservation.getStatus());
+                no, userId, room.getId(), time.start(), time.end());
+        return new BookingVO(reservation.getId(), no, reservation.getStatus());
     }
 
     /**
-     * 生成编号并插入；万一编号撞唯一键（并发），重取最大值再试，最多 3 次。
+     * 我的预约（接口 #6，FR-11）：只看本人的，状态是推导后的四态。
      *
-     * <p>行锁已经把同一间会议室串行化了，但"两间会议室同一天同时提交"仍可能取到同一个
-     * 最大值——这是残留的窄窗口，用重试兜住，比让用户看到 500 更合适。</p>
+     * <p>先做落库时校正（把已结束仍存 PENDING 的批量改 FINISHED，NF-08、不引入定时器），
+     * 再查询，保证同一次响应里状态与库存值一致。</p>
      */
-    private void insertWithUniqueNo(Reservation reservation, LocalDate date) {
-        String prefix = ReservationNoGenerator.prefixOf(date);
-        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-            String no = ReservationNoGenerator.next(prefix, reservationMapper.selectMaxReservationNo(prefix));
-            reservation.setReservationNo(no);
-            reservation.setId(null);
-            try {
-                reservationMapper.insert(reservation);
-                return;
-            } catch (DuplicateKeyException e) {
-                log.warn("预约编号 {} 撞唯一键，第 {} 次重试", no, attempt);
-                if (attempt == MAX_ATTEMPTS) {
-                    throw new BusinessException(ApiResponse.CODE_SERVER_ERROR,
-                            "预约编号生成冲突，请重新提交");
-                }
+    @Transactional(readOnly = true)
+    public List<BookingItemVO> mine(Long userId) {
+        requireLogin(userId);
+        reservationMapper.correctOverduePending();
+        List<BookingItemVO> items = reservationMapper.selectMine(userId);
+        LocalDateTime now = LocalDateTime.now();
+        for (BookingItemVO item : items) {
+            item.setStatus(ReservationStatusPolicy.derive(item.getStatus(),
+                    item.getStartTime(), item.getEndTime(), now));
+        }
+        return items;
+    }
+
+    /**
+     * 修改我的预约（接口 #7，FR-12）：改用途／时段／人数等，改后按新时段重跑冲突检测。
+     *
+     * <p>准入三道关（口径集中在 {@link ReservationStatusPolicy}）：
+     * ①本人；②待开始；③距开始超过 30 分钟。
+     * 冲突检测排除自身——自己原时段与新时段重叠不算冲突。</p>
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public BookingVO modify(Long id, BookingRequest request, Long userId) {
+        requireLogin(userId);
+        if (id == null) {
+            throw new BusinessException(ApiResponse.CODE_PARAM_ERROR, "请选择要修改的预约");
+        }
+        Reservation reservation = reservationMapper.selectByIdForUpdate(id);
+        if (reservation == null) {
+            throw new BusinessException(ApiResponse.CODE_NOT_FOUND, "预约不存在");
+        }
+        if (!userId.equals(reservation.getUserId())) {
+            throw new BusinessException(ApiResponse.CODE_FORBIDDEN, "只能修改本人提交的预约");
+        }
+        String reject = ReservationStatusPolicy.rejectModifyReason(
+                reservation.getStatus(), reservation.getStartTime(), LocalDateTime.now());
+        if (reject != null) {
+            throw new BusinessException(ApiResponse.CODE_PARAM_ERROR, reject);
+        }
+
+        validateRequired(request);
+        ParsedTime time = parseAndValidateTime(request);
+        MeetingRoom room = lockEnabledRoom(request.getRoomId());
+        ensureNoConflict(room.getId(), time.date(), time.start(), time.end(), id);
+
+        reservation.setRoomId(room.getId());
+        reservation.setReserveDate(time.date());
+        reservation.setStartTime(time.start());
+        reservation.setEndTime(time.end());
+        reservation.setTopic(request.getTopic().trim());
+        reservation.setAttendeeCount(request.getAttendeeCount());
+        reservation.setContact(request.getContact().trim());
+        reservation.setPurpose(blankToNull(request.getPurpose()));
+        reservationMapper.updateBookingFields(reservation);
+
+        log.info("修改预约成功：no={}, userId={}, 新时段 {} ~ {}",
+                reservation.getReservationNo(), userId, time.start(), time.end());
+        return new BookingVO(id, reservation.getReservationNo(), reservation.getStatus());
+    }
+
+    /**
+     * 取消我的预约（接口 #8，FR-13）：状态改 CANCELLED，时段立即释放（NF-08）。
+     *
+     * <p>取消原因选填（"必填原因"是 FR-16 对管理员强制取消的要求，不是这里）。
+     * 不写 {@code operation_log}：NF-14 只记管理员敏感操作，与第 9 周口径一致。</p>
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public BookingVO cancel(Long id, String reason, Long userId) {
+        requireLogin(userId);
+        if (id == null) {
+            throw new BusinessException(ApiResponse.CODE_PARAM_ERROR, "请选择要取消的预约");
+        }
+        Reservation reservation = reservationMapper.selectByIdForUpdate(id);
+        if (reservation == null) {
+            throw new BusinessException(ApiResponse.CODE_NOT_FOUND, "预约不存在");
+        }
+        if (!userId.equals(reservation.getUserId())) {
+            throw new BusinessException(ApiResponse.CODE_FORBIDDEN, "只能取消本人提交的预约");
+        }
+        String reject = ReservationStatusPolicy.rejectCancelReason(
+                reservation.getStatus(), reservation.getStartTime(), LocalDateTime.now());
+        if (reject != null) {
+            throw new BusinessException(ApiResponse.CODE_PARAM_ERROR, reject);
+        }
+
+        String trimmedReason = (reason == null || reason.isBlank()) ? null : reason.trim();
+        reservationMapper.updateStatus(id, STATUS_CANCELLED, trimmedReason);
+
+        log.info("取消预约成功：no={}, userId={}, reason={}",
+                reservation.getReservationNo(), userId, trimmedReason);
+        return new BookingVO(id, reservation.getReservationNo(), STATUS_CANCELLED);
+    }
+
+    // ==================== 内部步骤 ====================
+
+    private void requireLogin(Long userId) {
+        if (userId == null) {
+            throw new BusinessException(ApiResponse.CODE_UNAUTHORIZED, "未登录");
+        }
+    }
+
+    /** 解析并校验时间（FR-08），返回日期与起止时刻 */
+    private ParsedTime parseAndValidateTime(BookingRequest request) {
+        LocalDate date = BookingTimeRules.parseDate(request.getDate());
+        LocalDateTime start = BookingTimeRules.parseTime(request.getStartTime(), date);
+        LocalDateTime end = BookingTimeRules.parseTime(request.getEndTime(), date);
+        String windowError = BookingTimeRules.validateWindow(start, end, date, LocalDateTime.now());
+        if (windowError != null) {
+            throw new BusinessException(ApiResponse.CODE_PARAM_ERROR, windowError);
+        }
+        return new ParsedTime(date, start, end);
+    }
+
+    /**
+     * 锁会议室行并确认启用（FR-06）。
+     * 停用判断放在锁内，避免"查完才发现刚被停用"。
+     */
+    private MeetingRoom lockEnabledRoom(Long roomId) {
+        if (roomId == null) {
+            throw new BusinessException(ApiResponse.CODE_PARAM_ERROR, "请选择会议室");
+        }
+        MeetingRoom room = meetingRoomMapper.selectByIdForUpdate(roomId);
+        if (room == null) {
+            throw new BusinessException(ApiResponse.CODE_NOT_FOUND, "会议室不存在");
+        }
+        if (!ROOM_ENABLED.equals(room.getStatus())) {
+            throw new BusinessException(ApiResponse.CODE_PARAM_ERROR, "该会议室已停用，无法预约");
+        }
+        return room;
+    }
+
+    /**
+     * 冲突判定（FR-09）：半开区间 [start, end)，首尾相接不算冲突。
+     * 409 时把<b>同一份</b>查询结果带回给前端（FR-10），判定式只在
+     * {@code BookingTimeRules.conflicts} 一处实现。
+     *
+     * @param excludeId 修改场景排除自身，其余传 {@code null}
+     */
+    private void ensureNoConflict(Long roomId, LocalDate date,
+                                  LocalDateTime start, LocalDateTime end, Long excludeId) {
+        List<OccupiedSlotDTO> occupied = reservationMapper.selectOccupiedSlotsOfRoom(roomId, date, excludeId);
+        for (OccupiedSlotDTO slot : occupied) {
+            if (BookingTimeRules.conflicts(start, end, slot.getStartTime(), slot.getEndTime())) {
+                throw new BusinessException(ApiResponse.CODE_CONFLICT,
+                        "该会议室在此时间段已被占用", new ConflictPayload(toSlotVOs(occupied)));
             }
         }
     }
@@ -181,5 +297,9 @@ public class BookingService {
 
     private String blankToNull(String value) {
         return (value == null || value.isBlank()) ? null : value.trim();
+    }
+
+    /** 解析后的时间三元组 */
+    private record ParsedTime(LocalDate date, LocalDateTime start, LocalDateTime end) {
     }
 }

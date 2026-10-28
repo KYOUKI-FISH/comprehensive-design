@@ -2,13 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <!--
-  D3 预约记录表（reservation）的 SQL —— 第 9 周 虞业宸 后端预约模块
-  对应接口：POST /api/bookings（草案 #5）
+  D3 预约记录表（reservation）的 SQL —— 第 9/10 周 虞业宸 后端预约模块
+  对应接口：POST /api/bookings（#5）、GET /api/bookings/mine（#6）、
+           PUT /api/bookings/{id}（#7）、DELETE /api/bookings/{id}（#8）
   ★ 时间一律按半开区间 [start_time, end_time) 处理，判定式见 BookingTimeRules
 -->
 <mapper namespace="com.meetingroom.mapper.ReservationMapper">
 
-    <!-- 新增预约。status 由 Service 固定写 PENDING；reserve_date 恒等于 DATE(start_time)（CHECK 兜底） -->
+    <!-- 新增预约。reservation_no 先填随机占位串满足 NOT NULL UNIQUE，插入后由主键派生正式编号回填 -->
     <insert id="insert" parameterType="com.meetingroom.entity.Reservation"
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO reservation
@@ -19,6 +20,13 @@
              #{startTime}, #{endTime}, #{topic}, #{attendeeCount}, #{contact}, #{purpose}, #{status})
     </insert>
 
+    <!-- 正式编号回填（第 10 周编号方案改造：MR + yyyyMMdd + 左补零主键，主键唯一 → 编号唯一） -->
+    <update id="updateReservationNo">
+        UPDATE reservation
+        SET reservation_no = #{reservationNo}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
     <!--
       某会议室某天的已占用时段（冲突判定 + 409 载荷共用）。
       ★ 口径与 MeetingRoomMapper.selectOccupiedSlots 保持一致：
@@ -26,6 +34,7 @@
         FINISHED 的时段必然已经过去，与"未来的预约"不可能重叠。
       这里不写时间交集条件，交给 BookingTimeRules.conflicts 逐条比对——
       判定式只有一处实现，用例才能真正覆盖到线上跑的那段代码。
+      excludeId：修改预约时排除自身（自己占的时段与自己"冲突"是误报）。
     -->
     <select id="selectOccupiedSlotsOfRoom" resultType="com.meetingroom.dto.OccupiedSlotDTO">
         SELECT room_id AS roomId, start_time AS startTime, end_time AS endTime
@@ -33,21 +42,80 @@
         WHERE room_id = #{roomId}
           AND reserve_date = #{date}
           AND status IN ('PENDING', 'ONGOING')
+        <if test="excludeId != null">
+          AND id != #{excludeId}
+        </if>
         ORDER BY start_time
     </select>
 
     <!--
-      取当天最大编号（编号生成，规则 MR + yyyyMMdd + 3 位流水号）。
-      FOR UPDATE：拿住 reservation_no 索引上这段前缀的锁，避免两个并发事务
-      取到同一个"最大值"从而生成同一个编号（编号唯一性由 uk_reservation_no 兜底）。
+      按主键查预约并加行锁（修改／取消场景，必须处于事务内）。
+      锁自己的行：防止"读状态 → 判准入 → 写"之间被另一个并发请求改变状态。
     -->
-    <select id="selectMaxReservationNo" resultType="java.lang.String">
-        SELECT reservation_no
+    <select id="selectByIdForUpdate" resultType="com.meetingroom.entity.Reservation">
+        SELECT id, reservation_no, user_id, room_id, reserve_date,
+               start_time, end_time, topic, attendee_count, contact,
+               purpose, status, cancel_reason, created_at, updated_at
         FROM reservation
-        WHERE reservation_no LIKE CONCAT(#{prefix}, '%')
-        ORDER BY reservation_no DESC
-        LIMIT 1
+        WHERE id = #{id}
         FOR UPDATE
     </select>
+
+    <!-- 我的预约列表：带上会议室名称与位置，前端不用二次查询（FR-11） -->
+    <select id="selectMine" resultType="com.meetingroom.dto.BookingItemVO">
+        SELECT r.id,
+               r.reservation_no  AS reservationNo,
+               r.room_id         AS roomId,
+               m.name            AS roomName,
+               m.location        AS location,
+               r.reserve_date    AS date,
+               r.start_time      AS startTime,
+               r.end_time        AS endTime,
+               r.topic,
+               r.attendee_count  AS attendeeCount,
+               r.contact,
+               r.purpose,
+               r.status,
+               r.cancel_reason   AS cancelReason
+        FROM reservation r
+        JOIN meeting_room m ON m.id = r.room_id
+        WHERE r.user_id = #{userId}
+        ORDER BY r.start_time DESC, r.id DESC
+    </select>
+
+    <!-- 修改预约的业务字段；编号 / 状态 / 取消原因不在修改范围内 -->
+    <update id="updateBookingFields" parameterType="com.meetingroom.entity.Reservation">
+        UPDATE reservation
+        SET room_id        = #{roomId},
+            reserve_date   = #{reserveDate},
+            start_time     = #{startTime},
+            end_time       = #{endTime},
+            topic          = #{topic},
+            attendee_count = #{attendeeCount},
+            contact        = #{contact},
+            purpose        = #{purpose},
+            updated_at     = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
+    <!-- 状态更新：取消写 CANCELLED（cancel_reason 可空）；读取校正写 FINISHED -->
+    <update id="updateStatus">
+        UPDATE reservation
+        SET status        = #{status},
+            cancel_reason = #{cancelReason},
+            updated_at    = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
+    <!--
+      落库时校正（NF-08，不引入定时器）：已结束但仍存 PENDING 的批量校正为 FINISHED。
+      幂等：已校正过的行不再满足 WHERE 条件。任何一次"我的预约"读取都会顺手执行。
+    -->
+    <update id="correctOverduePending">
+        UPDATE reservation
+        SET status = 'FINISHED', updated_at = CURRENT_TIMESTAMP
+        WHERE status = 'PENDING'
+          AND end_time &lt; NOW()
+    </update>
 
 </mapper>

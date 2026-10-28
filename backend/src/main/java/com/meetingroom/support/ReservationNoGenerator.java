@@ -2,19 +2,30 @@ package com.meetingroom.support;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 /**
- * 预约编号生成 —— 规则 {@code MR + yyyyMMdd + 3 位流水号}，共 13 位字符。
+ * 预约编号生成 —— 第 10 周改造后的方案：<b>自增主键派生</b>。
  *
- * <p>例如 2026-10-27 的第一条预约：{@code MR20261027001}。</p>
+ * <p>规则：{@code MR + yyyyMMdd + 主键左补零至 3 位}，如
+ * {@code MR20261028008}（id=8 那条 10-28 的预约）。</p>
  *
- * <p>★ 为什么规则要抽成一个纯函数：编号是**对外展示的业务主键**，13 位这个长度
- * 在第 8 周文档、建表脚本注释、7 条种子数据里都出现过，写漂移了测试和联调都会对不上；
- * 抽出来后用例可以逐条断言格式，Service 只负责"取当天最大值 → 调它 → 落库"。</p>
+ * <p>★ 为什么第 10 周要改掉第 9 周的"取当日最大流水号 +1"：
+ * 旧方案在并发下有撞唯一键 {@code uk_reservation_no} 的窗口——行锁只串行化了
+ * <b>同一间会议室</b>的提交，两间会议室同一天并发提交仍可能取到同一个"最大值"，
+ * 靠重试兜底（第 10 周计划 §2.3 攻坚点 2 点名此处，第 11 周 50 并发是硬指标）。
+ * 主键天然唯一、且 {@code (id) → 编号} 是单射，<b>从根上没有撞键窗口</b>，
+ * 不再需要"查最大值""重试"这两步。</p>
  *
- * <p>★ 流水号超过 999 时会自然变成 4 位（{@code %03d} 只是最少补 3 位），
- * 编号仍然唯一、按字典序排列也仍然有序；一天上千条预约在课程场景不会出现，
- * 这里选择"不报错、继续可预约"，而不是给演示造一个死路。</p>
+ * <p><b>落库方式（三步，同一事务）：</b></p>
+ * <ol>
+ *   <li>先用 {@link #placeholder()} 生成 32 位随机占位串填进 {@code NOT NULL UNIQUE} 列；</li>
+ *   <li>{@code INSERT}，{@code useGeneratedKeys} 回填自增主键；</li>
+ *   <li>用 {@link #derive} 由 {@code (date, id)} 算出正式编号，一条 {@code UPDATE} 回填。</li>
+ * </ol>
+ *
+ * <p>长度口径：主键不足 3 位左补零（课程场景 13 位），超过 999 自然变 4 位及以上，
+ * {@code VARCHAR(32)} 容纳无压力；唯一性由"主键唯一 + 日期段定长"双保证。</p>
  */
 public final class ReservationNoGenerator {
 
@@ -26,27 +37,25 @@ public final class ReservationNoGenerator {
     private ReservationNoGenerator() {
     }
 
-    /** 某天的编号前缀，如 {@code MR20261027} */
-    public static String prefixOf(LocalDate date) {
-        return PREFIX + date.format(DAY);
+    /**
+     * 由（预约日期，主键）派生正式编号。
+     *
+     * @param id 预约自增主键，必须 &gt; 0（插入成功回填后才有）
+     */
+    public static String derive(LocalDate date, long id) {
+        if (id <= 0) {
+            throw new IllegalArgumentException("预约编号必须由回填的自增主键派生，当前 id=" + id);
+        }
+        return PREFIX + date.format(DAY) + String.format("%03d", id);
     }
 
     /**
-     * 由当天已用的最大编号推出下一个编号。
+     * 插入前的占位编号：32 位随机十六进制，恰好占满 {@code VARCHAR(32)}。
      *
-     * @param prefix  {@link #prefixOf} 的结果
-     * @param maxNo   当天已用的最大编号，当天还没有预约时传 {@code null}
+     * <p>只为满足 {@code NOT NULL UNIQUE} 约束让插入成功，同一事务内立刻被
+     * 正式编号覆盖；随机会在 2^122 空间里取值，占位期间撞键概率可忽略。</p>
      */
-    public static String next(String prefix, String maxNo) {
-        int serial = 1;
-        if (maxNo != null && maxNo.length() > prefix.length()) {
-            try {
-                serial = Integer.parseInt(maxNo.substring(prefix.length())) + 1;
-            } catch (NumberFormatException e) {
-                // 存量编号格式异常时退回从 1 开始，唯一性仍由 uk_reservation_no 兜底
-                serial = 1;
-            }
-        }
-        return prefix + String.format("%03d", serial);
+    public static String placeholder() {
+        return UUID.randomUUID().toString().replace("-", "");
     }
 }
