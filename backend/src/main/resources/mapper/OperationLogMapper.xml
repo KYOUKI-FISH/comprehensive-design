@@ -20,4 +20,68 @@
              #{beforeData}, #{afterData}, #{remark})
     </insert>
 
+    <!-- =====================================================================
+         查询（第 10 周 李知渔）：接口 #13，NF-14 可追溯
+         ★ 本文件永远不会有 update / delete —— 审计链不可由业务界面改写或删除
+         ===================================================================== -->
+
+    <!-- 公共列与联表。★ LEFT JOIN：操作人账号异常时日志本身不能消失 -->
+    <sql id="logColumns">
+        l.id, l.operator_username AS operatorUsername,
+        u.real_name AS operatorName, u.role AS operatorRole,
+        l.operation_type AS operationType, l.target_type AS targetType,
+        l.target_id AS targetId, l.before_data AS beforeData, l.after_data AS afterData,
+        l.remark, l.operated_at AS createdAt
+    </sql>
+
+    <!--
+      公共 where。
+      ★ endDate 用 < endDate + 1 天，不是 <= endDate：
+        operated_at 是 DATETIME，`<= 2026-11-04 00:00:00` 会漏掉当天 00:00 之后的全部记录。
+        这里写成 日期比较，由 MySQL 把 endDate 转成当天零点再加一天，
+        等价于"含当天全天"，这是审计查询最不容易写错的口径。
+    -->
+    <sql id="logWhere">
+        <where>
+            <if test="operatorId != null">
+                AND l.operator_id = #{operatorId}
+            </if>
+            <if test="operationType != null and operationType != ''">
+                AND l.operation_type = #{operationType}
+            </if>
+            <if test="targetType != null and targetType != ''">
+                AND l.target_type = #{targetType}
+            </if>
+            <if test="startDate != null">
+                AND l.operated_at &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND l.operated_at &lt; DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+            </if>
+        </where>
+    </sql>
+
+    <!--
+      条件查询。★ 按 operated_at DESC 倒序：审计场景先看最近发生了什么；
+        带 id DESC 保证同一秒写入的多条顺序稳定（否则分页可能重复／漏行）。
+    -->
+    <select id="selectList" parameterType="com.meetingroom.dto.AdminLogQuery"
+            resultType="com.meetingroom.dto.OperationLogVO">
+        SELECT <include refid="logColumns"/>
+        FROM operation_log l
+        LEFT JOIN `user` u ON u.id = l.operator_id
+        <include refid="logWhere"/>
+        ORDER BY l.operated_at DESC, l.id DESC
+        <if test="pageSize != null and pageSize > 0">
+            LIMIT #{pageSize} OFFSET #{offset}
+        </if>
+    </select>
+
+    <!-- 总数（与 selectList 共用 logWhere，口径不会漂移） -->
+    <select id="countList" parameterType="com.meetingroom.dto.AdminLogQuery" resultType="long">
+        SELECT COUNT(*)
+        FROM operation_log l
+        <include refid="logWhere"/>
+    </select>
+
 </mapper>
