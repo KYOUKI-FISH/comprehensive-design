@@ -114,7 +114,7 @@ public class BookingService {
      * <p>先做落库时校正（把已结束仍存 PENDING 的批量改 FINISHED，NF-08、不引入定时器），
      * 再查询，保证同一次响应里状态与库存值一致。</p>
      */
-    @Transactional(readOnly = true)
+    @Transactional(rollbackFor = Exception.class)
     public List<BookingItemVO> mine(Long userId) {
         requireLogin(userId);
         reservationMapper.correctOverduePending();
