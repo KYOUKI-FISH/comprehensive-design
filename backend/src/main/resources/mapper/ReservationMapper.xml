@@ -118,4 +118,118 @@
           AND end_time &lt; NOW()
     </update>
 
+    <!-- =====================================================================
+         管理端（第 10 周 李知渔）：接口 #9 全部预约、#10 强制取消
+         ===================================================================== -->
+
+    <!--
+      管理端列表的公共列与联表。
+      ★ operatorName 取该预约"最后一条强制取消日志"的操作人账号：
+        子查询按 operated_at DESC 取第一行。用子查询而不是 LEFT JOIN + GROUP BY，
+        是因为一条预约理论上可被多次强制取消（取消后不可再取消，但历史数据可能有），
+        GROUP BY 会把它折叠成一行且取到的不一定是最新的那条。
+    -->
+    <sql id="adminColumns">
+        r.id, r.reservation_no AS reservationNo, r.user_id AS userId,
+        u.real_name AS userName,
+        r.room_id AS roomId, m.name AS roomName,
+        r.reserve_date AS reserveDate, r.start_time AS startTime, r.end_time AS endTime,
+        r.topic, r.attendee_count AS attendeeCount, r.contact, r.purpose,
+        r.status, r.cancel_reason AS cancelReason,
+        (SELECT l.operator_username
+           FROM operation_log l
+          WHERE l.target_type = 'BOOKING'
+            AND l.target_id = r.id
+            AND l.operation_type = 'BOOKING_FORCE_CANCEL'
+          ORDER BY l.operated_at DESC, l.id DESC
+          LIMIT 1) AS operatorName,
+        r.created_at AS createdAt, r.updated_at AS updatedAt
+    </sql>
+
+    <!-- 全部预约的公共 where；筛选条件全部可空，传哪个按哪个过滤 -->
+    <sql id="adminWhere">
+        <where>
+            <if test="userId != null">
+                AND r.user_id = #{userId}
+            </if>
+            <if test="roomId != null">
+                AND r.room_id = #{roomId}
+            </if>
+            <if test="status != null and status != ''">
+                AND r.status = #{status}
+            </if>
+            <if test="startDate != null">
+                AND r.reserve_date &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND r.reserve_date &lt;= #{endDate}
+            </if>
+        </where>
+    </sql>
+
+    <!--
+      管理端全部预约（接口 #9）。
+      ★ 排序用 start_time DESC：管理员关心"最近和将来的会议"，按开始时间倒序
+        能把即将发生和刚过去的一起排前面；再按 id DESC 保证同秒记录顺序稳定
+        （没有第二排序键时，LIMIT 分页可能同一行出现两次）。
+    -->
+    <select id="selectAdminList" parameterType="com.meetingroom.dto.AdminBookingQuery"
+            resultType="com.meetingroom.dto.ReservationDetailDTO">
+        SELECT <include refid="adminColumns"/>
+        FROM reservation r
+        JOIN `user` u ON u.id = r.user_id
+        JOIN meeting_room m ON m.id = r.room_id
+        <include refid="adminWhere"/>
+        ORDER BY r.start_time DESC, r.id DESC
+        <if test="pageSize != null and pageSize > 0">
+            LIMIT #{pageSize} OFFSET #{offset}
+        </if>
+    </select>
+
+    <!-- 总数（与 selectAdminList 共用 adminWhere，口径不会漂移） -->
+    <select id="countAdminList" parameterType="com.meetingroom.dto.AdminBookingQuery"
+            resultType="long">
+        SELECT COUNT(*)
+        FROM reservation r
+        <include refid="adminWhere"/>
+    </select>
+
+    <!-- 单条详情（强制取消后回带） -->
+    <select id="selectDetailById" resultType="com.meetingroom.dto.ReservationDetailDTO">
+        SELECT <include refid="adminColumns"/>
+        FROM reservation r
+        JOIN `user` u ON u.id = r.user_id
+        JOIN meeting_room m ON m.id = r.room_id
+        WHERE r.id = #{id}
+    </select>
+
+    <!--
+      强制取消（接口 #10，FR-16）。
+      ★ where 带 status = 'PENDING'：把"已取消的不能重复取消"做成原子判定。
+        两个管理员同时点，只有一个能更新到行，另一个返回 0 行由 Service 判错。
+        先查后改会留下窗口，两个都通过校验、都写了一次取消原因。
+      ★ 只允许 PENDING：已结束（FINISHED）的会本身不需要取消，
+        进行中（ONGOING）的取消语义与"异常预约处理"不符，按需求口径都不放行。
+    -->
+    <update id="updateStatusToCancelled">
+        UPDATE reservation
+        SET status = 'CANCELLED',
+            cancel_reason = #{cancelReason},
+            updated_at = #{now}
+        WHERE id = #{id}
+          AND status = 'PENDING'
+    </update>
+
+    <!--
+      某会议室挂着的预约条数（FR-03 删除前置校验）。
+      ★ 数全部状态而不是只数未完成的：外键 ON DELETE RESTRICT 拦的是所有引用行，
+        只要还有一条历史记录，DELETE 就会失败。前置校验若只数未完成，
+        会放行一个注定失败的请求，前端拿到的就是数据库外键异常。
+    -->
+    <select id="countByRoomId" resultType="long">
+        SELECT COUNT(*)
+        FROM reservation
+        WHERE room_id = #{roomId}
+    </select>
+
 </mapper>

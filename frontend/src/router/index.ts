@@ -3,7 +3,8 @@ import LoginView from '@/views/LoginView.vue'
 import RoomListView from '@/views/RoomListView.vue'
 import RoomDetailView from '@/views/RoomDetailView.vue'
 import BookingView from '@/views/BookingView.vue'
-import { isLoggedIn, restoreSession } from '@/store/session'
+import ForbiddenView from '@/views/ForbiddenView.vue'
+import { isLoggedIn, restoreSession, session } from '@/store/session'
 
 /**
  * 路由表（第 9 周）。
@@ -38,7 +39,15 @@ const routes: RouteRecordRaw[] = [
     path: '/bookings/new',
     name: 'booking-new',
     component: BookingView,
-    meta: { title: '提交预约' }
+    // ★ FR-02：角色说明的权限矩阵中管理员"提交预约：不允许"，
+    //   因此本页只放行普通用户。这只是导航层的门，真正的边界在后端。
+    meta: { title: '提交预约', role: 'USER' }
+  },
+  {
+    path: '/403',
+    name: 'forbidden',
+    component: ForbiddenView,
+    meta: { title: '无权访问' }
   },
   { path: '/:pathMatch(.*)*', redirect: { name: 'rooms' } }
 ]
@@ -49,14 +58,16 @@ const router = createRouter({
 })
 
 /**
- * 路由守卫：未登录只放行 public 路由。
+ * 路由守卫：未登录只放行 public 路由；已登录再按角色过滤。
  *
  * <p>第 9 周起守卫会先尝试<strong>从 localStorage 恢复登录态</strong>——
  * 否则刷新页面后虽然 localStorage 里有令牌，内存里的登录态却是空的，
  * 会被守卫弹回登录页（而令牌其实还有效），这正是"刷新不掉登录"要解决的问题。</p>
  *
  * <p>⚠️ 注意这只是页面导航层面的门，不是安全边界——真正的权限校验在
- * 后端 {@code AuthInterceptor}（前端守卫可被绕过，NF 安全类要求以后端为准）。</p>
+ * 后端 {@code AuthInterceptor}（前端守卫可被绕过，NF 安全类要求以后端为准）。
+ * 因此普通用户令牌直调管理接口、管理员令牌直调 {@code POST /api/bookings}，
+ * 都必须由后端返回 403（NF-03）。</p>
  */
 router.beforeEach((to) => {
   if (to.meta.public === true) {
@@ -64,10 +75,14 @@ router.beforeEach((to) => {
   }
   if (!isLoggedIn()) {
     // 内存里没有登录态，但 localStorage 可能有令牌 → 先尝试恢复
-    if (restoreSession()) {
-      return true
+    if (!restoreSession()) {
+      return { name: 'login', query: { redirect: to.fullPath } }
     }
-    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+  // ★ FR-02：路由声明了 role 时，当前角色不匹配就跳 403 页
+  const requiredRole = to.meta.role
+  if (requiredRole && session.user?.role !== requiredRole) {
+    return { name: 'forbidden', query: { from: to.fullPath } }
   }
   return true
 })

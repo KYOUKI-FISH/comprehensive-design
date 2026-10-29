@@ -76,4 +76,36 @@ public interface MeetingRoomMapper {
      * @return 会议室；不存在时返回 null
      */
     MeetingRoom selectByIdForUpdate(@Param("id") Long id);
+
+    // -------------------------------------------------------------------------
+    // 管理端会议室管理（第 10 周，李知渔）。接口 #11。
+    // -------------------------------------------------------------------------
+
+    /**
+     * 按名称查会议室（FR-03 同名拒绝前置校验）。
+     *
+     * <p>★ 前置校验只是给用户一句能看懂的提示；真正的唯一性由 {@code uk_room_name} 兜底。
+     * 两个管理员同时建同名会议室时，前置校验都会通过，最终靠数据库唯一键挡住一个。</p>
+     */
+    MeetingRoom selectByName(@Param("name") String name);
+
+    /** 新增会议室，回填自增主键 */
+    int insert(MeetingRoom room);
+
+    /**
+     * 更新会议室（接口 #11 PUT）。
+     *
+     * <p>★ 只更新非 null 字段：管理员改容量时不该把设备描述清空。
+     * 启用／停用也走这条（传 status），不单开接口——需求清单里停用不属独立功能。</p>
+     */
+    int updateSelective(MeetingRoom room);
+
+    /**
+     * 删除会议室（接口 #11 DELETE）。
+     *
+     * <p>★ 有预约挂着的会议室外键会拒绝删除（{@code ON DELETE RESTRICT}），
+     * Service 先在事务里用 {@code ReservationMapper.countByRoomId} 前置判一次，
+     * 好给用户中文提示；数据库外键仍是最后一道闸。</p>
+     */
+    int deleteById(@Param("id") Long id);
 }

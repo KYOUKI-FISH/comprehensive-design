@@ -86,4 +86,55 @@
         FOR UPDATE
     </select>
 
+    <!-- =====================================================================
+         管理端会议室管理（第 10 周 李知渔）：接口 #11
+         ===================================================================== -->
+
+    <!-- 同名查重（FR-03）。唯一性最终由 uk_room_name 兜底，这里只为给中文提示 -->
+    <select id="selectByName" resultType="com.meetingroom.entity.MeetingRoom">
+        SELECT id, name, location, capacity, equipment, status, remark, created_at, updated_at
+        FROM meeting_room
+        WHERE name = #{name}
+        LIMIT 1
+    </select>
+
+    <!-- 新增会议室。equipment 列 NOT NULL DEFAULT ''，Service 层把 null 转成空串再传 -->
+    <insert id="insert" parameterType="com.meetingroom.entity.MeetingRoom"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO meeting_room (name, location, capacity, equipment, status, remark)
+        VALUES (#{name}, #{location}, #{capacity}, #{equipment}, #{status}, #{remark})
+    </insert>
+
+    <!--
+      按非 null 字段更新（接口 #11 PUT）。
+      ★ status 也走这条：需求清单里"启用／停用"不是一个独立接口，是 PUT 的一个字段。
+      ★ equipment 允许更新成空串（管理员清空设备描述是合法操作），
+        所以判断用 != null 而不是 != null and != ''。
+    -->
+    <update id="updateSelective" parameterType="com.meetingroom.entity.MeetingRoom">
+        UPDATE meeting_room
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="location != null">location = #{location},</if>
+            <if test="capacity != null">capacity = #{capacity},</if>
+            <if test="equipment != null">equipment = #{equipment},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!--
+      删除会议室（接口 #11 DELETE）。
+      ★ 有预约挂着时，reservation.room_id 的外键 ON DELETE RESTRICT 会抛
+        SQLIntegrityConstraintViolationException，由 GlobalExceptionHandler／Service
+        转成 409「该会议室存在有效预约，请先处理预约」。
+        Service 会先用 ReservationMapper.countByRoomId 前置判一次，好给中文提示；
+        但并发下仍可能漏，外键是最后一道闸。
+    -->
+    <delete id="deleteById">
+        DELETE FROM meeting_room
+        WHERE id = #{id}
+    </delete>
+
 </mapper>

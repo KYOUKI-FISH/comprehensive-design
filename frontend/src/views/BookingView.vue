@@ -46,11 +46,68 @@ const form = reactive({
   purpose: ''
 })
 
+/** 单次预约时长上限（小时）；FR-08 时间规则 */
+const MAX_DURATION_MINUTES = 8 * 60
+
+/** 把 HH:mm 换算成当天 0 点起的分钟数；格式不合法返回 null */
+function toMinutes(value: string): number | null {
+  const matched = /^(\d{1,2}):(\d{2})$/.exec(value)
+  if (!matched) {
+    return null
+  }
+  const hour = Number(matched[1])
+  const minute = Number(matched[2])
+  if (hour > 23 || minute > 59) {
+    return null
+  }
+  return hour * 60 + minute
+}
+
+/**
+ * FR-08 时间规则校验（前端表单级，不重复实现冲突判定）。
+ *
+ * <p>三条：结束晚于开始、不跨天、单次不超过 8 小时。
+ * <p>★ 日期是表单里单独一个字段（{@code form.date}），起止时间只填 HH:mm，
+ * 所以"跨天"不会通过选日期发生，而是通过"结束时刻早于开始时刻"发生；
+ * 分钟差 {@code <= 0} 与"跨天"在这里是同一件事，合并为一句提示即可。</p>
+ */
+function validateTimeRule(): string | null {
+  if (!form.startTime || !form.endTime) {
+    return null
+  }
+  const start = toMinutes(form.startTime)
+  const end = toMinutes(form.endTime)
+  if (start === null || end === null) {
+    return '时间格式不正确，应为 HH:mm'
+  }
+  if (end <= start) {
+    return '结束时间必须晚于开始时间，且单次预约不能跨天'
+  }
+  if (end - start > MAX_DURATION_MINUTES) {
+    return '单次预约不能超过 8 小时'
+  }
+  return null
+}
+
 const rules: FormRules<typeof form> = {
   roomId: [{ required: true, message: '请选择会议室', trigger: 'change' }],
   date: [{ required: true, message: '请选择预约日期', trigger: 'change' }],
   startTime: [{ required: true, message: '请选择开始时间', trigger: 'change' }],
-  endTime: [{ required: true, message: '请选择结束时间', trigger: 'change' }],
+  // ★ FR-08：结束时间必须过时间规则这一关，否则不允许提交
+  endTime: [
+    { required: true, message: '请选择结束时间', trigger: 'change' },
+    {
+      validator: (_rule, _value, callback) => {
+        const message = validateTimeRule()
+        if (message) {
+          callback(new Error(message))
+          return
+        }
+        callback()
+      },
+      trigger: 'change'
+    }
+  ],
   topic: [{ required: true, message: '请填写会议主题', trigger: 'blur' }],
   attendeeCount: [{ required: true, message: '请填写参会人数', trigger: 'blur' }],
   contact: [{ required: true, message: '请填写联系人', trigger: 'blur' }]
@@ -92,6 +149,14 @@ async function loadOccupancy(): Promise<void> {
 
 async function onSubmit(): Promise<void> {
   if (!formRef.value) {
+    return
+  }
+  // ★ FR-08：先单独过一遍时间规则——用户可能只改了开始时间而没有触发
+  //   endTime 的 change 校验，这里兜底，保证非法时段一定提交不出去
+  const timeRuleMessage = validateTimeRule()
+  if (timeRuleMessage) {
+    ElMessage.warning(timeRuleMessage)
+    void formRef.value.validateField('endTime').catch(() => undefined)
     return
   }
   const valid = await formRef.value.validate().catch(() => false)
