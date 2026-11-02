@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<!-- D2 会议室信息表（meeting_room）与 D3 预约记录表（reservation）的 SQL -->
+<!--
+  D2 会议室信息表（meeting_room）与 D3 预约记录表（reservation）的 SQL。
+
+  ★ 第 9 周融合说明：本文件由两条并行开发线合并 ——
+    预约模块（虞业宸）的 selectByIdForUpdate，
+    详情页／占用时段接口（李知渔）的 selectById 与 selectRoomOccupiedSlots。
+    两边原本各有一个"锁会议室行"的方法（lockById / selectByIdForUpdate），
+    语义重复，合并后只保留后者。
+-->
 <mapper namespace="com.meetingroom.mapper.MeetingRoomMapper">
 
     <!-- 按条件查询会议室（DFD 加工 P2 查询会议室 / FR-05、FR-06） -->
@@ -40,7 +48,7 @@
         ORDER BY room_id, start_time
     </select>
 
-    <!-- 按ID查会议室（第 9 周详情页用） -->
+    <!-- 按ID查会议室（第 9 周详情页用；也用于确认会议室存在） -->
     <select id="selectById" resultType="com.meetingroom.entity.MeetingRoom">
         SELECT id, name, location, capacity, equipment, status, remark, created_at, updated_at
         FROM meeting_room
@@ -49,59 +57,84 @@
     </select>
 
     <!--
-      查某会议室某天的占用时段（只读版，供详情页展示用）。
-      ★ 只取"占用行"，判定不在 SQL 里。
-      ★ 排除 CANCELLED：已取消的预约时段已释放（NF-08「取消后时段立即释放」）。
-      ⚠️ 这是【快照读】：不锁行。详情页是纯展示，用它没问题。
-        冲突检测<strong>不能</strong>用这个（会读到旧快照，见 selectRoomOccupiedSlotsForUpdate）。
+      查某会议室某天的占用时段（只读版，供详情页展示）。
+
+      ★ 口径必须与上面的 selectOccupiedSlots 一致：只有 PENDING／ONGOING 算占用。
+        CANCELLED 已释放时段（NF-08）；FINISHED 的时段已经过去。
+        两个查询给同一次查询的两个页面供数，口径不一致会出现
+        "列表页说有占用、详情页说没有"这种自相矛盾。
+      ★ 这是普通 SELECT（快照读），纯展示用途。
+        冲突检测不能用它——见 ReservationMapper.selectOccupiedSlotsOfRoom（锁定读）。
     -->
     <select id="selectRoomOccupiedSlots" resultType="com.meetingroom.dto.OccupiedSlotDTO">
         SELECT room_id AS roomId, start_time AS startTime, end_time AS endTime
         FROM reservation
         WHERE reserve_date = #{date}
           AND room_id = #{roomId}
-          AND status &lt;&gt; 'CANCELLED'
+          AND status IN ('PENDING', 'ONGOING')
         ORDER BY start_time
     </select>
 
     <!--
-      查某会议室某天的占用时段（【锁定读】版，专供冲突检测使用）。
-      ★★★ 末尾的 FOR UPDATE 不是可选项 ★★★
-      MySQL 默认隔离级别 REPEATABLE READ 下：
-        · 普通 SELECT 是【快照读】，读的是事务开始那一刻的快照——看不到别的事务刚提交的记录；
-        · SELECT ... FOR UPDATE 是【当前读】，读的是最新已提交数据。
-      第 9 周并发自测实际打出的问题：这个查询原本用普通 SELECT（快照读），
-      导致 10 个并发请求<strong>全都通过了冲突检测</strong>，产生 10 条有效预约（超卖）。
-      锁 meeting_room 行本身<strong>不够</strong>——它只保证"同一会议室的请求排队"，
-      但排队后每个事务仍读到各自的旧快照，于是全都判"无冲突"。
-
-      ★ 锁顺序：同一事务内先锁 meeting_room 行（lockById），再锁该会议室当日的
-        reservation 行范围（此处）。所有并发请求顺序一致 → 不会死锁。
-      ★ 必须在事务内调用（否则 FOR UPDATE 立即释放，等于没锁）。
+      按ID查会议室并加行锁（提交预约时用，NF-07 并发不超订）。
+      FOR UPDATE 必须在事务内才有效：调用方 BookingService.create 标了 @Transactional。
     -->
-    <select id="selectRoomOccupiedSlotsForUpdate" resultType="com.meetingroom.dto.OccupiedSlotDTO">
-        SELECT room_id AS roomId, start_time AS startTime, end_time AS endTime
-        FROM reservation
-        WHERE reserve_date = #{date}
-          AND room_id = #{roomId}
-          AND status &lt;&gt; 'CANCELLED'
-        ORDER BY start_time
-        FOR UPDATE
-    </select>
-
-    <!--
-      ★★ 锁定会议室行（第 9 周并发防超卖的关键，FR-09 + NF-07）★★
-      为什么锁 meeting_room 行而不是 reservation 行：
-        并发提交时，冲突方那条预约记录【还不存在】，锁不到它；
-        而会议室行一定存在，锁它就能把"同一会议室"的并发请求串行化。
-      配合 @Transactional 使用：本语句必须与后续的冲突查询、INSERT 在同一事务里，
-      否则锁一放就失效，等于没锁。
-    -->
-    <select id="lockById" resultType="com.meetingroom.entity.MeetingRoom">
+    <select id="selectByIdForUpdate" resultType="com.meetingroom.entity.MeetingRoom">
         SELECT id, name, location, capacity, equipment, status, remark, created_at, updated_at
         FROM meeting_room
         WHERE id = #{id}
         FOR UPDATE
     </select>
+
+    <!-- =====================================================================
+         管理端会议室管理（第 10 周 李知渔）：接口 #11
+         ===================================================================== -->
+
+    <!-- 同名查重（FR-03）。唯一性最终由 uk_room_name 兜底，这里只为给中文提示 -->
+    <select id="selectByName" resultType="com.meetingroom.entity.MeetingRoom">
+        SELECT id, name, location, capacity, equipment, status, remark, created_at, updated_at
+        FROM meeting_room
+        WHERE name = #{name}
+        LIMIT 1
+    </select>
+
+    <!-- 新增会议室。equipment 列 NOT NULL DEFAULT ''，Service 层把 null 转成空串再传 -->
+    <insert id="insert" parameterType="com.meetingroom.entity.MeetingRoom"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO meeting_room (name, location, capacity, equipment, status, remark)
+        VALUES (#{name}, #{location}, #{capacity}, #{equipment}, #{status}, #{remark})
+    </insert>
+
+    <!--
+      按非 null 字段更新（接口 #11 PUT）。
+      ★ status 也走这条：需求清单里"启用／停用"不是一个独立接口，是 PUT 的一个字段。
+      ★ equipment 允许更新成空串（管理员清空设备描述是合法操作），
+        所以判断用 != null 而不是 != null and != ''。
+    -->
+    <update id="updateSelective" parameterType="com.meetingroom.entity.MeetingRoom">
+        UPDATE meeting_room
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="location != null">location = #{location},</if>
+            <if test="capacity != null">capacity = #{capacity},</if>
+            <if test="equipment != null">equipment = #{equipment},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!--
+      删除会议室（接口 #11 DELETE）。
+      ★ 有预约挂着时，reservation.room_id 的外键 ON DELETE RESTRICT 会抛
+        SQLIntegrityConstraintViolationException，由 GlobalExceptionHandler／Service
+        转成 409「该会议室存在有效预约，请先处理预约」。
+        Service 会先用 ReservationMapper.countByRoomId 前置判一次，好给中文提示；
+        但并发下仍可能漏，外键是最后一道闸。
+    -->
+    <delete id="deleteById">
+        DELETE FROM meeting_room
+        WHERE id = #{id}
+    </delete>
 
 </mapper>

@@ -1,36 +1,43 @@
 package com.meetingroom.dto;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 /**
- * 提交预约请求体（POST /api/bookings 的入参）。
+ * 提交预约的请求体（{@code POST /api/bookings} 入参，第 7 周草案 #5）。
  *
- * <p>对应第 8 周冻结接口清单第 5 条：{@code roomId}、{@code date}、{@code startTime}、
- * {@code endTime}、{@code topic}（必填）、{@code attendeeCount}（必填）、
- * {@code contact}（必填）、{@code purpose}（选填）。</p>
+ * <pre>
+ * {
+ *   "roomId": 1,
+ *   "date": "2026-10-27",
+ *   "startTime": "2026-10-27 09:00:00",
+ *   "endTime": "2026-10-27 10:00:00",
+ *   "topic": "需求评审",
+ *   "attendeeCount": 8,
+ *   "contact": "虞业宸",
+ *   "purpose": "评审第 9 周接口"
+ * }
+ * </pre>
  *
- * <p>★ 必填校验在 Service 层做，<strong>不靠 {@code @NotNull} 注解</strong>——
- * 本项目没有引 validation starter，且 FR-07 要求给的是<strong>面向使用者的中文提示</strong>
- * （"请填写会议主题"而不是"topic must not be null"），手写校验更可控。</p>
+ * <p>★ 时间为什么用 String 收：前端页面（第 9 周）可能传 {@code 2026-10-27 09:00}、
+ * 也可能只传 {@code 09:00} 配合 {@code date}。这里统一用字符串接收、由
+ * {@code BookingTimeRules} 解析，避免"前端传 HH:mm、后端只认完整 datetime"这类
+ * 字段格式不一致导致联调失败（检查点②要暴露的正是这类问题）。</p>
  */
 public class BookingRequest {
 
-    /** 会议室ID */
+    /** 会议室ID（必填） */
     private Long roomId;
-    /** 预约日期 yyyy-MM-dd */
-    private LocalDate date;
-    /** 开始时间 yyyy-MM-dd HH:mm（也可传 yyyy-MM-ddTHH:mm） */
-    private LocalDateTime startTime;
-    /** 结束时间 */
-    private LocalDateTime endTime;
-    /** 会议主题，必填（FR-07） */
+    /** 预约日期 yyyy-MM-dd（必填；只传 HH:mm 时用它拼完整时间） */
+    private String date;
+    /** 开始时间，支持 yyyy-MM-dd HH:mm[:ss] / yyyy-MM-ddTHH:mm[:ss] / HH:mm[:ss] */
+    private String startTime;
+    /** 结束时间，格式同 startTime */
+    private String endTime;
+    /** 会议主题（FR-07 必填） */
     private String topic;
-    /** 参会人数，必填且大于 0（FR-07） */
+    /** 参会人数（FR-07 必填，> 0） */
     private Integer attendeeCount;
-    /** 联系人，必填（FR-07） */
+    /** 联系人（FR-07 必填） */
     private String contact;
-    /** 用途补充说明，选填 */
+    /** 用途（选填） */
     private String purpose;
 
     public Long getRoomId() {
@@ -41,27 +48,27 @@ public class BookingRequest {
         this.roomId = roomId;
     }
 
-    public LocalDate getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(LocalDate date) {
+    public void setDate(String date) {
         this.date = date;
     }
 
-    public LocalDateTime getStartTime() {
+    public String getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
+    public void setStartTime(String startTime) {
         this.startTime = startTime;
     }
 
-    public LocalDateTime getEndTime() {
+    public String getEndTime() {
         return endTime;
     }
 
-    public void setEndTime(LocalDateTime endTime) {
+    public void setEndTime(String endTime) {
         this.endTime = endTime;
     }
 

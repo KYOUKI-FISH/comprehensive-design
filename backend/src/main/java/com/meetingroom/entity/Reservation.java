@@ -4,39 +4,39 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
- * 预约实体 —— 对应建表脚本 {@code reservation} 表（DFD 数据存储 D3 预约记录）。
+ * 预约记录实体 —— 对应建表脚本 {@code reservation} 表（DFD 数据存储 D3 预约记录）。
  *
- * <p>★ 时间字段的语义（半开区间 {@code [start_time, end_time)}）：
- * 开始时间<strong>含</strong>本时刻，结束时间<strong>不含</strong>本时刻。
- * 因此"09:00—10:00"与"10:00—11:00"两段首尾相接，<strong>不算冲突</strong>（FR-09）。</p>
+ * <p>字段与 {@code docs/week07-08/schema.sql} 逐列对应，<b>不要凭记忆加字段</b>：
+ * 第 8 周定稿的该表没有 {@code operator_id}（管理员处理留痕走 {@code operation_log}），
+ * 加了会与建表脚本不一致，插入直接报 Unknown column。</p>
  */
 public class Reservation {
 
-    /** 预约主键ID，自增；对外不暴露，对外用 reservationNo */
+    /** 主键，对外不暴露（对外用 reservationNo） */
     private Long id;
-    /** 预约编号，全局唯一，对外展示（FR-07） */
+    /** 预约编号：MR + yyyyMMdd + 3 位流水号，13 位字符，UNIQUE */
     private String reservationNo;
-    /** 预约人ID → user(id) */
+    /** 预约人 → user.id */
     private Long userId;
-    /** 会议室ID → meeting_room(id) */
+    /** 会议室 → meeting_room.id */
     private Long roomId;
-    /** 预约日期，恒等于 DATE(start_time)，由 CHECK 保证 */
+    /** 预约日期，恒等于 DATE(startTime)（由 CHECK ck_reservation_date_match 保证） */
     private LocalDate reserveDate;
-    /** 开始时间，含本时刻 */
+    /** 开始时间（半开区间左闭，含本时刻） */
     private LocalDateTime startTime;
-    /** 结束时间，不含本时刻 */
+    /** 结束时间（半开区间右开，不含本时刻） */
     private LocalDateTime endTime;
-    /** 会议主题，必填（FR-07） */
+    /** 会议主题（FR-07 必填） */
     private String topic;
-    /** 参会人数，必填且大于 0（FR-07） */
+    /** 参会人数（FR-07 必填，> 0） */
     private Integer attendeeCount;
-    /** 联系人，必填（FR-07） */
+    /** 联系人（FR-07 必填） */
     private String contact;
-    /** 用途补充说明，选填 */
+    /** 用途补充说明（选填） */
     private String purpose;
-    /** 预约状态：PENDING / ONGOING / FINISHED / CANCELLED（NF-08 四态） */
+    /** 状态四态：PENDING / ONGOING / FINISHED / CANCELLED（NF-08） */
     private String status;
-    /** 取消原因；管理员强制取消时必填（FR-16） */
+    /** 取消原因（FR-16 强制取消必填） */
     private String cancelReason;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

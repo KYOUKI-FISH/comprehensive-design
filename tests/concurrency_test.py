@@ -109,7 +109,8 @@ if conflict:
     print("   提示：%s" % conflict[0][1])
     slots = (conflict[0][2] or {}).get("occupiedSlots") if conflict[0][2] else None
     if slots:
-        print("   返回的被占用时段：%s" % [("%s-%s" % (s["startTime"][11:16], s["endTime"][11:16])) for s in slots])
+        print("   返回的被占用时段：%s" % [("%s-%s" % ((s.get("startTime") or "")[-5:],
+                                                       (s.get("endTime") or "")[-5:])) for s in slots])
 print("其他（应为 0）   ：%d 条" % len(other))
 for i, r in other:
     print("   #%d code=%s message=%s" % (i, r[0], r[1]))

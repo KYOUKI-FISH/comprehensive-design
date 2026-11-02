@@ -24,4 +24,73 @@
         LIMIT 1
     </select>
 
+    <!-- =====================================================================
+         管理端用户管理（第 10 周 李知渔）：接口 #12
+         ===================================================================== -->
+
+    <!--
+      用户列表，status／role 均可空。
+      ★ 按 id 升序：管理员页面稳定，不会因 updated_at 被改而跳位。
+      ★ 这里会查回 password 摘要（实体字段），Service 必须转 UserVO 后再返回，
+        不能直接序列化实体。
+    -->
+    <select id="selectList" resultType="com.meetingroom.entity.User">
+        SELECT id, username, password, real_name, role, phone, status, created_at, updated_at
+        FROM `user`
+        <where>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="role != null and role != ''">
+                AND role = #{role}
+            </if>
+        </where>
+        ORDER BY id
+    </select>
+
+    <!-- 建号查重 -->
+    <select id="selectByUsernameForCheck" resultType="com.meetingroom.entity.User">
+        SELECT id, username, password, real_name, role, phone, status, created_at, updated_at
+        FROM `user`
+        WHERE username = #{username}
+        LIMIT 1
+    </select>
+
+    <!-- 新增用户。password 已在 Service 层 BCrypt 加密，本层不做任何转换 -->
+    <insert id="insert" parameterType="com.meetingroom.entity.User"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `user` (username, password, real_name, role, phone, status)
+        VALUES (#{username}, #{password}, #{realName}, #{role}, #{phone}, #{status})
+    </insert>
+
+    <!--
+      按非 null 字段更新（接口 #12 PUT）。
+      ★ 用 <set> 而不是写死全部列：管理员改电话时不该把姓名清空。
+      ★ 空对象更新（全 null）会被 Service 拦下——这里若真进来，SQL 会生成
+        "UPDATE user WHERE id=?"，是语法错误，不能靠数据库兜。
+    -->
+    <update id="updateSelective" parameterType="com.meetingroom.entity.User">
+        UPDATE `user`
+        <set>
+            <if test="realName != null">real_name = #{realName},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="role != null">role = #{role},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="password != null">password = #{password},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!--
+      可用管理员计数（降级前置校验）。
+      ★ 条件带 status = 'ACTIVE'：已停用的管理员不算数——他登不进来，
+        也就没法兜住"最后一个可用管理员"这个底。
+    -->
+    <select id="countActiveAdmins" resultType="long">
+        SELECT COUNT(*)
+        FROM `user`
+        WHERE role = 'ADMIN'
+          AND status = 'ACTIVE'
+    </select>
+
 </mapper>

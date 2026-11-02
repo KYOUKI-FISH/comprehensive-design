@@ -89,6 +89,9 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
 
         CurrentUser.set(session);
+        // ★ 与预约模块的衔接点：虞业宸的 CurrentUserResolver 优先读 request 属性 "userId"。
+        //   少了这一行，POST /api/bookings 一律返回 401「未登录」——合并时最容易漏的一处。
+        request.setAttribute("userId", session.getUserId());
         return true;
     }
 
