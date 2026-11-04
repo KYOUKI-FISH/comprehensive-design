@@ -1,0 +1,146 @@
+{
+  "executedAt": "2026-10-28 17:23:26",
+  "finishedAt": "2026-10-28 17:23:32",
+  "webUrl": "http://127.0.0.1:5399",
+  "mockUrl": "http://localhost:28080",
+  "browsers": [
+    {
+      "name": "Edge",
+      "available": true,
+      "executablePath": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+      "version": "156.0.4314.42",
+      "reason": "",
+      "viewports": [
+        {
+          "width": 1366,
+          "height": 768,
+          "pass": true,
+          "list": {
+            "innerWidth": 1366,
+            "documentScrollWidth": 1366,
+            "bodyScrollWidth": 1366
+          },
+          "detail": {
+            "innerWidth": 1366,
+            "documentScrollWidth": 1366,
+            "bodyScrollWidth": 1366
+          },
+          "queryButtonEnabled": true,
+          "detailLinkVisible": true,
+          "screenshots": [
+            "C:\\Users\\Zhui_\\Desktop\\meetingroom-week11\\docs\\week11\\适配截图\\Edge_1366x768_列表.png",
+            "C:\\Users\\Zhui_\\Desktop\\meetingroom-week11\\docs\\week11\\适配截图\\Edge_1366x768_详情.png"
+          ],
+          "consoleErrors": [],
+          "failedRequests": []
+        },
+        {
+          "width": 375,
+          "height": 667,
+          "pass": true,
+          "list": {
+            "innerWidth": 375,
+            "documentScrollWidth": 375,
+            "bodyScrollWidth": 375
+          },
+          "detail": {
+            "innerWidth": 375,
+            "documentScrollWidth": 375,
+            "bodyScrollWidth": 375
+          },
+          "queryButtonEnabled": true,
+          "detailLinkVisible": true,
+          "screenshots": [
+            "C:\\Users\\Zhui_\\Desktop\\meetingroom-week11\\docs\\week11\\适配截图\\Edge_375x667_列表.png",
+            "C:\\Users\\Zhui_\\Desktop\\meetingroom-week11\\docs\\week11\\适配截图\\Edge_375x667_详情.png"
+          ],
+          "consoleErrors": [],
+          "failedRequests": []
+        },
+        {
+          "width": 768,
+          "height": 1024,
+          "pass": true,
+          "list": {
+            "innerWidth": 768,
+            "documentScrollWidth": 768,
+            "bodyScrollWidth": 768
+          },
+          "detail": {
+            "innerWidth": 768,
+            "documentScrollWidth": 768,
+            "bodyScrollWidth": 768
+          },
+          "queryButtonEnabled": true,
+          "detailLinkVisible": true,
+          "screenshots": [
+            "C:\\Users\\Zhui_\\Desktop\\meetingroom-week11\\docs\\week11\\适配截图\\Edge_768x1024_列表.png",
+            "C:\\Users\\Zhui_\\Desktop\\meetingroom-week11\\docs\\week11\\适配截图\\Edge_768x1024_详情.png"
+          ],
+          "consoleErrors": [],
+          "failedRequests": []
+        }
+      ],
+      "flow": {
+        "pass": true,
+        "steps": [
+          "登录成功",
+          "按名称筛选 301 命中 1 条",
+          "提交预约成功（MR202610290005）",
+          "取消预约成功，状态变为已取消"
+        ],
+        "bookingNo": "MR202610290005",
+        "screenshots": [
+          "C:\\Users\\Zhui_\\Desktop\\meetingroom-week11\\docs\\week11\\适配截图\\Edge_全流程_预约成功.png",
+          "C:\\Users\\Zhui_\\Desktop\\meetingroom-week11\\docs\\week11\\适配截图\\Edge_全流程_取消成功.png"
+        ],
+        "consoleErrors": [],
+        "failedRequests": []
+      }
+    },
+    {
+      "name": "Chrome",
+      "available": false,
+      "executablePath": "",
+      "version": "",
+      "reason": "本机未安装",
+      "viewports": [],
+      "flow": null
+    }
+  ],
+  "warnings": [
+    "Chrome 未安装，相关用例未执行"
+  ],
+  "checks": [
+    {
+      "id": "TC-09-Edge-1366x768",
+      "name": "适配 1366×768 列表页与详情页无横向溢出",
+      "ok": true,
+      "detail": "列表 scrollWidth=1366/1366；详情 scrollWidth=1366/1366；查询按钮=可点；控制台错误=0；网络失败=0"
+    },
+    {
+      "id": "TC-09-Edge-375x667",
+      "name": "适配 375×667 列表页与详情页无横向溢出",
+      "ok": true,
+      "detail": "列表 scrollWidth=375/375；详情 scrollWidth=375/375；查询按钮=可点；控制台错误=0；网络失败=0"
+    },
+    {
+      "id": "TC-09-Edge-768x1024",
+      "name": "适配 768×1024 列表页与详情页无横向溢出",
+      "ok": true,
+      "detail": "列表 scrollWidth=768/768；详情 scrollWidth=768/768；查询按钮=可点；控制台错误=0；网络失败=0"
+    },
+    {
+      "id": "TC-11-Edge",
+      "name": "Edge 全流程：登录→查询→预约→取消",
+      "ok": true,
+      "detail": "登录成功；按名称筛选 301 命中 1 条；提交预约成功（MR202610290005）；取消预约成功，状态变为已取消"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "passed": 4,
+    "failed": 0
+  },
+  "overallPass": true
+}

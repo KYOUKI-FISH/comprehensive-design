@@ -1,0 +1,34 @@
+[stdout] 
+[stdout] 智能会议室管理系统 · 第11周本地 mock 后端
+  API: http://localhost:28080/api
+  令牌有效期: 1800 秒
+  演示账号（仅本地 mock，不是生产账号）：
+    口令由启动参数注入，本次运行不在日志中输出
+  种子预约：2026-10-29 学术报告厅 10:00-11:00、3号楼301 14:00-16:00
+            2026-10-30 行政楼小会议室 09:00-10:00
+            2026-10-27 学术报告厅 14:00-15:00（已结束，供管理员强制取消演示）
+  按 Ctrl+C 停止。数据仅存内存，重启即重置。
+
+[stdout] GET /api/health -> 200
+[stdout] GET /api/health -> 200
+[stdout] POST /api/auth/login -> 200
+[stdout] GET /api/rooms -> 200
+[stdout] GET /api/rooms -> 200
+[stdout] GET /api/rooms/1/occupancy?date=2026-10-28 -> 200
+[stdout] POST /api/auth/login -> 200
+[stdout] GET /api/rooms -> 200
+[stdout] GET /api/rooms -> 200
+[stdout] GET /api/rooms/1/occupancy?date=2026-10-28 -> 200
+[stdout] POST /api/auth/login -> 200
+[stdout] GET /api/rooms -> 200
+[stdout] GET /api/rooms -> 200
+[stdout] GET /api/rooms/1/occupancy?date=2026-10-28 -> 200
+[stdout] POST /api/auth/login -> 200
+[stdout] GET /api/rooms -> 200
+[stdout] GET /api/rooms?name=301 -> 200
+[stdout] GET /api/rooms -> 200
+[stdout] GET /api/rooms -> 200
+[stdout] POST /api/bookings -> 200
+[stdout] GET /api/bookings/mine -> 200
+[stdout] DELETE /api/bookings/5 -> 200
+[stdout] GET /api/bookings/mine -> 200

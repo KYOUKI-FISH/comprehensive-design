@@ -1,0 +1,102 @@
+{
+  "executedAt": "2026-10-28 17:23:23",
+  "adjacencySeed": {
+    "id": 1,
+    "reservationNo": "MR202610290001",
+    "roomId": 1,
+    "roomName": "学术报告厅",
+    "userId": 2,
+    "username": "user002",
+    "subject": "学院工作例会",
+    "startTime": "2026-10-29T10:00:00",
+    "endTime": "2026-10-29T11:00:00",
+    "status": "PENDING",
+    "cancelledAt": "",
+    "cancelReason": ""
+  },
+  "cases": [
+    {
+      "key": "跨天",
+      "request": {
+        "roomId": 5,
+        "subject": "W11-时间边界-跨天",
+        "startTime": "2026-10-29T23:00:00",
+        "endTime": "2026-10-30T01:00:00"
+      },
+      "status": 400,
+      "body": {
+        "code": 40024,
+        "message": "单次预约不能跨天",
+        "data": null
+      }
+    },
+    {
+      "key": "超8小时",
+      "request": {
+        "roomId": 5,
+        "subject": "W11-时间边界-超8小时",
+        "startTime": "2026-10-30T08:00:00",
+        "endTime": "2026-10-30T17:00:00"
+      },
+      "status": 400,
+      "body": {
+        "code": 40025,
+        "message": "单次预约不能超过 8 小时",
+        "data": null
+      }
+    },
+    {
+      "key": "结束早于开始",
+      "request": {
+        "roomId": 5,
+        "subject": "W11-时间边界-结束早于开始",
+        "startTime": "2026-10-30T14:00:00",
+        "endTime": "2026-10-30T13:00:00"
+      },
+      "status": 400,
+      "body": {
+        "code": 40023,
+        "message": "结束时间必须晚于开始时间",
+        "data": null
+      }
+    },
+    {
+      "key": "首尾相接",
+      "request": {
+        "roomId": 1,
+        "subject": "W11-时间边界-首尾相接",
+        "startTime": "2026-10-29T11:00:00",
+        "endTime": "2026-10-29T12:00:00"
+      },
+      "status": 200,
+      "body": {
+        "code": 0,
+        "message": "预约成功",
+        "data": {
+          "id": 5,
+          "reservationNo": "MR202610290005",
+          "roomId": 1,
+          "roomName": "学术报告厅",
+          "subject": "W11-时间边界-首尾相接",
+          "attendees": 6,
+          "contact": "张同学",
+          "startTime": "2026-10-29T11:00:00",
+          "endTime": "2026-10-29T12:00:00",
+          "status": "PENDING",
+          "createdAt": "2026-10-28T17:23:23"
+        }
+      }
+    }
+  ],
+  "before": {
+    "mine": 2,
+    "admin": 4
+  },
+  "after": {
+    "mine": 3,
+    "admin": 5
+  },
+  "legalPresent": true,
+  "illegalPresent": [],
+  "onlyLegalAdded": true
+}

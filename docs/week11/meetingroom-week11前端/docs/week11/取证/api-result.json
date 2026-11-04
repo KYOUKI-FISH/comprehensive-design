@@ -1,0 +1,133 @@
+{
+  "executedAt": "2026-10-28 17:23:23",
+  "finishedAt": "2026-10-28 17:23:24",
+  "baseUrl": "http://localhost:8080",
+  "environment": "mock-start-by-script",
+  "accounts": [
+    "user001",
+    "user002",
+    "admin001"
+  ],
+  "boundary": {
+    "tomorrow": "2026-10-29",
+    "dayAfter": "2026-10-30"
+  },
+  "counts": {
+    "user1MineBefore": 2,
+    "user2MineBefore": 2,
+    "adminBookingsBefore": 4,
+    "logsBefore": 0,
+    "user1MineAfter": 3,
+    "user2MineAfter": 2,
+    "adminBookingsAfter": 5
+  },
+  "checks": [
+    {
+      "id": "TC-07-prep",
+      "name": "准备：找到被攻击的预约",
+      "ok": true,
+      "detail": "id=3 师生座谈"
+    },
+    {
+      "id": "ATK-01",
+      "name": "越权取消返回 403",
+      "ok": true,
+      "detail": "status=403"
+    },
+    {
+      "id": "ATK-01-msg",
+      "name": "越权取消返回中文业务提示",
+      "ok": true,
+      "detail": "无权操作他人的预约"
+    },
+    {
+      "id": "ATK-01-data",
+      "name": "越权取消响应不含预约数据",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "ATK-01-db",
+      "name": "被攻击预约仍在库且状态未变",
+      "ok": true,
+      "detail": "PENDING / cancelledAt=空"
+    },
+    {
+      "id": "TC-07",
+      "name": "普通用户调全部预约接口返回 403",
+      "ok": true,
+      "detail": "status=403"
+    },
+    {
+      "id": "TC-07-data",
+      "name": "普通用户调全部预约接口不返回数据",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "TC-08",
+      "name": "普通用户查操作日志返回 403",
+      "ok": true,
+      "detail": "status=403"
+    },
+    {
+      "id": "TC-08-data",
+      "name": "普通用户查操作日志不返回数据",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "ATK-02",
+      "name": "越权查看后管理数据条数未变",
+      "ok": true,
+      "detail": "预约 4→4；日志 0→0"
+    },
+    {
+      "id": "ATK-03-跨天",
+      "name": "时间边界「跨天」按预期处理",
+      "ok": true,
+      "detail": "status=400 code=40024 message=单次预约不能跨天"
+    },
+    {
+      "id": "ATK-03-超8小时",
+      "name": "时间边界「超8小时」按预期处理",
+      "ok": true,
+      "detail": "status=400 code=40025 message=单次预约不能超过 8 小时"
+    },
+    {
+      "id": "ATK-03-结束早于开始",
+      "name": "时间边界「结束早于开始」按预期处理",
+      "ok": true,
+      "detail": "status=400 code=40023 message=结束时间必须晚于开始时间"
+    },
+    {
+      "id": "ATK-03-首尾相接",
+      "name": "时间边界「首尾相接」按预期处理",
+      "ok": true,
+      "detail": "status=200 code=0 message=预约成功"
+    },
+    {
+      "id": "ATK-03-db",
+      "name": "库中只新增合法的一条，非法时段零落库",
+      "ok": true,
+      "detail": "我的预约 2→3；非法命中 0 条"
+    },
+    {
+      "id": "TC-12",
+      "name": "普通用户只看到本人预约",
+      "ok": true,
+      "detail": "user001 3 条；user002 2 条"
+    },
+    {
+      "id": "TC-12-status",
+      "name": "我的预约状态均为四态之一",
+      "ok": true,
+      "detail": "PENDING, FINISHED"
+    }
+  ],
+  "summary": {
+    "total": 17,
+    "passed": 17,
+    "failed": 0
+  }
+}

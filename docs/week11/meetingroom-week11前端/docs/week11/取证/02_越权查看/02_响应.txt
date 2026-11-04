@@ -1,0 +1,21 @@
+HTTP 状态码：403
+耗时：9 ms
+响应头（节选）：
+  Content-Type: application/json; charset=utf-8
+响应体：
+  {
+    "code": 40304,
+    "message": "无权访问管理功能",
+    "data": null
+  }
+
+HTTP 状态码：403
+耗时：16 ms
+响应头（节选）：
+  Content-Type: application/json; charset=utf-8
+响应体：
+  {
+    "code": 40304,
+    "message": "无权访问管理功能",
+    "data": null
+  }
