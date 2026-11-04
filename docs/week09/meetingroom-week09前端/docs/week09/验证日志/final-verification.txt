@@ -1,0 +1,168 @@
+
+> meetingroom-week09-sunruopu@0.9.0 typecheck
+> npm --prefix frontend run typecheck
+
+
+> meetingroom-frontend@0.9.0 typecheck
+> vue-tsc --noEmit
+
+
+> meetingroom-week09-sunruopu@0.9.0 build
+> npm --prefix frontend run build
+
+
+> meetingroom-frontend@0.9.0 build
+> vue-tsc --noEmit && vite build
+
+[36mvite v6.4.5 [32mbuilding for production...[36m[39m
+transforming...
+[32m✓[39m 49 modules transformed.
+rendering chunks...
+computing gzip size...
+[2mdist/[22m[32mindex.html                          [39m[1m[2m  0.57 kB[22m[1m[22m[2m │ gzip:  0.38 kB[22m
+[2mdist/[22m[35massets/index-BbiGaC1h.css           [39m[1m[2m 10.24 kB[22m[1m[22m[2m │ gzip:  2.83 kB[22m
+[2mdist/[22m[36massets/room-x9gG23U0.js             [39m[1m[2m  0.48 kB[22m[1m[22m[2m │ gzip:  0.31 kB[22m
+[2mdist/[22m[36massets/PlaceholderView-CU-6vO2B.js  [39m[1m[2m  0.92 kB[22m[1m[22m[2m │ gzip:  0.66 kB[22m
+[2mdist/[22m[36massets/ForbiddenView-BusX3dAA.js    [39m[1m[2m  1.02 kB[22m[1m[22m[2m │ gzip:  0.76 kB[22m
+[2mdist/[22m[36massets/datetime-BGz6zFAA.js         [39m[1m[2m  1.22 kB[22m[1m[22m[2m │ gzip:  0.51 kB[22m
+[2mdist/[22m[36massets/LoginView-DMxZYlTc.js        [39m[1m[2m  2.29 kB[22m[1m[22m[2m │ gzip:  1.21 kB[22m
+[2mdist/[22m[36massets/RoomListView-TMmfdRkV.js     [39m[1m[2m  4.05 kB[22m[1m[22m[2m │ gzip:  1.93 kB[22m
+[2mdist/[22m[36massets/RoomDetailView-NCpzgR_z.js   [39m[1m[2m  6.25 kB[22m[1m[22m[2m │ gzip:  2.64 kB[22m
+[2mdist/[22m[36massets/BookingView-Cibmf2Dp.js      [39m[1m[2m 10.28 kB[22m[1m[22m[2m │ gzip:  3.84 kB[22m
+[2mdist/[22m[36massets/index-D0-YeEJS.js            [39m[1m[2m105.50 kB[22m[1m[22m[2m │ gzip: 41.35 kB[22m
+[32m✓ built in 565ms[39m
+
+> meetingroom-week09-sunruopu@0.9.0 smoke
+> node scripts/smoke.mjs
+
+[PASS] 01 健康检查可访问
+[PASS] 02 错误密码返回同一句中文提示（防账号枚举）
+[PASS] 03 停用账号正确密码登录被拒并提示原因
+[PASS] 04 普通用户登录成功并拿到令牌
+[PASS] 05 登录响应带 30 分钟有效期（NF-04）
+[PASS] 06 未携带令牌访问会议室列表返回 401
+[PASS] 07 会议室列表返回 6 间且包含停用状态（FR-06）
+[PASS] 08 按名称筛选会议室（FR-05）
+[PASS] 09 按最小容量筛选会议室（FR-05）
+[PASS] 10 按位置筛选会议室（FR-05）
+[PASS] 11 多条件组合筛选取交集（FR-05）
+[PASS] 12 无匹配结果时返回空数组，页面显示“未找到”
+[PASS] 13 非法容量筛选条件返回 400 中文提示
+[PASS] 14 占用时段接口返回种子预约 10:00-11:00（FR-17）
+[PASS] 15 空闲时段与占用时段不重叠，且正确切分（FR-17）
+[PASS] 16 非法日期返回 400 中文提示
+[PASS] 17 缺必填项返回 400 并列出需要补充的字段（FR-07）
+[PASS] 18 结束时间不晚于开始时间被拒（FR-08）
+[PASS] 19 跨天预约被拒（FR-08）
+[PASS] 20 单次超过 8 小时被拒（FR-08）
+[PASS] 21 停用会议室不能提交新预约（FR-06）
+[PASS] 22 首尾相接（前）不冲突：09:00-10:00 可提交（FR-09）
+[PASS] 23 冲突返回 409，且 data.occupiedSlots 带被占用时段（FR-10）
+[PASS] 24 完全重叠被拒（FR-09）
+[PASS] 25 无冲突预约成功并返回预约编号（FR-07）
+[PASS] 26 新预约立刻出现在占用时段中（落库可查）
+[PASS] 27 首尾相接（后）不冲突：12:00-13:00 可提交（FR-09）
+[PASS] 28 同日不同会议室不冲突（FR-09）
+[PASS] 29 “我的预约”如实返回未实现，不伪造数据
+[PASS] 30 普通用户令牌直调管理接口被拒 403（NF-03）
+[PASS] 31 管理员登录成功，角色为 ADMIN
+[PASS] 32 管理员账号不能提交个人预约（角色矩阵）
+[PASS] 33 管理员通过角色校验后，全部预约接口如实返回第 10 周实现
+[PASS] 34 登出成功
+[PASS] 35 登出后旧令牌立即失效（NF-04）
+[PASS] 36 过期测试服务已启动
+[PASS] 37 过期测试登录成功
+[PASS] 38 令牌到期后被拒，返回 401 中文提示（NF-04）
+
+全部 38 项冒烟检查通过。
+
+> meetingroom-week09-sunruopu@0.9.0 e2e
+> node scripts/e2e.mjs
+
+[mock] 
+[mock] 智能会议室管理系统 · 第9周本地 mock 后端
+  API: http://localhost:18080/api
+  令牌有效期: 1800 秒
+  演示账号（仅本地 mock，不是生产账号）：
+    口令由启动参数注入，本次运行不在日志中输出
+  种子占用：2026-10-27 学术报告厅 10:00-11:00、3号楼301 14:00-16:00
+  按 Ctrl+C 停止。数据仅存内存，重启即重置。
+
+[mock] GET /api/health -> 200
+[web] 
+  [32m[1mVITE[22m v6.4.5[39m  [2mready in [0m[1m464[22m[2m[0m ms[22m
+
+[web]   [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5199[22m/[39m
+[PASS] 未登录访问会议室列表被重定向登录页并带 redirect
+[PASS] 登录页显示系统名称
+[PASS] 登录页没有“注册/忘记密码”入口
+[mock] POST /api/auth/login -> 401
+[PASS] 错误口令显示中文业务提示：账号或密码错误
+[mock] POST /api/auth/login -> 200
+[mock] GET /api/rooms -> 200
+[PASS] 普通用户登录后进入会议室列表
+[PASS] 会议室列表显示后端返回的 6 间会议室（非前端假数据）
+[PASS] 普通用户菜单包含“会议室查询”
+[PASS] 普通用户菜单包含“我的预约”
+[PASS] 普通用户菜单不显示任何管理入口（FR-02）：会议室查询 / 我的预约 建设中
+[PASS] 列表正确显示已停用会议室状态（FR-06）
+[mock] GET /api/rooms?name=301 -> 200
+[PASS] 按名称筛选命中 3号楼301（FR-05）
+[mock] GET /api/rooms -> 200
+[mock] GET /api/rooms?minCapacity=100 -> 200
+[PASS] 按最小容量 100 人筛选命中 120 人报告厅（FR-05）
+[mock] GET /api/rooms -> 200
+[mock] GET /api/rooms?location=3%E5%8F%B7%E6%A5%BC -> 200
+[PASS] 按位置筛选命中 3号楼301（FR-05）
+[mock] GET /api/rooms?location=%E4%B8%8D%E5%AD%98%E5%9C%A8%E7%9A%84%E4%BD%8D%E7%BD%AE -> 200
+[PASS] 无匹配结果时显示“未找到符合条件的会议室”
+[mock] GET /api/rooms -> 200
+[mock] GET /api/rooms -> 200
+[mock] GET /api/rooms/1/occupancy?date=2026-10-26 -> 200
+[PASS] 详情页显示会议室名称
+[PASS] 详情页基本信息来自列表接口（D1）
+[mock] GET /api/rooms/1/occupancy?date=2026-10-27 -> 200
+[PASS] 选择明天后显示种子占用 10:00–11:00（FR-17）
+[PASS] 详情页同时显示空闲时段
+[PASS] 可用会议室显示“去预约”入口
+[mock] GET /api/rooms -> 200
+[PASS] 从详情页进入预约表单时自动带入会议室
+[PASS] 预约表单带有详情页所选日期
+[PASS] 缺必填项时在对应输入框行内提示（NF-09）：请填写会议主题。 / 请填写参会人数。 / 请填写联系人。
+[PASS] 表单校验失败不跳页、不显示原始错误码
+[mock] POST /api/bookings -> 409
+[PASS] 冲突时显示中文提示且包含被占用时段（FR-09/FR-10）：该时段已被占用，请选择其他时间 /  / 以下时段已被占用： /  / 2026-10-27 10:00 — 11:00 /  / 请调整开始或结束时间后重新提交，已填写的信息不会丢失。
+[PASS] 冲突失败后完整保留已填信息（FR-18）
+[PASS] 冲突提示不是原始错误码或堆栈（NF-10）
+[mock] POST /api/bookings -> 200
+[PASS] 预约成功并返回预约编号：MR202610270004
+[PASS] 预约时间为 11:00–12:00（与 10:00–11:00 首尾相接）
+[mock] GET /api/rooms/1/occupancy?date=2026-10-27 -> 200
+[PASS] 成功预约后从接口可查到两条首尾相接的占用记录（落库可查）：10:00-11:00 / 11:00-12:00
+[mock] GET /api/rooms -> 200
+[PASS] 刷新后仍在当前页面，未被踢回登录页
+[PASS] 刷新后登录态与用户信息保留（localStorage 令牌持久化）
+[PASS] 普通用户访问管理页面被前端路由拦截到 403
+[mock] GET /api/rooms -> 200
+[mock] POST /api/auth/logout -> 200
+[PASS] 登出后本地令牌被清除
+[PASS] 登出后访问受限页再次要求登录
+[mock] POST /api/auth/login -> 403
+[PASS] 停用账号登录被拒并提示原因
+[mock] POST /api/auth/login -> 200
+[mock] GET /api/rooms -> 200
+[PASS] 管理员菜单显示四个管理入口（FR-02）
+[PASS] 管理员菜单不显示“我的预约”（角色权限矩阵：管理员无个人预约）
+[mock] GET /api/rooms -> 200
+[mock] GET /api/rooms/1/occupancy?date=2026-10-26 -> 200
+[PASS] 管理员详情页不显示预约入口并说明原因
+[PASS] 管理入口进入第 10 周“建设中”占位页，不伪造功能
+[PASS] 1366×768 下页面无横向溢出：scrollWidth=1366
+[PASS] 1366×768 下角色菜单完整可见、不被遮挡
+[PASS] 1920×1080 下页面无横向溢出：scrollWidth=1920
+[PASS] 1920×1080 下角色菜单完整可见、不被遮挡
+[PASS] 页面可见文本未出现本学期禁写 9 项
+[PASS] 浏览器控制台无报错
+[PASS] 无失败的网络请求
+
+全部 46 项浏览器端到端检查通过。
