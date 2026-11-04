@@ -78,7 +78,7 @@ onMounted(() => {
       type="info"
       :closable="false"
       show-icon
-      title="第 9 周最小原型"
+      title="V1.0 会议室查询"
       description="本页可按位置／容量／日期筛选会议室。点「进详情」看该会议室所选日期的已占用时段，再点「去预约」提交预约——提交时若时间重叠会给出明确提示与被占用的具体时段（FR-09、FR-10）。"
       style="margin-bottom: 16px"
     />
@@ -151,7 +151,7 @@ onMounted(() => {
     </el-table>
 
     <p class="page-hint" style="margin-top: 12px">
-      共 {{ rooms.length }} 间（{{ query.date }}）。种子数据里特意留了 1 间停用会议室（学生活动中心 C102），按 FR-06 它不应出现在上表。
+      共 {{ rooms.length }} 间（{{ query.date }}）。种子数据里特意留了 1 间停用会议室（图书馆B301报告厅），按 FR-06 它不应出现在上表。
     </p>
   </div>
 </template>

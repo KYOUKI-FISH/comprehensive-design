@@ -14,7 +14,7 @@ public class Reservation {
 
     /** 主键，对外不暴露（对外用 reservationNo） */
     private Long id;
-    /** 预约编号：MR + yyyyMMdd + 3 位流水号，13 位字符，UNIQUE */
+    /** 预约编号：MR + yyyyMMdd + 自增主键左补零至 3 位，插入后回填，UNIQUE（第 10 周改造） */
     private String reservationNo;
     /** 预约人 → user.id */
     private Long userId;
