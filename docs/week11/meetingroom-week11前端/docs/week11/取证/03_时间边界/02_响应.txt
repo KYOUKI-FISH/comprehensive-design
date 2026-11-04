@@ -1,0 +1,55 @@
+HTTP 状态码：400
+耗时：15 ms
+响应头（节选）：
+  Content-Type: application/json; charset=utf-8
+响应体：
+  {
+    "code": 40024,
+    "message": "单次预约不能跨天",
+    "data": null
+  }
+
+HTTP 状态码：400
+耗时：16 ms
+响应头（节选）：
+  Content-Type: application/json; charset=utf-8
+响应体：
+  {
+    "code": 40025,
+    "message": "单次预约不能超过 8 小时",
+    "data": null
+  }
+
+HTTP 状态码：400
+耗时：15 ms
+响应头（节选）：
+  Content-Type: application/json; charset=utf-8
+响应体：
+  {
+    "code": 40023,
+    "message": "结束时间必须晚于开始时间",
+    "data": null
+  }
+
+HTTP 状态码：200
+耗时：16 ms
+响应头（节选）：
+  Content-Type: application/json; charset=utf-8
+响应体：
+  {
+    "code": 0,
+    "message": "预约成功",
+    "data": {
+      "id": 5,
+      "reservationNo": "MR202610290005",
+      "roomId": 1,
+      "roomName": "学术报告厅",
+      "subject": "W11-时间边界-首尾相接",
+      "attendees": 6,
+      "contact": "张同学",
+      "startTime": "2026-10-29T11:00:00",
+      "endTime": "2026-10-29T12:00:00",
+      "status": "PENDING",
+      "createdAt": "2026-10-28T17:23:23"
+    }
+  }

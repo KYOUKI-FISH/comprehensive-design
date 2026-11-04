@@ -1,0 +1,17 @@
+=== 2026-10-28 17:14:07 +0800 root npm ci ===
+
+added 1 package in 1s
+root_exit=0
+=== frontend npm ci ===
+
+added 75 packages in 24s
+
+11 packages are looking for funding
+  run `npm fund` for details
+npm warn allow-scripts 3 packages have install scripts not yet covered by allowScripts:
+npm warn allow-scripts   vue-demi@0.14.10 (postinstall: node -e "try{require('./scripts/postinstall.js')}catch(e){}")
+npm warn allow-scripts   vue-demi@0.14.10 (postinstall: node -e "try{require('./scripts/postinstall.js')}catch(e){}")
+npm warn allow-scripts   esbuild@0.21.5 (postinstall: node install.js)
+npm warn allow-scripts
+npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+frontend_exit=0

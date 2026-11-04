@@ -1,0 +1,39 @@
+{
+  "executedAt": "2026-10-28 17:23:23",
+  "attacker": "user002",
+  "target": {
+    "id": 3,
+    "reservationNo": "MR202610300003",
+    "roomId": 3,
+    "roomName": "行政楼小会议室",
+    "userId": 1,
+    "username": "user001",
+    "subject": "师生座谈",
+    "startTime": "2026-10-30T09:00:00",
+    "endTime": "2026-10-30T10:00:00",
+    "status": "PENDING",
+    "cancelledAt": "",
+    "cancelReason": ""
+  },
+  "responseStatus": 403,
+  "responseBody": {
+    "code": 40305,
+    "message": "无权操作他人的预约",
+    "data": null
+  },
+  "after": {
+    "id": 3,
+    "reservationNo": "MR202610300003",
+    "roomId": 3,
+    "roomName": "行政楼小会议室",
+    "userId": 1,
+    "username": "user001",
+    "subject": "师生座谈",
+    "startTime": "2026-10-30T09:00:00",
+    "endTime": "2026-10-30T10:00:00",
+    "status": "PENDING",
+    "cancelledAt": "",
+    "cancelReason": ""
+  },
+  "unchanged": true
+}

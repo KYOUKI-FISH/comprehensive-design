@@ -1,0 +1,36 @@
+{
+  "executedAt": "2026-10-28 17:23:23",
+  "attacker": "user001",
+  "requests": [
+    {
+      "path": "/api/admin/bookings",
+      "status": 403,
+      "body": {
+        "code": 40304,
+        "message": "无权访问管理功能",
+        "data": null
+      }
+    },
+    {
+      "path": "/api/admin/logs",
+      "status": 403,
+      "body": {
+        "code": 40304,
+        "message": "无权访问管理功能",
+        "data": null
+      }
+    }
+  ],
+  "before": {
+    "bookings": 4,
+    "logs": 0
+  },
+  "after": {
+    "bookings": 4,
+    "logs": 0
+  },
+  "leaked": {
+    "bookings": false,
+    "logs": false
+  }
+}
