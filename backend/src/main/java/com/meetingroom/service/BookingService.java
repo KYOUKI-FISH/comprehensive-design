@@ -35,8 +35,9 @@ import java.util.List;
  *   <li><b>锁</b>先对会议室行 {@code SELECT ... FOR UPDATE}：同一间会议室的提交被串行化，
  *       避免两个用户同时订到同一时段（NF-07 并发不超订，幻读问题）；</li>
  *   <li><b>判</b>取当天已占用时段，用 {@link BookingTimeRules#conflicts} 逐条比对。
- *       判定式只此一处实现（第 9 周计划 §3.1「冲突判定只写一遍」）；
- *       409 载荷只带<b>本次重叠</b>的那几段，不把当天其他占用一起回给前端；</li>
+ *       判定式只此一处实现（第 9 周计划 §3.1「冲突判定只写一遍」），与 409 响应里的
+ *       {@code occupiedSlots} 共用同一份查询结果；409 载荷只带<b>本次重叠</b>的那几段，
+ *       不把当天其他占用一起回给前端（W10-01）；</li>
  *   <li><b>写</b>占位编号插入 → 自增主键回填 → 派生正式编号回填（第 10 周改造，
  *       见 {@link ReservationNoGenerator} 类注释），状态固定 PENDING。</li>
  * </ol>
@@ -246,8 +247,8 @@ public class BookingService {
 
     /**
      * 冲突判定（FR-09）：半开区间 [start, end)，首尾相接不算冲突。
-     * 409 时把<b>同一份</b>查询结果带回给前端（FR-10），判定式只在
-     * {@code BookingTimeRules.conflicts} 一处实现。
+     * 409 时只把<b>与本次提交重叠</b>的那几段带回给前端（FR-10、W10-01），
+     * 判定式只在 {@code BookingTimeRules.conflicts} 一处实现。
      *
      * @param excludeId 修改场景排除自身，其余传 {@code null}
      */
