@@ -1,5 +1,5 @@
 {
-  "executedAt": "2026-11-04T16:35:42",
+  "executedAt": "2026-11-04T16:42:41",
   "baseUrl": "http://localhost:8080/api",
   "baseDate": "2026-12-14",
   "passed": 6,
@@ -11,7 +11,7 @@
       "name": "提交 09:00—11:00 预约",
       "steps": "user1 登录 → POST /api/bookings（room1，2026-12-14 09:00-11:00）→ GET /api/bookings/mine",
       "expected": "提示成功；我的预约出现该条；库内可查",
-      "actual": "HTTP 200，编号 MR20261214144，mine 中可见（状态 PENDING）",
+      "actual": "HTTP 200，编号 MR20261214151，mine 中可见（状态 PENDING）",
       "conclusion": "通过",
       "evidence": {
         "request": {
@@ -33,23 +33,23 @@
             "code": 200,
             "message": "ok",
             "data": {
-              "id": 144,
-              "reservationNo": "MR20261214144",
+              "id": 151,
+              "reservationNo": "MR20261214151",
               "status": "PENDING"
             }
           }
         },
-        "bookingId": 144
+        "bookingId": 151
       },
-      "executedAt": "2026-11-04T16:35:42"
+      "executedAt": "2026-11-04T16:42:40"
     },
     {
       "no": "TC-02",
       "category": "功能",
       "name": "管理员强制取消（填原因）",
-      "steps": "admin 登录 → PUT /api/admin/bookings/144/cancel {\"reason\":...} → GET /api/admin/logs",
+      "steps": "admin 登录 → PUT /api/admin/bookings/151/cancel {\"reason\":...} → GET /api/admin/logs",
       "expected": "提示成功；状态变已取消；操作日志可查",
-      "actual": "HTTP 200，状态=CANCELLED，日志命中 4 条",
+      "actual": "HTTP 200，状态=CANCELLED，日志命中 5 条",
       "conclusion": "通过",
       "evidence": {
         "response": {
@@ -58,8 +58,8 @@
             "code": 200,
             "message": "ok",
             "data": {
-              "id": 144,
-              "reservationNo": "MR20261214144",
+              "id": 151,
+              "reservationNo": "MR20261214151",
               "userId": 2,
               "userName": "张三",
               "roomId": 1,
@@ -74,15 +74,30 @@
               "status": "CANCELLED",
               "cancelReason": "第11周用例：该预约属测试数据，强制取消",
               "operatorName": "admin",
-              "createdAt": "2026-11-04 16:35:41",
-              "updatedAt": "2026-11-04 16:35:42"
+              "createdAt": "2026-11-04 16:42:40",
+              "updatedAt": "2026-11-04 16:42:41"
             }
           }
         },
         "logQuery": {
           "status": 200,
-          "count": 4,
+          "count": 5,
           "items": [
+            {
+              "id": 5,
+              "operatorUsername": "admin",
+              "operatorName": "系统管理员",
+              "operatorRole": "ADMIN",
+              "operationType": "BOOKING_FORCE_CANCEL",
+              "targetType": "BOOKING",
+              "targetId": 151,
+              "beforeData": "{\"status\": \"PENDING\", \"reservationNo\": \"MR20261214151\"}",
+              "afterData": "{\"status\": \"CANCELLED\", \"cancelReason\": \"第11周用例：该预约属测试数据，强制取消\", \"reservationNo\": \"MR20261214151\"}",
+              "remark": "管理员强制取消异常预约",
+              "detail": "管理员强制取消异常预约",
+              "ip": null,
+              "createdAt": "2026-11-04 16:42:41"
+            },
             {
               "id": 4,
               "operatorUsername": "admin",
@@ -146,7 +161,7 @@
           ]
         }
       },
-      "executedAt": "2026-11-04T16:35:42"
+      "executedAt": "2026-11-04T16:42:41"
     },
     {
       "no": "TC-03",
@@ -175,7 +190,7 @@
           }
         }
       },
-      "executedAt": "2026-11-04T16:35:42"
+      "executedAt": "2026-11-04T16:42:41"
     },
     {
       "no": "TC-04",
@@ -204,7 +219,7 @@
           }
         }
       },
-      "executedAt": "2026-11-04T16:35:42"
+      "executedAt": "2026-11-04T16:42:41"
     },
     {
       "no": "TC-05",
@@ -221,8 +236,8 @@
             "code": 200,
             "message": "ok",
             "data": {
-              "id": 145,
-              "reservationNo": "MR20261218145",
+              "id": 152,
+              "reservationNo": "MR20261218152",
               "status": "PENDING"
             }
           }
@@ -233,14 +248,14 @@
             "code": 200,
             "message": "ok",
             "data": {
-              "id": 146,
-              "reservationNo": "MR20261218146",
+              "id": 153,
+              "reservationNo": "MR20261218153",
               "status": "PENDING"
             }
           }
         }
       },
-      "executedAt": "2026-11-04T16:35:42"
+      "executedAt": "2026-11-04T16:42:41"
     },
     {
       "no": "TC-06",
@@ -269,7 +284,7 @@
           }
         }
       },
-      "executedAt": "2026-11-04T16:35:42"
+      "executedAt": "2026-11-04T16:42:41"
     }
   ]
 }

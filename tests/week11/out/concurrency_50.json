@@ -1,12 +1,12 @@
 {
-  "executedAt": "2026-11-04T16:35:44",
+  "executedAt": "2026-11-04T16:42:43",
   "concurrency": 50,
   "roomId": 2,
-  "date": "2026-12-25",
-  "startTime": "2026-12-25 20:00:00",
-  "endTime": "2026-12-25 21:00:00",
-  "spreadMs": 15.6,
-  "elapsedSec": 0.34,
+  "date": "2026-12-26",
+  "startTime": "2026-12-26 20:00:00",
+  "endTime": "2026-12-26 21:00:00",
+  "spreadMs": 15.2,
+  "elapsedSec": 0.35,
   "success": 1,
   "conflict": 49,
   "other": 0,
@@ -20,22 +20,19 @@
   "responses": [
     {
       "index": 0,
-      "firedAt": "16:35:44.414",
+      "firedAt": "16:42:43.376",
       "httpStatus": 200,
-      "code": 409,
-      "message": "该会议室在此时间段已被占用",
+      "code": 200,
+      "message": "ok",
       "data": {
-        "occupiedSlots": [
-          {
-            "startTime": "20:00",
-            "endTime": "21:00"
-          }
-        ]
+        "id": 154,
+        "reservationNo": "MR20261226154",
+        "status": "PENDING"
       }
     },
     {
       "index": 1,
-      "firedAt": "16:35:44.414",
+      "firedAt": "16:42:43.376",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -50,7 +47,7 @@
     },
     {
       "index": 2,
-      "firedAt": "16:35:44.414",
+      "firedAt": "16:42:43.376",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -65,7 +62,7 @@
     },
     {
       "index": 3,
-      "firedAt": "16:35:44.415",
+      "firedAt": "16:42:43.377",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -80,7 +77,7 @@
     },
     {
       "index": 4,
-      "firedAt": "16:35:44.415",
+      "firedAt": "16:42:43.377",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -95,7 +92,7 @@
     },
     {
       "index": 5,
-      "firedAt": "16:35:44.415",
+      "firedAt": "16:42:43.377",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -110,7 +107,7 @@
     },
     {
       "index": 6,
-      "firedAt": "16:35:44.415",
+      "firedAt": "16:42:43.378",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -125,7 +122,7 @@
     },
     {
       "index": 7,
-      "firedAt": "16:35:44.416",
+      "firedAt": "16:42:43.378",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -140,7 +137,7 @@
     },
     {
       "index": 8,
-      "firedAt": "16:35:44.416",
+      "firedAt": "16:42:43.378",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -155,7 +152,7 @@
     },
     {
       "index": 9,
-      "firedAt": "16:35:44.426",
+      "firedAt": "16:42:43.379",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -170,7 +167,7 @@
     },
     {
       "index": 10,
-      "firedAt": "16:35:44.416",
+      "firedAt": "16:42:43.379",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -185,7 +182,7 @@
     },
     {
       "index": 11,
-      "firedAt": "16:35:44.417",
+      "firedAt": "16:42:43.379",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -200,7 +197,7 @@
     },
     {
       "index": 12,
-      "firedAt": "16:35:44.417",
+      "firedAt": "16:42:43.379",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -215,19 +212,22 @@
     },
     {
       "index": 13,
-      "firedAt": "16:35:44.417",
+      "firedAt": "16:42:43.380",
       "httpStatus": 200,
-      "code": 200,
-      "message": "ok",
+      "code": 409,
+      "message": "该会议室在此时间段已被占用",
       "data": {
-        "id": 147,
-        "reservationNo": "MR20261225147",
-        "status": "PENDING"
+        "occupiedSlots": [
+          {
+            "startTime": "20:00",
+            "endTime": "21:00"
+          }
+        ]
       }
     },
     {
       "index": 14,
-      "firedAt": "16:35:44.417",
+      "firedAt": "16:42:43.380",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -242,7 +242,7 @@
     },
     {
       "index": 15,
-      "firedAt": "16:35:44.418",
+      "firedAt": "16:42:43.380",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -257,7 +257,7 @@
     },
     {
       "index": 16,
-      "firedAt": "16:35:44.418",
+      "firedAt": "16:42:43.380",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -272,7 +272,7 @@
     },
     {
       "index": 17,
-      "firedAt": "16:35:44.418",
+      "firedAt": "16:42:43.381",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -287,7 +287,7 @@
     },
     {
       "index": 18,
-      "firedAt": "16:35:44.419",
+      "firedAt": "16:42:43.381",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -302,7 +302,7 @@
     },
     {
       "index": 19,
-      "firedAt": "16:35:44.419",
+      "firedAt": "16:42:43.381",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -317,7 +317,7 @@
     },
     {
       "index": 20,
-      "firedAt": "16:35:44.419",
+      "firedAt": "16:42:43.382",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -332,7 +332,7 @@
     },
     {
       "index": 21,
-      "firedAt": "16:35:44.419",
+      "firedAt": "16:42:43.382",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -347,7 +347,7 @@
     },
     {
       "index": 22,
-      "firedAt": "16:35:44.420",
+      "firedAt": "16:42:43.382",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -362,7 +362,7 @@
     },
     {
       "index": 23,
-      "firedAt": "16:35:44.420",
+      "firedAt": "16:42:43.383",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -377,7 +377,7 @@
     },
     {
       "index": 24,
-      "firedAt": "16:35:44.420",
+      "firedAt": "16:42:43.383",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -392,7 +392,7 @@
     },
     {
       "index": 25,
-      "firedAt": "16:35:44.421",
+      "firedAt": "16:42:43.383",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -407,7 +407,7 @@
     },
     {
       "index": 26,
-      "firedAt": "16:35:44.421",
+      "firedAt": "16:42:43.383",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -422,7 +422,7 @@
     },
     {
       "index": 27,
-      "firedAt": "16:35:44.421",
+      "firedAt": "16:42:43.384",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -437,7 +437,7 @@
     },
     {
       "index": 28,
-      "firedAt": "16:35:44.422",
+      "firedAt": "16:42:43.384",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -452,7 +452,7 @@
     },
     {
       "index": 29,
-      "firedAt": "16:35:44.422",
+      "firedAt": "16:42:43.384",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -467,7 +467,7 @@
     },
     {
       "index": 30,
-      "firedAt": "16:35:44.422",
+      "firedAt": "16:42:43.390",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -482,7 +482,7 @@
     },
     {
       "index": 31,
-      "firedAt": "16:35:44.427",
+      "firedAt": "16:42:43.385",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -497,7 +497,7 @@
     },
     {
       "index": 32,
-      "firedAt": "16:35:44.423",
+      "firedAt": "16:42:43.385",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -512,7 +512,7 @@
     },
     {
       "index": 33,
-      "firedAt": "16:35:44.426",
+      "firedAt": "16:42:43.385",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -527,7 +527,7 @@
     },
     {
       "index": 34,
-      "firedAt": "16:35:44.425",
+      "firedAt": "16:42:43.385",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -542,7 +542,7 @@
     },
     {
       "index": 35,
-      "firedAt": "16:35:44.425",
+      "firedAt": "16:42:43.386",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -557,7 +557,7 @@
     },
     {
       "index": 36,
-      "firedAt": "16:35:44.428",
+      "firedAt": "16:42:43.386",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -572,7 +572,7 @@
     },
     {
       "index": 37,
-      "firedAt": "16:35:44.426",
+      "firedAt": "16:42:43.386",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -587,7 +587,7 @@
     },
     {
       "index": 38,
-      "firedAt": "16:35:44.423",
+      "firedAt": "16:42:43.387",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -602,7 +602,7 @@
     },
     {
       "index": 39,
-      "firedAt": "16:35:44.429",
+      "firedAt": "16:42:43.387",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -617,7 +617,7 @@
     },
     {
       "index": 40,
-      "firedAt": "16:35:44.425",
+      "firedAt": "16:42:43.387",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -632,7 +632,7 @@
     },
     {
       "index": 41,
-      "firedAt": "16:35:44.428",
+      "firedAt": "16:42:43.387",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -647,7 +647,7 @@
     },
     {
       "index": 42,
-      "firedAt": "16:35:44.427",
+      "firedAt": "16:42:43.390",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -662,7 +662,7 @@
     },
     {
       "index": 43,
-      "firedAt": "16:35:44.424",
+      "firedAt": "16:42:43.388",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -677,7 +677,7 @@
     },
     {
       "index": 44,
-      "firedAt": "16:35:44.424",
+      "firedAt": "16:42:43.388",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -692,7 +692,7 @@
     },
     {
       "index": 45,
-      "firedAt": "16:35:44.427",
+      "firedAt": "16:42:43.388",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -707,7 +707,7 @@
     },
     {
       "index": 46,
-      "firedAt": "16:35:44.428",
+      "firedAt": "16:42:43.388",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -722,7 +722,7 @@
     },
     {
       "index": 47,
-      "firedAt": "16:35:44.427",
+      "firedAt": "16:42:43.389",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -737,7 +737,7 @@
     },
     {
       "index": 48,
-      "firedAt": "16:35:44.424",
+      "firedAt": "16:42:43.389",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",
@@ -752,7 +752,7 @@
     },
     {
       "index": 49,
-      "firedAt": "16:35:44.413",
+      "firedAt": "16:42:43.375",
       "httpStatus": 200,
       "code": 409,
       "message": "该会议室在此时间段已被占用",

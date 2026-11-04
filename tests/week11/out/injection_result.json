@@ -1,14 +1,14 @@
 {
-  "executedAt": "2026-11-04T16:28:39",
+  "executedAt": "2026-11-04T16:43:14",
   "baseUrl": "http://localhost:8080/api",
   "before": {
-    "reservationRows": "35",
+    "reservationRows": "33",
     "userRows": "3",
     "roomRows": "3",
     "reservationTableExists": "1"
   },
   "after": {
-    "reservationRows": "35",
+    "reservationRows": "37",
     "userRows": "3",
     "roomRows": "3",
     "reservationTableExists": "1"
@@ -213,8 +213,8 @@
           "code": 200,
           "message": "ok",
           "data": {
-            "id": 128,
-            "reservationNo": "MR20270103128",
+            "id": 155,
+            "reservationNo": "MR20270103155",
             "status": "PENDING"
           }
         },
@@ -246,8 +246,8 @@
           "code": 200,
           "message": "ok",
           "data": {
-            "id": 129,
-            "reservationNo": "MR20270103129",
+            "id": 156,
+            "reservationNo": "MR20270103156",
             "status": "PENDING"
           }
         },
@@ -279,8 +279,8 @@
           "code": 200,
           "message": "ok",
           "data": {
-            "id": 130,
-            "reservationNo": "MR20270103130",
+            "id": 157,
+            "reservationNo": "MR20270103157",
             "status": "PENDING"
           }
         },
@@ -312,8 +312,8 @@
           "code": 200,
           "message": "ok",
           "data": {
-            "id": 131,
-            "reservationNo": "MR20270103131",
+            "id": 158,
+            "reservationNo": "MR20270103158",
             "status": "PENDING"
           }
         },
