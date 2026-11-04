@@ -120,7 +120,7 @@ CREATE TABLE `meeting_room` (
 -- =============================================================================
 CREATE TABLE `reservation` (
   `id`             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '预约主键ID，自增；对外不暴露，对外用 reservation_no',
-  `reservation_no`     VARCHAR(32)     NOT NULL                COMMENT '预约编号，全局唯一，对外展示（FR-07）。生成规则：MR + yyyyMMdd + 3 位流水号，如 MR20261102001（13 位字符），由业务层 ReservationNoGenerator 生成（第 9 周实现）。★ 并发安全：取当日最大编号时用 SELECT ... FOR UPDATE 锁住该前缀的索引区间，同一日期的编号生成被串行化；另对 uk_reservation_no 撞键做最多 3 次重试。50 并发实测 3 轮：撞键 0 次、500 为 0 条',
+  `reservation_no`     VARCHAR(32)     NOT NULL                COMMENT '预约编号，全局唯一，对外展示（FR-07）。生成规则（第 10 周改造为自增主键派生）：MR + yyyyMMdd + 主键左补零至 3 位，如 MR20261028008（主键超 999 自然变 4 位，VARCHAR(32) 内）。落库三步同一事务：随机占位串满足 NOT NULL UNIQUE → INSERT 回填自增主键 → 由（日期,主键）派生正式编号 UPDATE 回填。★ 主键单射保证编号唯一，无"取最大流水号"的撞键窗口，无需重试（第 10 周计划 §2.3 攻坚点 2）',
   `user_id`        BIGINT UNSIGNED NOT NULL                COMMENT '预约人ID → user(id)，ON DELETE RESTRICT（FR-11 我的预约归属）',
   `room_id`        BIGINT UNSIGNED NOT NULL                COMMENT '会议室ID → meeting_room(id)，ON DELETE RESTRICT（FR-03 删除保护）',
   `reserve_date`   DATE            NOT NULL                COMMENT '预约日期，恒等于 DATE(start_time)，由 CHECK 保证；用于按日查询与占用日历（FR-17、FR-20）',

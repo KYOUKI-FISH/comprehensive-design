@@ -6,51 +6,58 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * 预约编号生成用例：MR + yyyyMMdd + 3 位流水号 = 13 位字符。
+ * 预约编号生成用例 —— 第 10 周改造后的<b>自增主键派生</b>方案。
  *
- * <p>13 位这个口径同时出现在第 8 周设计文档、建表脚本注释与 7 条种子数据里，
- * 这里用正则把长度钉死，避免第 10 周改代码时悄悄漂移。</p>
+ * <p>规则 {@code MR + yyyyMMdd + 左补零主键}：主键天然唯一，编号从根上无撞键窗口；
+ * 用例钉住格式与派生关系，防止后续再往"当日流水号"方向漂移。</p>
  */
 class ReservationNoGeneratorTest {
 
-    private static final LocalDate DAY = LocalDate.of(2026, 10, 27);
-    private static final String PREFIX = "MR20261027";
+    private static final LocalDate DAY = LocalDate.of(2026, 10, 28);
 
     @Test
-    @DisplayName("前缀格式：MR + 8 位日期")
-    void 前缀() {
-        assertEquals(PREFIX, ReservationNoGenerator.prefixOf(DAY));
-    }
-
-    @Test
-    @DisplayName("当天第一条：流水号从 001 起，总长 13 位")
-    void 当天第一条() {
-        String no = ReservationNoGenerator.next(PREFIX, null);
-        assertEquals("MR20261027001", no);
+    @DisplayName("派生：MR + 8 位日期 + 3 位补零主键，13 位")
+    void 派生格式() {
+        String no = ReservationNoGenerator.derive(DAY, 8L);
+        assertEquals("MR20261028008", no);
         assertEquals(13, no.length());
-        assertTrue(no.matches("MR\\d{8}\\d{3}"));
+        assertTrue(no.matches("MR\\d{8}\\d{3,}"));
     }
 
     @Test
-    @DisplayName("递增：009 之后是 010（补零不能丢）")
-    void 递增补零() {
-        assertEquals("MR20261027010", ReservationNoGenerator.next(PREFIX, "MR20261027009"));
-        assertEquals("MR20261027100", ReservationNoGenerator.next(PREFIX, "MR20261027099"));
+    @DisplayName("主键不同 → 编号必不相同（单射，唯一性的根）")
+    void 主键单射() {
+        assertNotEquals(ReservationNoGenerator.derive(DAY, 1L),
+                ReservationNoGenerator.derive(DAY, 2L));
     }
 
     @Test
-    @DisplayName("跨过 999：继续可用（自然变 4 位），不报错、不重复")
-    void 超过三位流水号() {
-        String no = ReservationNoGenerator.next(PREFIX, "MR20261027999");
-        assertEquals("MR202610271000", no);
+    @DisplayName("主键超过 999：自然变 4 位，VARCHAR(32) 内不报错")
+    void 主键超三位() {
+        String no = ReservationNoGenerator.derive(DAY, 1234L);
+        assertEquals("MR202610281234", no);
+        assertEquals(14, no.length());
     }
 
     @Test
-    @DisplayName("存量编号格式异常时退回 001，而不是抛异常")
-    void 异常存量编号() {
-        assertEquals("MR20261027001", ReservationNoGenerator.next(PREFIX, "MR20261027ABC"));
+    @DisplayName("占位编号：32 位十六进制，恰好占满 VARCHAR(32)，两次调用互不相同")
+    void 占位编号() {
+        String p1 = ReservationNoGenerator.placeholder();
+        String p2 = ReservationNoGenerator.placeholder();
+        assertEquals(32, p1.length());
+        assertTrue(p1.matches("[0-9a-f]{32}"));
+        assertNotEquals(p1, p2);
+    }
+
+    @Test
+    @DisplayName("主键缺失（未回填）时派生必须失败，不能静默生成坏编号")
+    void 主键缺失拒绝() {
+        assertThrows(IllegalArgumentException.class, () -> ReservationNoGenerator.derive(DAY, 0L));
+        assertThrows(IllegalArgumentException.class, () -> ReservationNoGenerator.derive(DAY, -1L));
     }
 }

@@ -1,23 +1,24 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { session } from '@/store/session'
 
 /**
- * 角色菜单（第 9 周；对应 FR-02 角色区分与权限控制）。
+ * 角色菜单（FR-02 角色区分与权限控制）。
  *
  * <p>★ 普通用户登录后<strong>看不到</strong>用户管理／会议室管理／全部预约处理入口
  * （FR-02 的原文要求）。管理员登录后能看到对应管理入口。</p>
+ *
+ * <p>第 10 周变化：管理端 4 个入口从"建设中"占位变成<strong>真实可点的路由</strong>；
+ * 普通用户菜单补上「我的预约」（八步的第 6／7／8 步要它）。</p>
  *
  * <p>⚠️ <b>前端隐藏菜单不是安全边界</b>——菜单可以被绕过（F12 改 DOM、直接调接口），
  * 真正的边界在后端 {@code AuthInterceptor}：普通用户调 {@code /api/admin/**}
  * 一律返回 403（NF-03）。前端的角色菜单只是"不让用户看见用不上的功能"，
  * 属于体验层，不是权限层。</p>
- *
- * <p>第 9 周的管理端页面尚未实现（属第 10 周），因此管理员入口本期<strong>显示但标注建设中</strong>，
- * 点击给出提示而不是跳到空白页。</p>
  */
 const router = useRouter()
+const route = useRoute()
 
 const user = computed(() => session.user)
 const isAdmin = computed(() => user.value?.role === 'ADMIN')
@@ -25,34 +26,45 @@ const isAdmin = computed(() => user.value?.role === 'ADMIN')
 interface MenuItem {
   name: string
   label: string
-  route?: string
-  /** 尚未实现的页面：显示为"建设中"，点击给提示 */
-  pending?: boolean
+  route: string
 }
 
-/** 普通用户菜单 */
+/** 普通用户菜单（FR-02：看不到任何管理入口） */
 const userMenus: MenuItem[] = [
   { name: 'rooms', label: '会议室查询', route: '/rooms' },
-  { name: 'booking-new', label: '提交预约', route: '/bookings/new' }
+  { name: 'booking-new', label: '提交预约', route: '/bookings/new' },
+  { name: 'my-bookings', label: '我的预约', route: '/bookings/mine' }
 ]
 
-/** 管理员菜单：在普通用户菜单基础上加管理入口（FR-02） */
+/**
+ * 管理员菜单：在普通用户菜单基础上加管理入口（FR-02）。
+ *
+ * <p>★ 第 10 周这 4 个入口从"建设中"变成真实路由。它们<b>只是体验层的门</b>——
+ * 地址栏可以被绕过（直接敲 /admin/users），真正的边界是后端
+ * {@code AuthInterceptor}：普通用户令牌调 {@code /api/admin/**} 一律 403（NF-03）。
+ * 所以路由表里这 4 条都声明了 {@code role: 'ADMIN'}，后端那边也有独立拦截，
+ * 两层缺一不可。</p>
+ */
 const adminMenus: MenuItem[] = [
-  { name: 'admin-bookings', label: '全部预约', pending: true },
-  { name: 'admin-rooms', label: '会议室管理', pending: true },
-  { name: 'admin-users', label: '用户管理', pending: true },
-  { name: 'admin-logs', label: '操作日志', pending: true }
+  { name: 'admin-bookings', label: '全部预约', route: '/admin/bookings' },
+  { name: 'admin-rooms', label: '会议室管理', route: '/admin/rooms' },
+  { name: 'admin-users', label: '用户管理', route: '/admin/users' },
+  { name: 'admin-logs', label: '操作日志', route: '/admin/logs' }
 ]
 
 const menus = computed<MenuItem[]>(() => (isAdmin.value ? [...userMenus, ...adminMenus] : userMenus))
 
-function onMenuClick(item: MenuItem): void {
-  if (item.pending) {
-    // 第 9 周不实现管理端页面（第 10 周做），点一下给明确提示而不是空白页
-    window.alert(`「${item.label}」将在第 10 周实现（管理员功能）。\n\n第 9 周的最小原型范围是：登录 → 会议室列表 → 会议室详情 → 提交预约。`)
-    return
+/** 当前高亮项：按路径前缀匹配，进详情页时仍高亮「会议室查询」 */
+function isActive(item: MenuItem): boolean {
+  const path = route.path
+  if (item.route === '/rooms') {
+    return path === '/rooms' || path.startsWith('/rooms/')
   }
-  if (item.route) {
+  return path === item.route
+}
+
+function onMenuClick(item: MenuItem): void {
+  if (route.path !== item.route) {
     void router.push(item.route)
   }
 }
@@ -65,12 +77,11 @@ function onMenuClick(item: MenuItem): void {
       v-for="item in menus"
       :key="item.name"
       class="role-menu-item"
-      :class="{ 'is-pending': item.pending }"
+      :class="{ 'is-active': isActive(item) }"
       type="button"
       @click="onMenuClick(item)"
     >
       {{ item.label }}
-      <span v-if="item.pending" class="role-menu-badge">建设中</span>
     </button>
   </nav>
 </template>
@@ -107,14 +118,10 @@ function onMenuClick(item: MenuItem): void {
   background: #ecf5ff;
 }
 
-.role-menu-item.is-pending {
-  color: #909399;
-  border-style: dashed;
-}
-
-.role-menu-badge {
-  font-size: 11px;
-  margin-left: 4px;
-  color: #e6a23c;
+.role-menu-item.is-active {
+  color: #409eff;
+  border-color: #409eff;
+  background: #ecf5ff;
+  font-weight: 500;
 }
 </style>

@@ -100,3 +100,165 @@ export interface ReservationCreateVO {
   /** 仅 409 冲突时有值 */
   occupiedSlots?: OccupiedSlotVO[]
 }
+
+/* ==========================================================================================
+ * 以下为第 10 周新增类型（我的预约、管理端 4 组接口）。
+ * 字段与 backend 的 dto 包逐一对应，不做"顺手多给几个字段"——前后端各写各的字段名，
+ * 联调时会花大量时间确认"这个字段到底有没有"。
+ * ========================================================================================== */
+
+/** 预约状态四态（NF-08）；与 backend 的 ReservationStatusPolicy 取值一致 */
+export type ReservationStatus = 'PENDING' | 'ONGOING' | 'FINISHED' | 'CANCELLED'
+
+/**
+ * 分页结果包装（与 backend 的 dto.PageResult 对应）。
+ *
+ * <p>管理端两个列表（#9 全部预约、#13 操作日志）都返回它。只有拿到 {@code total}
+ * 才能算总页数，翻页控件才做得出来。</p>
+ */
+export interface PageResult<T> {
+  total: number
+  pageNum: number
+  pageSize: number
+  list: T[]
+}
+
+/**
+ * "我的预约"列表项（与 backend 的 dto.BookingItemVO 对应，接口 #6）。
+ *
+ * <p>★ {@code status} 是<b>后端读取时推导后的四态</b>，不是库里的原始存储值。
+ * 前端<b>不许</b>按时间自己算状态——那样"过去但库里还是 PENDING"的记录会两边显示不一致，
+ * 也绕开了 NF-08 的单一口径。</p>
+ */
+export interface BookingItemVO {
+  id: number
+  reservationNo: string
+  roomId: number
+  roomName: string
+  location: string
+  /** 预约日期 yyyy-MM-dd */
+  date: string
+  /** yyyy-MM-dd HH:mm:ss（或精确到分钟） */
+  startTime: string
+  endTime: string
+  topic: string
+  attendeeCount: number
+  contact: string
+  purpose: string | null
+  status: ReservationStatus
+  /** 取消原因：用户自己取消可空；被管理员强制取消时有值 */
+  cancelReason: string | null
+}
+
+/**
+ * 管理端预约视图（与 backend 的 dto.ReservationDetailDTO 对应，接口 #9／#10）。
+ *
+ * <p>比 {@link BookingItemVO} 多三样：{@code userName}（谁订的）、
+ * {@code operatorName}（最后强制取消它的管理员）、{@code createdAt}／{@code updatedAt}。</p>
+ */
+export interface ReservationDetailVO {
+  id: number
+  reservationNo: string
+  userId: number
+  userName: string | null
+  roomId: number
+  roomName: string
+  /** 预约日期 yyyy-MM-dd */
+  reserveDate: string
+  startTime: string
+  endTime: string
+  topic: string
+  attendeeCount: number
+  contact: string
+  purpose: string | null
+  status: ReservationStatus
+  cancelReason: string | null
+  operatorName: string | null
+  createdAt: string | null
+  updatedAt: string | null
+}
+
+/** 用户视图（与 backend 的 dto.UserVO 对应，接口 #12）。★ 后端刻意不含 password */
+export interface UserVO {
+  id: number
+  username: string
+  realName: string | null
+  role: 'USER' | 'ADMIN'
+  phone: string | null
+  /** ACTIVE=正常，DISABLED=已停用（FR-14 的下线方式；本系统不删用户） */
+  status: 'ACTIVE' | 'DISABLED'
+  createdAt: string | null
+}
+
+/** 操作日志视图（与 backend 的 dto.OperationLogVO 对应，接口 #13，NF-14） */
+export interface OperationLogVO {
+  id: number
+  /** 操作人账号快照（操作人事后改名不影响历史记录） */
+  operatorUsername: string | null
+  operatorName: string | null
+  operatorRole: string | null
+  operationType: string
+  targetType: string
+  targetId: number | null
+  /** 变更前数据（JSON 串原样返回） */
+  beforeData: string | null
+  afterData: string | null
+  remark: string | null
+  /** 后端拼好的人类可读摘要，前端直接显示，不必自己解析 JSON */
+  detail: string | null
+  /** 建表脚本无 ip 列，后端固定返回 null */
+  ip: string | null
+  createdAt: string
+}
+
+/** 全部预约查询条件（接口 #9；参数全部可选，一条不传即返回全部） */
+export interface AdminBookingQuery {
+  userId?: number
+  roomId?: number
+  status?: ReservationStatus
+  /** yyyy-MM-dd */
+  startDate?: string
+  endDate?: string
+  pageNum?: number
+  pageSize?: number
+}
+
+/** 操作日志查询条件（接口 #13；参数全部可选） */
+export interface AdminLogQuery {
+  operatorId?: number
+  operationType?: string
+  targetType?: string
+  startDate?: string
+  endDate?: string
+  pageNum?: number
+  pageSize?: number
+}
+
+/** 新增／修改会议室请求体（接口 #11） */
+export interface RoomUpsertRequest {
+  name: string
+  location: string
+  capacity: number
+  equipment?: string
+  remark?: string
+  status?: 'ENABLED' | 'DISABLED'
+}
+
+/** 新建用户请求体（接口 #12） */
+export interface UserCreateRequest {
+  username: string
+  password: string
+  realName?: string
+  phone?: string
+  role?: 'USER' | 'ADMIN'
+}
+
+/** 修改用户请求体（接口 #12 PUT；至少一项） */
+export interface UserUpdateRequest {
+  realName?: string
+  phone?: string
+  role?: 'USER' | 'ADMIN'
+  status?: 'ACTIVE' | 'DISABLED'
+  /** 只在校验通过后由后端 BCrypt 落库，明文不落库也不返回 */
+  password?: string
+}
