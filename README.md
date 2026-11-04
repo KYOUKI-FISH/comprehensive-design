@@ -131,6 +131,7 @@ $env:DB_PASSWORD='你的MySQL root口令'; cd backend; mvn spring-boot:run
 ```bash
 cd frontend
 npm install
+npm run setup
 npm run dev
 ```
 
