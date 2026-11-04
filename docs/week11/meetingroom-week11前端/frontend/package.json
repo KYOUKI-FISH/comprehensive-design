@@ -1,0 +1,24 @@
+{
+  "name": "meetingroom-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "element-plus": "2.7.8",
+    "vue": "3.4.38",
+    "vue-router": "4.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "@vitejs/plugin-vue": "5.1.4",
+    "typescript": "5.4.5",
+    "vite": "5.4.21",
+    "vue-tsc": "2.0.29"
+  }
+}
