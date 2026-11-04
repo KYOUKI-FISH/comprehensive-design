@@ -1,0 +1,169 @@
+{
+  "executedAt": "2026-11-04T16:32:34",
+  "concurrency": 10,
+  "roomId": 2,
+  "date": "2026-12-20",
+  "startTime": "2026-12-20 20:00:00",
+  "endTime": "2026-12-20 21:00:00",
+  "spreadMs": 3.1,
+  "elapsedSec": 0.11,
+  "success": 1,
+  "conflict": 9,
+  "other": 0,
+  "duplicateKeyErrors": 0,
+  "serverErrors": 0,
+  "passed": true,
+  "accounts": [
+    "user1",
+    "user2"
+  ],
+  "responses": [
+    {
+      "index": 0,
+      "firedAt": "16:32:34.540",
+      "httpStatus": 200,
+      "code": 409,
+      "message": "该会议室在此时间段已被占用",
+      "data": {
+        "occupiedSlots": [
+          {
+            "startTime": "20:00",
+            "endTime": "21:00"
+          }
+        ]
+      }
+    },
+    {
+      "index": 1,
+      "firedAt": "16:32:34.541",
+      "httpStatus": 200,
+      "code": 409,
+      "message": "该会议室在此时间段已被占用",
+      "data": {
+        "occupiedSlots": [
+          {
+            "startTime": "20:00",
+            "endTime": "21:00"
+          }
+        ]
+      }
+    },
+    {
+      "index": 2,
+      "firedAt": "16:32:34.541",
+      "httpStatus": 200,
+      "code": 409,
+      "message": "该会议室在此时间段已被占用",
+      "data": {
+        "occupiedSlots": [
+          {
+            "startTime": "20:00",
+            "endTime": "21:00"
+          }
+        ]
+      }
+    },
+    {
+      "index": 3,
+      "firedAt": "16:32:34.539",
+      "httpStatus": 200,
+      "code": 409,
+      "message": "该会议室在此时间段已被占用",
+      "data": {
+        "occupiedSlots": [
+          {
+            "startTime": "20:00",
+            "endTime": "21:00"
+          }
+        ]
+      }
+    },
+    {
+      "index": 4,
+      "firedAt": "16:32:34.542",
+      "httpStatus": 200,
+      "code": 409,
+      "message": "该会议室在此时间段已被占用",
+      "data": {
+        "occupiedSlots": [
+          {
+            "startTime": "20:00",
+            "endTime": "21:00"
+          }
+        ]
+      }
+    },
+    {
+      "index": 5,
+      "firedAt": "16:32:34.542",
+      "httpStatus": 200,
+      "code": 409,
+      "message": "该会议室在此时间段已被占用",
+      "data": {
+        "occupiedSlots": [
+          {
+            "startTime": "20:00",
+            "endTime": "21:00"
+          }
+        ]
+      }
+    },
+    {
+      "index": 6,
+      "firedAt": "16:32:34.541",
+      "httpStatus": 200,
+      "code": 409,
+      "message": "该会议室在此时间段已被占用",
+      "data": {
+        "occupiedSlots": [
+          {
+            "startTime": "20:00",
+            "endTime": "21:00"
+          }
+        ]
+      }
+    },
+    {
+      "index": 7,
+      "firedAt": "16:32:34.540",
+      "httpStatus": 200,
+      "code": 409,
+      "message": "该会议室在此时间段已被占用",
+      "data": {
+        "occupiedSlots": [
+          {
+            "startTime": "20:00",
+            "endTime": "21:00"
+          }
+        ]
+      }
+    },
+    {
+      "index": 8,
+      "firedAt": "16:32:34.542",
+      "httpStatus": 200,
+      "code": 409,
+      "message": "该会议室在此时间段已被占用",
+      "data": {
+        "occupiedSlots": [
+          {
+            "startTime": "20:00",
+            "endTime": "21:00"
+          }
+        ]
+      }
+    },
+    {
+      "index": 9,
+      "firedAt": "16:32:34.539",
+      "httpStatus": 200,
+      "code": 200,
+      "message": "ok",
+      "data": {
+        "id": 137,
+        "reservationNo": "MR20261220137",
+        "status": "PENDING"
+      }
+    }
+  ]
+}

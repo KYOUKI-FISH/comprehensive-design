@@ -1,0 +1,275 @@
+{
+  "executedAt": "2026-11-04T16:35:42",
+  "baseUrl": "http://localhost:8080/api",
+  "baseDate": "2026-12-14",
+  "passed": 6,
+  "total": 6,
+  "cases": [
+    {
+      "no": "TC-01",
+      "category": "功能",
+      "name": "提交 09:00—11:00 预约",
+      "steps": "user1 登录 → POST /api/bookings（room1，2026-12-14 09:00-11:00）→ GET /api/bookings/mine",
+      "expected": "提示成功；我的预约出现该条；库内可查",
+      "actual": "HTTP 200，编号 MR20261214144，mine 中可见（状态 PENDING）",
+      "conclusion": "通过",
+      "evidence": {
+        "request": {
+          "method": "POST",
+          "path": "/api/bookings",
+          "body": {
+            "roomId": 1,
+            "date": "2026-12-14",
+            "startTime": "2026-12-14 09:00:00",
+            "endTime": "2026-12-14 11:00:00",
+            "topic": "W11-TC01",
+            "attendeeCount": 4,
+            "contact": "虞业宸"
+          }
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "code": 200,
+            "message": "ok",
+            "data": {
+              "id": 144,
+              "reservationNo": "MR20261214144",
+              "status": "PENDING"
+            }
+          }
+        },
+        "bookingId": 144
+      },
+      "executedAt": "2026-11-04T16:35:42"
+    },
+    {
+      "no": "TC-02",
+      "category": "功能",
+      "name": "管理员强制取消（填原因）",
+      "steps": "admin 登录 → PUT /api/admin/bookings/144/cancel {\"reason\":...} → GET /api/admin/logs",
+      "expected": "提示成功；状态变已取消；操作日志可查",
+      "actual": "HTTP 200，状态=CANCELLED，日志命中 4 条",
+      "conclusion": "通过",
+      "evidence": {
+        "response": {
+          "status": 200,
+          "body": {
+            "code": 200,
+            "message": "ok",
+            "data": {
+              "id": 144,
+              "reservationNo": "MR20261214144",
+              "userId": 2,
+              "userName": "张三",
+              "roomId": 1,
+              "roomName": "逸夫楼A101会议室",
+              "reserveDate": "2026-12-14",
+              "startTime": "2026-12-14 09:00:00",
+              "endTime": "2026-12-14 11:00:00",
+              "topic": "W11-TC01",
+              "attendeeCount": 4,
+              "contact": "虞业宸",
+              "purpose": null,
+              "status": "CANCELLED",
+              "cancelReason": "第11周用例：该预约属测试数据，强制取消",
+              "operatorName": "admin",
+              "createdAt": "2026-11-04 16:35:41",
+              "updatedAt": "2026-11-04 16:35:42"
+            }
+          }
+        },
+        "logQuery": {
+          "status": 200,
+          "count": 4,
+          "items": [
+            {
+              "id": 4,
+              "operatorUsername": "admin",
+              "operatorName": "系统管理员",
+              "operatorRole": "ADMIN",
+              "operationType": "BOOKING_FORCE_CANCEL",
+              "targetType": "BOOKING",
+              "targetId": 144,
+              "beforeData": "{\"status\": \"PENDING\", \"reservationNo\": \"MR20261214144\"}",
+              "afterData": "{\"status\": \"CANCELLED\", \"cancelReason\": \"第11周用例：该预约属测试数据，强制取消\", \"reservationNo\": \"MR20261214144\"}",
+              "remark": "管理员强制取消异常预约",
+              "detail": "管理员强制取消异常预约",
+              "ip": null,
+              "createdAt": "2026-11-04 16:35:42"
+            },
+            {
+              "id": 3,
+              "operatorUsername": "admin",
+              "operatorName": "系统管理员",
+              "operatorRole": "ADMIN",
+              "operationType": "BOOKING_FORCE_CANCEL",
+              "targetType": "BOOKING",
+              "targetId": 134,
+              "beforeData": "{\"status\": \"PENDING\", \"reservationNo\": \"MR20261214134\"}",
+              "afterData": "{\"status\": \"CANCELLED\", \"cancelReason\": \"第11周用例：该预约属测试数据，强制取消\", \"reservationNo\": \"MR20261214134\"}",
+              "remark": "管理员强制取消异常预约",
+              "detail": "管理员强制取消异常预约",
+              "ip": null,
+              "createdAt": "2026-11-04 16:32:27"
+            },
+            {
+              "id": 2,
+              "operatorUsername": "admin",
+              "operatorName": "系统管理员",
+              "operatorRole": "ADMIN",
+              "operationType": "BOOKING_FORCE_CANCEL",
+              "targetType": "BOOKING",
+              "targetId": 119,
+              "beforeData": "{\"status\": \"PENDING\", \"reservationNo\": \"MR20261214119\"}",
+              "afterData": "{\"status\": \"CANCELLED\", \"cancelReason\": \"第11周用例：该预约属测试数据，强制取消\", \"reservationNo\": \"MR20261214119\"}",
+              "remark": "管理员强制取消异常预约",
+              "detail": "管理员强制取消异常预约",
+              "ip": null,
+              "createdAt": "2026-11-04 16:25:39"
+            },
+            {
+              "id": 1,
+              "operatorUsername": "admin",
+              "operatorName": "系统管理员",
+              "operatorRole": "ADMIN",
+              "operationType": "BOOKING_FORCE_CANCEL",
+              "targetType": "BOOKING",
+              "targetId": 5,
+              "beforeData": "{\"status\": \"PENDING\", \"reservationNo\": \"MR20261102005\"}",
+              "afterData": "{\"status\": \"CANCELLED\", \"cancelReason\": \"主讲人临时出差，管理员强制取消\"}",
+              "remark": "演示数据：管理员强制取消异常预约",
+              "detail": "演示数据：管理员强制取消异常预约",
+              "ip": null,
+              "createdAt": "2026-11-02 09:30:00"
+            }
+          ]
+        }
+      },
+      "executedAt": "2026-11-04T16:35:42"
+    },
+    {
+      "no": "TC-03",
+      "category": "异常",
+      "name": "提交跨天预约",
+      "steps": "POST /api/bookings（2026-12-16 23:00 → 2026-12-17 01:00）",
+      "expected": "提示不能跨天，不入库",
+      "actual": "HTTP 200 code=400 message=预约不能跨天，且单次不能超过 8 小时；mine 中未出现",
+      "conclusion": "通过",
+      "evidence": {
+        "request": {
+          "roomId": 1,
+          "date": "2026-12-16",
+          "startTime": "2026-12-16 23:00:00",
+          "endTime": "2026-12-17 01:00:00",
+          "topic": "W11-TC03",
+          "attendeeCount": 4,
+          "contact": "虞业宸"
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "code": 400,
+            "message": "预约不能跨天，且单次不能超过 8 小时",
+            "data": null
+          }
+        }
+      },
+      "executedAt": "2026-11-04T16:35:42"
+    },
+    {
+      "no": "TC-04",
+      "category": "异常",
+      "name": "结束时间早于开始",
+      "steps": "POST /api/bookings（2026-12-17 15:00 → 14:00）",
+      "expected": "提示时间不合法，不入库",
+      "actual": "HTTP 200 code=400 message=结束时间必须晚于开始时间",
+      "conclusion": "通过",
+      "evidence": {
+        "request": {
+          "roomId": 1,
+          "date": "2026-12-17",
+          "startTime": "2026-12-17 15:00:00",
+          "endTime": "2026-12-17 14:00:00",
+          "topic": "W11-TC04",
+          "attendeeCount": 4,
+          "contact": "虞业宸"
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "code": 400,
+            "message": "结束时间必须晚于开始时间",
+            "data": null
+          }
+        }
+      },
+      "executedAt": "2026-11-04T16:35:42"
+    },
+    {
+      "no": "TC-05",
+      "category": "异常",
+      "name": "首尾相接时段（半开区间）",
+      "steps": "同一房间同一天先订 09:00-10:00，再订 10:00-11:00",
+      "expected": "两条都提交成功（首尾相接不算冲突，FR-09）",
+      "actual": "第一条 HTTP 200 / 第二条 HTTP 200（code=200 message=ok）",
+      "conclusion": "通过",
+      "evidence": {
+        "first": {
+          "status": 200,
+          "body": {
+            "code": 200,
+            "message": "ok",
+            "data": {
+              "id": 145,
+              "reservationNo": "MR20261218145",
+              "status": "PENDING"
+            }
+          }
+        },
+        "second": {
+          "status": 200,
+          "body": {
+            "code": 200,
+            "message": "ok",
+            "data": {
+              "id": 146,
+              "reservationNo": "MR20261218146",
+              "status": "PENDING"
+            }
+          }
+        }
+      },
+      "executedAt": "2026-11-04T16:35:42"
+    },
+    {
+      "no": "TC-06",
+      "category": "异常",
+      "name": "对已停用会议室提交预约",
+      "steps": "POST /api/bookings（roomId=3，库内 status=DISABLED）",
+      "expected": "拒绝并提示不可预约，不入库",
+      "actual": "HTTP 200 code=400 message=该会议室已停用，无法预约",
+      "conclusion": "通过",
+      "evidence": {
+        "request": {
+          "roomId": 3,
+          "date": "2026-12-19",
+          "startTime": "2026-12-19 09:00:00",
+          "endTime": "2026-12-19 10:00:00",
+          "topic": "W11-TC06",
+          "attendeeCount": 4,
+          "contact": "虞业宸"
+        },
+        "response": {
+          "status": 200,
+          "body": {
+            "code": 400,
+            "message": "该会议室已停用，无法预约",
+            "data": null
+          }
+        }
+      },
+      "executedAt": "2026-11-04T16:35:42"
+    }
+  ]
+}

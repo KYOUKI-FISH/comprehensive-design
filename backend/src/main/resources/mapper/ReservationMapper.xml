@@ -110,12 +110,23 @@
     <!--
       落库时校正（NF-08，不引入定时器）：已结束但仍存 PENDING 的批量校正为 FINISHED。
       幂等：已校正过的行不再满足 WHERE 条件。任何一次"我的预约"读取都会顺手执行。
+
+      ★ 第 11 周性能修复（虞业宸）：补 `AND reserve_date <= CURDATE()`。
+        原因：`status` 与 `end_time` 都不是任何索引的前导列，原写法在 1000 条数据下
+        EXPLAIN 为 type=index(key=PRIMARY) 全表扫描，实测 3632µs/次；每次打开"我的预约"
+        都要付这个代价，数据量涨就线性变慢。
+        改写逻辑等价：`end_time < NOW()` ⇒ 这条预约已经开始过 ⇒ 其 reserve_date 必 ≤ 今天；
+        而 reserve_date 与 start_time 同日的合法性由 CHECK 约束
+        `ck_reservation_date_match` 保证，所以不会漏校正。
+        改写后 EXPLAIN 为 type=range(key=idx_reservation_date_status)，实测 253µs/次（约 14 倍）。
+        等价性实测见 tests/week11/04_perf_explain.sql 第 ⑤ 段（两种写法命中行数相同）。
     -->
     <update id="correctOverduePending">
         UPDATE reservation
         SET status = 'FINISHED', updated_at = CURRENT_TIMESTAMP
         WHERE status = 'PENDING'
           AND end_time &lt; NOW()
+          AND reserve_date &lt;= CURDATE()
     </update>
 
     <!-- =====================================================================

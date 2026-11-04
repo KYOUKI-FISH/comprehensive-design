@@ -1,0 +1,422 @@
+{
+  "executedAt": "2026-11-04T16:28:39",
+  "baseUrl": "http://localhost:8080/api",
+  "before": {
+    "reservationRows": "35",
+    "userRows": "3",
+    "roomRows": "3",
+    "reservationTableExists": "1"
+  },
+  "after": {
+    "reservationRows": "35",
+    "userRows": "3",
+    "roomRows": "3",
+    "reservationTableExists": "1"
+  },
+  "reservationTableStillExists": true,
+  "intact": true,
+  "total": 16,
+  "safe": 16,
+  "evidence": [
+    {
+      "group": "G1-登录账号名",
+      "payloadId": "P1",
+      "payload": "' OR '1'='1",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/auth/login",
+        "body": {
+          "username": "' OR '1'='1",
+          "password": "whatever"
+        }
+      },
+      "response": {
+        "httpStatus": 200,
+        "body": {
+          "code": 401,
+          "message": "账号或密码错误",
+          "data": null
+        }
+      },
+      "conclusion": "通过（未被注入）",
+      "note": "未返回令牌；服务未报 5xx"
+    },
+    {
+      "group": "G1-登录账号名",
+      "payloadId": "P2",
+      "payload": "admin' -- ",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/auth/login",
+        "body": {
+          "username": "admin' -- ",
+          "password": "whatever"
+        }
+      },
+      "response": {
+        "httpStatus": 200,
+        "body": {
+          "code": 401,
+          "message": "账号或密码错误",
+          "data": null
+        }
+      },
+      "conclusion": "通过（未被注入）",
+      "note": "未返回令牌；服务未报 5xx"
+    },
+    {
+      "group": "G1-登录账号名",
+      "payloadId": "P3",
+      "payload": "' OR 1=1 #",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/auth/login",
+        "body": {
+          "username": "' OR 1=1 #",
+          "password": "whatever"
+        }
+      },
+      "response": {
+        "httpStatus": 200,
+        "body": {
+          "code": 401,
+          "message": "账号或密码错误",
+          "data": null
+        }
+      },
+      "conclusion": "通过（未被注入）",
+      "note": "未返回令牌；服务未报 5xx"
+    },
+    {
+      "group": "G1-登录账号名",
+      "payloadId": "P4",
+      "payload": "1; DROP TABLE reservation-- ",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/auth/login",
+        "body": {
+          "username": "1; DROP TABLE reservation-- ",
+          "password": "whatever"
+        }
+      },
+      "response": {
+        "httpStatus": 200,
+        "body": {
+          "code": 401,
+          "message": "账号或密码错误",
+          "data": null
+        }
+      },
+      "conclusion": "通过（未被注入）",
+      "note": "未返回令牌；服务未报 5xx"
+    },
+    {
+      "group": "G2-会议室位置筛选",
+      "payloadId": "P1",
+      "payload": "' OR '1'='1",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/api/rooms?status=ENABLED&location=%27%20OR%20%271%27%3D%271"
+      },
+      "response": {
+        "httpStatus": 200,
+        "resultCount": 0,
+        "body": {
+          "code": 200,
+          "message": "ok",
+          "data": []
+        }
+      },
+      "conclusion": "通过（未被注入）",
+      "note": "返回 0 条（应为 0：没有任何会议室名称含该串）"
+    },
+    {
+      "group": "G2-会议室位置筛选",
+      "payloadId": "P2",
+      "payload": "admin' -- ",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/api/rooms?status=ENABLED&location=admin%27%20--%20"
+      },
+      "response": {
+        "httpStatus": 200,
+        "resultCount": 0,
+        "body": {
+          "code": 200,
+          "message": "ok",
+          "data": []
+        }
+      },
+      "conclusion": "通过（未被注入）",
+      "note": "返回 0 条（应为 0：没有任何会议室名称含该串）"
+    },
+    {
+      "group": "G2-会议室位置筛选",
+      "payloadId": "P3",
+      "payload": "' OR 1=1 #",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/api/rooms?status=ENABLED&location=%27%20OR%201%3D1%20%23"
+      },
+      "response": {
+        "httpStatus": 200,
+        "resultCount": 0,
+        "body": {
+          "code": 200,
+          "message": "ok",
+          "data": []
+        }
+      },
+      "conclusion": "通过（未被注入）",
+      "note": "返回 0 条（应为 0：没有任何会议室名称含该串）"
+    },
+    {
+      "group": "G2-会议室位置筛选",
+      "payloadId": "P4",
+      "payload": "1; DROP TABLE reservation-- ",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/api/rooms?status=ENABLED&location=1%3B%20DROP%20TABLE%20reservation--%20"
+      },
+      "response": {
+        "httpStatus": 200,
+        "resultCount": 0,
+        "body": {
+          "code": 200,
+          "message": "ok",
+          "data": []
+        }
+      },
+      "conclusion": "通过（未被注入）",
+      "note": "返回 0 条（应为 0：没有任何会议室名称含该串）"
+    },
+    {
+      "group": "G3-预约主题",
+      "payloadId": "P1",
+      "payload": "' OR '1'='1",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-03",
+          "startTime": "2027-01-03 08:00:00",
+          "endTime": "2027-01-03 09:00:00",
+          "topic": "' OR '1'='1",
+          "attendeeCount": 3,
+          "contact": "虞业宸"
+        }
+      },
+      "response": {
+        "httpStatus": 200,
+        "body": {
+          "code": 200,
+          "message": "ok",
+          "data": {
+            "id": 128,
+            "reservationNo": "MR20270103128",
+            "status": "PENDING"
+          }
+        },
+        "dbStoredTopic": "' OR '1'='1"
+      },
+      "conclusion": "通过（未被注入）",
+      "note": "库内原样存储，未被执行"
+    },
+    {
+      "group": "G3-预约主题",
+      "payloadId": "P2",
+      "payload": "admin' -- ",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-03",
+          "startTime": "2027-01-03 09:00:00",
+          "endTime": "2027-01-03 10:00:00",
+          "topic": "admin' -- ",
+          "attendeeCount": 3,
+          "contact": "虞业宸"
+        }
+      },
+      "response": {
+        "httpStatus": 200,
+        "body": {
+          "code": 200,
+          "message": "ok",
+          "data": {
+            "id": 129,
+            "reservationNo": "MR20270103129",
+            "status": "PENDING"
+          }
+        },
+        "dbStoredTopic": "admin' --"
+      },
+      "conclusion": "通过（未被注入）",
+      "note": "库内原样存储，未被执行"
+    },
+    {
+      "group": "G3-预约主题",
+      "payloadId": "P3",
+      "payload": "' OR 1=1 #",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-03",
+          "startTime": "2027-01-03 10:00:00",
+          "endTime": "2027-01-03 11:00:00",
+          "topic": "' OR 1=1 #",
+          "attendeeCount": 3,
+          "contact": "虞业宸"
+        }
+      },
+      "response": {
+        "httpStatus": 200,
+        "body": {
+          "code": 200,
+          "message": "ok",
+          "data": {
+            "id": 130,
+            "reservationNo": "MR20270103130",
+            "status": "PENDING"
+          }
+        },
+        "dbStoredTopic": "' OR 1=1 #"
+      },
+      "conclusion": "通过（未被注入）",
+      "note": "库内原样存储，未被执行"
+    },
+    {
+      "group": "G3-预约主题",
+      "payloadId": "P4",
+      "payload": "1; DROP TABLE reservation-- ",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-03",
+          "startTime": "2027-01-03 11:00:00",
+          "endTime": "2027-01-03 12:00:00",
+          "topic": "1; DROP TABLE reservation-- ",
+          "attendeeCount": 3,
+          "contact": "虞业宸"
+        }
+      },
+      "response": {
+        "httpStatus": 200,
+        "body": {
+          "code": 200,
+          "message": "ok",
+          "data": {
+            "id": 131,
+            "reservationNo": "MR20270103131",
+            "status": "PENDING"
+          }
+        },
+        "dbStoredTopic": "1; DROP TABLE reservation--"
+      },
+      "conclusion": "通过（未被注入）",
+      "note": "库内原样存储，未被执行"
+    },
+    {
+      "group": "G4-管理端状态筛选",
+      "payloadId": "P1",
+      "payload": "' OR '1'='1",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/api/admin/bookings?status=%27%20OR%20%271%27%3D%271&pageNum=1&pageSize=5",
+        "headers": {
+          "Authorization": "Bearer <admin token>"
+        }
+      },
+      "response": {
+        "httpStatus": 200,
+        "code": 400,
+        "returnedItems": 0,
+        "body": {
+          "code": 400,
+          "message": "预约状态只能是 PENDING／ONGOING／FINISHED／CANCELLED",
+          "data": null
+        }
+      },
+      "conclusion": "通过（未被注入）",
+      "note": "状态入参走枚举校验，未进入 SQL 拼接"
+    },
+    {
+      "group": "G4-管理端状态筛选",
+      "payloadId": "P2",
+      "payload": "admin' -- ",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/api/admin/bookings?status=admin%27%20--%20&pageNum=1&pageSize=5",
+        "headers": {
+          "Authorization": "Bearer <admin token>"
+        }
+      },
+      "response": {
+        "httpStatus": 200,
+        "code": 400,
+        "returnedItems": 0,
+        "body": {
+          "code": 400,
+          "message": "预约状态只能是 PENDING／ONGOING／FINISHED／CANCELLED",
+          "data": null
+        }
+      },
+      "conclusion": "通过（未被注入）",
+      "note": "状态入参走枚举校验，未进入 SQL 拼接"
+    },
+    {
+      "group": "G4-管理端状态筛选",
+      "payloadId": "P3",
+      "payload": "' OR 1=1 #",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/api/admin/bookings?status=%27%20OR%201%3D1%20%23&pageNum=1&pageSize=5",
+        "headers": {
+          "Authorization": "Bearer <admin token>"
+        }
+      },
+      "response": {
+        "httpStatus": 200,
+        "code": 400,
+        "returnedItems": 0,
+        "body": {
+          "code": 400,
+          "message": "预约状态只能是 PENDING／ONGOING／FINISHED／CANCELLED",
+          "data": null
+        }
+      },
+      "conclusion": "通过（未被注入）",
+      "note": "状态入参走枚举校验，未进入 SQL 拼接"
+    },
+    {
+      "group": "G4-管理端状态筛选",
+      "payloadId": "P4",
+      "payload": "1; DROP TABLE reservation-- ",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8080/api/admin/bookings?status=1%3B%20DROP%20TABLE%20reservation--%20&pageNum=1&pageSize=5",
+        "headers": {
+          "Authorization": "Bearer <admin token>"
+        }
+      },
+      "response": {
+        "httpStatus": 200,
+        "code": 400,
+        "returnedItems": 0,
+        "body": {
+          "code": 400,
+          "message": "预约状态只能是 PENDING／ONGOING／FINISHED／CANCELLED",
+          "data": null
+        }
+      },
+      "conclusion": "通过（未被注入）",
+      "note": "状态入参走枚举校验，未进入 SQL 拼接"
+    }
+  ]
+}

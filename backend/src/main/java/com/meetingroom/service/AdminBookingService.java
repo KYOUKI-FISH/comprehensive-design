@@ -36,6 +36,8 @@ public class AdminBookingService {
 
     /** FR-16／接口清单 #10：取消原因不少于 5 个字符 */
     private static final int MIN_REASON_LENGTH = 5;
+    /** 与库内 cancel_reason 列宽一致（第 11 周 Bug W11-02：超长入参曾直接 500） */
+    private static final int MAX_REASON_LENGTH = 200;
     /** 分页默认值：管理端页面一屏大约能放这么多 */
     private static final int DEFAULT_PAGE_SIZE = 20;
     private static final int MAX_PAGE_SIZE = 200;
@@ -100,6 +102,12 @@ public class AdminBookingService {
         if (trimmedReason.length() < MIN_REASON_LENGTH) {
             throw new BusinessException(ApiResponse.CODE_PARAM_ERROR,
                     "请填写取消原因（不少于 " + MIN_REASON_LENGTH + " 个字符）");
+        }
+        // 上限同样必须拦：否则超长原因落到 cancel_reason(200) 上会抛
+        // DataIntegrityViolation，被兜成 500「服务器内部错误」
+        if (trimmedReason.length() > MAX_REASON_LENGTH) {
+            throw new BusinessException(ApiResponse.CODE_PARAM_ERROR,
+                    "取消原因不能超过 " + MAX_REASON_LENGTH + " 个字符");
         }
 
         // ② 先确认存在，好区分"不存在"(404) 与"已不是 PENDING"(400) 两种失败

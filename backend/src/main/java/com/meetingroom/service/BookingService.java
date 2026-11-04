@@ -58,6 +58,12 @@ public class BookingService {
     private static final String STATUS_CANCELLED = ReservationStatusPolicy.CANCELLED;
     private static final String ROOM_ENABLED = "ENABLED";
 
+    /** 与库内列宽一致的入参上限（第 11 周 Bug W11-02：超长入参曾直接 500） */
+    private static final int TOPIC_MAX_LENGTH = 100;
+    private static final int CONTACT_MAX_LENGTH = 50;
+    private static final int PURPOSE_MAX_LENGTH = 255;
+    private static final int CANCEL_REASON_MAX_LENGTH = 200;
+
     private static final DateTimeFormatter SLOT_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
     private final ReservationMapper reservationMapper;
@@ -199,6 +205,11 @@ public class BookingService {
         }
 
         String trimmedReason = (reason == null || reason.isBlank()) ? null : reason.trim();
+        // 同上：cancel_reason 列宽 200，超长同样是"用户输错 → 500"，先拦成 400
+        if (trimmedReason != null && trimmedReason.length() > CANCEL_REASON_MAX_LENGTH) {
+            throw new BusinessException(ApiResponse.CODE_PARAM_ERROR,
+                    "取消原因不能超过 " + CANCEL_REASON_MAX_LENGTH + " 个字符");
+        }
         reservationMapper.updateStatus(id, STATUS_CANCELLED, trimmedReason);
 
         log.info("取消预约成功：no={}, userId={}, reason={}",
@@ -281,6 +292,23 @@ public class BookingService {
         }
         if (request.getDate() == null || request.getDate().isBlank()) {
             throw new BusinessException(ApiResponse.CODE_PARAM_ERROR, "请选择预约日期");
+        }
+        // 长度上限对齐库内列宽（topic 100 / contact 50 / purpose 255）。
+        // 为什么必须在这里拦：库是严格模式，超长会抛 DataIntegrityViolation，
+        // 被全局异常处理器兜成 **500「服务器内部错误」** —— 那是把用户输错当成系统故障，
+        // 既误导使用者（以为系统坏了），也让真实故障淹没在噪声里。
+        // 第 11 周用例探测实测：topic>100、contact>50、purpose>255 三种都会 500（见 Bug 日志 W11-02）。
+        if (request.getTopic().trim().length() > TOPIC_MAX_LENGTH) {
+            throw new BusinessException(ApiResponse.CODE_PARAM_ERROR,
+                    "会议主题不能超过 " + TOPIC_MAX_LENGTH + " 个字符");
+        }
+        if (request.getContact().trim().length() > CONTACT_MAX_LENGTH) {
+            throw new BusinessException(ApiResponse.CODE_PARAM_ERROR,
+                    "联系人不能超过 " + CONTACT_MAX_LENGTH + " 个字符");
+        }
+        if (request.getPurpose() != null && request.getPurpose().trim().length() > PURPOSE_MAX_LENGTH) {
+            throw new BusinessException(ApiResponse.CODE_PARAM_ERROR,
+                    "会议说明不能超过 " + PURPOSE_MAX_LENGTH + " 个字符");
         }
     }
 
