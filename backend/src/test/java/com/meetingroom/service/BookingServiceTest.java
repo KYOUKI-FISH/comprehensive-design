@@ -165,6 +165,26 @@ class BookingServiceTest {
     }
 
     @Test
+    @DisplayName("冲突：只回本次重叠的时段，当天其他占用不塞进来（W10-01 回归）")
+    void 冲突只返回重叠时段() {
+        when(meetingRoomMapper.selectByIdForUpdate(1L)).thenReturn(room("ENABLED"));
+        // 当天已被占 09:00-11:00 与 14:00-15:00，本次要订 14:30-15:30
+        when(reservationMapper.selectOccupiedSlotsOfRoom(eq(1L), eq(DAY), eq(null)))
+                .thenReturn(List.of(slot(9, 11), slot(14, 15)));
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> bookingService.create(request("14:30", "15:30"), 2L));
+
+        assertEquals(409, e.getCode());
+        ConflictPayload payload = (ConflictPayload) e.getData();
+        assertNotNull(payload);
+        assertEquals(1, payload.getOccupiedSlots().size(), "只应带回真正重叠的 14:00-15:00 一段");
+        assertEquals("14:00", payload.getOccupiedSlots().get(0).getStartTime());
+        assertEquals("15:00", payload.getOccupiedSlots().get(0).getEndTime());
+        verify(reservationMapper, never()).insert(any(Reservation.class));
+    }
+
+    @Test
     @DisplayName("停用的会议室不能预约（FR-06），提示是人话")
     void 停用会议室() {
         when(meetingRoomMapper.selectByIdForUpdate(1L)).thenReturn(room("DISABLED"));
