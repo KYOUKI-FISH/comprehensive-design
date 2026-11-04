@@ -1,0 +1,40 @@
+取证时间：2026-10-28 17:23:23
+目标预约：id=3，编号=MR202610300003，主题=师生座谈
+攻击者：user002（令牌已脱敏）
+
+--- 操作前（管理员接口回读同一数据源）---
+{
+  "id": 3,
+  "reservationNo": "MR202610300003",
+  "roomId": 3,
+  "roomName": "行政楼小会议室",
+  "userId": 1,
+  "username": "user001",
+  "subject": "师生座谈",
+  "startTime": "2026-10-30T09:00:00",
+  "endTime": "2026-10-30T10:00:00",
+  "status": "PENDING",
+  "cancelledAt": "",
+  "cancelReason": ""
+}
+
+--- 操作后 ---
+{
+  "id": 3,
+  "reservationNo": "MR202610300003",
+  "roomId": 3,
+  "roomName": "行政楼小会议室",
+  "userId": 1,
+  "username": "user001",
+  "subject": "师生座谈",
+  "startTime": "2026-10-30T09:00:00",
+  "endTime": "2026-10-30T10:00:00",
+  "status": "PENDING",
+  "cancelledAt": "",
+  "cancelReason": ""
+}
+
+结论：预约仍在库，状态未变，越权取消未执行。
+
+说明：本目录没有 MySQL，mock 的数据源为内存数组，因此用管理员接口回读代替 SELECT。
+正式后端复跑时改用：SELECT id, reservation_no, status, cancelled_at FROM reservation WHERE id = ?;

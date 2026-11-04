@@ -1,0 +1,67 @@
+时间：2026-10-28 17:23:23
+方法：POST
+URL：http://localhost:8080/api/bookings
+请求头：
+  Accept: application/json
+  Authorization: Bearer e7c31317…（已脱敏，共 64 字符）
+  Content-Type: application/json
+请求体：
+  {
+    "roomId": 5,
+    "subject": "W11-时间边界-跨天",
+    "attendees": 6,
+    "contact": "张同学",
+    "startTime": "2026-10-29T23:00:00",
+    "endTime": "2026-10-30T01:00:00"
+  }
+
+时间：2026-10-28 17:23:23
+方法：POST
+URL：http://localhost:8080/api/bookings
+请求头：
+  Accept: application/json
+  Authorization: Bearer e7c31317…（已脱敏，共 64 字符）
+  Content-Type: application/json
+请求体：
+  {
+    "roomId": 5,
+    "subject": "W11-时间边界-超8小时",
+    "attendees": 6,
+    "contact": "张同学",
+    "startTime": "2026-10-30T08:00:00",
+    "endTime": "2026-10-30T17:00:00"
+  }
+
+时间：2026-10-28 17:23:23
+方法：POST
+URL：http://localhost:8080/api/bookings
+请求头：
+  Accept: application/json
+  Authorization: Bearer e7c31317…（已脱敏，共 64 字符）
+  Content-Type: application/json
+请求体：
+  {
+    "roomId": 5,
+    "subject": "W11-时间边界-结束早于开始",
+    "attendees": 6,
+    "contact": "张同学",
+    "startTime": "2026-10-30T14:00:00",
+    "endTime": "2026-10-30T13:00:00"
+  }
+
+时间：2026-10-28 17:23:23
+方法：POST
+URL：http://localhost:8080/api/bookings
+请求头：
+  Accept: application/json
+  Authorization: Bearer e7c31317…（已脱敏，共 64 字符）
+  Content-Type: application/json
+请求体：
+  {
+    "roomId": 1,
+    "subject": "W11-时间边界-首尾相接",
+    "attendees": 6,
+    "contact": "张同学",
+    "startTime": "2026-10-29T11:00:00",
+    "endTime": "2026-10-29T12:00:00"
+  }

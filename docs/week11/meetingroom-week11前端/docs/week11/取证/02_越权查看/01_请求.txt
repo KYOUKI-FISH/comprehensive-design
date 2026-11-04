@@ -1,0 +1,17 @@
+时间：2026-10-28 17:23:23
+方法：GET
+URL：http://localhost:8080/api/admin/bookings
+请求头：
+  Accept: application/json
+  Authorization: Bearer e7c31317…（已脱敏，共 64 字符）
+请求体：
+  （无）
+
+时间：2026-10-28 17:23:23
+方法：GET
+URL：http://localhost:8080/api/admin/logs
+请求头：
+  Accept: application/json
+  Authorization: Bearer e7c31317…（已脱敏，共 64 字符）
+请求体：
+  （无）

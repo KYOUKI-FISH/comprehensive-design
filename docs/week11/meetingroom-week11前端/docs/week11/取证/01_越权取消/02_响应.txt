@@ -1,0 +1,10 @@
+HTTP 状态码：403
+耗时：15 ms
+响应头（节选）：
+  Content-Type: application/json; charset=utf-8
+响应体：
+  {
+    "code": 40305,
+    "message": "无权操作他人的预约",
+    "data": null
+  }

@@ -1,0 +1,8 @@
+时间：2026-10-28 17:23:23
+方法：DELETE
+URL：http://localhost:8080/api/bookings/3
+请求头：
+  Accept: application/json
+  Authorization: Bearer 190e003e…（已脱敏，共 64 字符）
+请求体：
+  （无）
