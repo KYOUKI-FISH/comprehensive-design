@@ -1,0 +1,69 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', fontFamily: '"Microsoft YaHei", Arial, sans-serif', position: 'relative' }}>
+    <Box style={{ position: 'absolute', left: 0, top: 0, width: 1280, height: 76, background: '#1E4FA8', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '0 60px' }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>模块划分：每个模块都挂得上需求编号</Text>
+        <Text style={{ fontSize: 16, color: '#BFD0EA' }}>02 · 概要设计</Text>
+    </Box>
+
+    <Text style={{ position: 'absolute', left: 60, top: 92, fontSize: 20, fontWeight: 'bold', color: '#1A2230' }}>后端四层（包名 com.meetingroom）</Text>
+
+    <Box style={{ position: 'absolute', left: 60, top: 128, width: 1160, display: 'flex', flexDirection: 'row', gap: 20 }}>
+        <Box style={{ width: 275, height: 200, border: '1px solid #D6DCE5', display: 'flex', flexDirection: 'column', padding: 18, gap: 8 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>controller　入口层</Text>
+            <Text style={{ fontSize: 15, color: '#4A5568', lineHeight: 1.7 }}>Auth／Room／Booking<br />Admin 系列 4 个控制器</Text>
+            <Text style={{ fontSize: 14, color: '#8B97A8', lineHeight: 1.6 }}>只做接参、转发、包装<br />FR-01、05、07、11～16</Text>
+        </Box>
+        <Box style={{ width: 275, height: 200, border: '1px solid #1E4FA8', background: '#F7F9FC', display: 'flex', flexDirection: 'column', padding: 18, gap: 8 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>service　业务层</Text>
+            <Text style={{ fontSize: 15, color: '#4A5568', lineHeight: 1.7 }}>Auth／Room／Booking<br />Admin／Log</Text>
+            <Text style={{ fontSize: 14, color: '#8B97A8', lineHeight: 1.6 }}>全部业务规则与事务边界<br />冲突检测唯一落点</Text>
+        </Box>
+        <Box style={{ width: 275, height: 200, border: '1px solid #D6DCE5', display: 'flex', flexDirection: 'column', padding: 18, gap: 8 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>mapper　数据访问层</Text>
+            <Text style={{ fontSize: 15, color: '#4A5568', lineHeight: 1.7 }}>User／Room／Reservation<br />Log 四个 Mapper</Text>
+            <Text style={{ fontSize: 14, color: '#8B97A8', lineHeight: 1.6 }}>只写 SQL，不写规则<br />冲突查询、占用时段聚合</Text>
+        </Box>
+        <Box style={{ width: 275, height: 200, border: '1px solid #D6DCE5', display: 'flex', flexDirection: 'column', padding: 18, gap: 8 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>config / common　横切</Text>
+            <Text style={{ fontSize: 15, color: '#4A5568', lineHeight: 1.7 }}>CorsConfig、密码编码器<br />ApiResponse、异常处理</Text>
+            <Text style={{ fontSize: 14, color: '#8B97A8', lineHeight: 1.6 }}>统一响应与统一异常出口<br />NF-10、NF-11</Text>
+        </Box>
+    </Box>
+
+    <Text style={{ position: 'absolute', left: 60, top: 352, fontSize: 20, fontWeight: 'bold', color: '#1A2230' }}>前端六模块（Vue 3 + TypeScript）</Text>
+
+    <Box style={{ position: 'absolute', left: 60, top: 388, width: 1160, display: 'flex', flexDirection: 'row', gap: 12 }}>
+        <Box style={{ width: 183, height: 150, border: '1px solid #D6DCE5', padding: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1E4FA8' }}>views</Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.6 }}>登录、列表、详情<br />预约、我的、管理端</Text>
+        </Box>
+        <Box style={{ width: 183, height: 150, border: '1px solid #D6DCE5', padding: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1E4FA8' }}>router</Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.6 }}>路由表 + 权限守卫<br />未登录跳 /login</Text>
+        </Box>
+        <Box style={{ width: 183, height: 150, border: '1px solid #D6DCE5', padding: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1E4FA8' }}>store</Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.6 }}>会话与角色<br />令牌持久化</Text>
+        </Box>
+        <Box style={{ width: 183, height: 150, border: '1px solid #D6DCE5', padding: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1E4FA8' }}>api</Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.6 }}>统一请求封装<br />剥壳、判码、中文提示</Text>
+        </Box>
+        <Box style={{ width: 183, height: 150, border: '1px solid #D6DCE5', padding: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1E4FA8' }}>types</Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.6 }}>接口与实体的<br />TypeScript 定义</Text>
+        </Box>
+        <Box style={{ width: 183, height: 150, border: '1px solid #D6DCE5', padding: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1E4FA8' }}>styles</Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.6 }}>全局样式与<br />窄屏适配</Text>
+        </Box>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 566, width: 1160, height: 66, background: '#F7F9FC', borderLeft: '4px solid #1E4FA8', display: 'flex', alignItems: 'center', padding: '0 24px' }}>
+        <Text style={{ fontSize: 19, color: '#1A2230' }}>冲突检测只在 BookingService 一处实现——规则唯一落点，便于事务包裹、单测与并发验证。</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 660, width: 1160, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>智能会议室管理系统 V1.0 · 第 4 组答辩</Text>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>10 / 20</Text>
+    </Box>
+</Slide>
