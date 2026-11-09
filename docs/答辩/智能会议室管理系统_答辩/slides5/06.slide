@@ -1,0 +1,65 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', fontFamily: '"Microsoft YaHei", Arial, sans-serif', position: 'relative' }}>
+    <Box style={{ position: 'absolute', left: 0, top: 0, width: 1280, height: 76, background: '#1E4FA8', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '0 60px' }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>提交预约：一次事务里的冲突判定</Text>
+        <Text style={{ fontSize: 16, color: '#BFD0EA' }}>03 · 详细设计</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 96, width: 620, display: 'flex', flexDirection: 'column', gap: 13 }}>
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
+            <Text style={{ width: 32, fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>1</Text>
+            <Box style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1A2230' }}>参数与时间规则校验</Text>
+                <Text style={{ fontSize: 15, color: '#4A5568' }}>必填、长度上限、不跨天、≤8 小时、开始晚于当前</Text>
+            </Box>
+        </Box>
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
+            <Text style={{ width: 32, fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>2</Text>
+            <Box style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1A2230' }}>开事务，锁定会议室行</Text>
+                <Text style={{ fontSize: 15, color: '#4A5568' }}>SELECT … FOR UPDATE，把同一房间的提交串行化</Text>
+            </Box>
+        </Box>
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
+            <Text style={{ width: 32, fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>3</Text>
+            <Box style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1A2230' }}>冲突查询（半开区间）</Text>
+                <Text style={{ fontSize: 15, color: '#4A5568' }}>排除已取消；修改时排除自身；命中则回 409 与真实占用时段</Text>
+            </Box>
+        </Box>
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
+            <Text style={{ width: 32, fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>4</Text>
+            <Box style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1A2230' }}>写入并生成预约编号</Text>
+                <Text style={{ fontSize: 15, color: '#4A5568' }}>MR + 日期 + 当日序号；同步写操作日志</Text>
+            </Box>
+        </Box>
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
+            <Text style={{ width: 32, fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>5</Text>
+            <Box style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1A2230' }}>提交事务，返回编号</Text>
+                <Text style={{ fontSize: 15, color: '#4A5568' }}>任一步失败整体回滚，不留半条记录</Text>
+            </Box>
+        </Box>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 720, top: 96, width: 500, height: 288, background: '#F7F9FC', border: '1px solid #D6DCE5', padding: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8', letterSpacing: 1 }}>RESERVATIONMAPPER.XML</Text>
+        <Text style={{ fontFamily: 'Consolas, monospace', fontSize: 13, color: '#1A2230', lineHeight: 1.7 }}>{'SELECT COUNT(*) FROM reservation'}<br />{'WHERE room_id = #{roomId}'}<br />{"  AND status <> 'CANCELLED'"}<br />{'  AND start_time < #{endNew}'}<br />{'  AND end_time   > #{startNew}'}<br />{'  AND id <> #{excludeId};'}</Text>
+        <Box style={{ width: 460, height: 1, background: '#E5E7EB', marginTop: 6 }} />
+        <Text style={{ fontFamily: 'Consolas, monospace', fontSize: 13, color: '#1A2230', lineHeight: 1.7 }}>{'SELECT id FROM meeting_room'}<br />{'WHERE id = #{roomId} FOR UPDATE;'}</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 720, top: 402, width: 500, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1A2230' }}>为什么先锁行再查</Text>
+        <Text style={{ fontSize: 16, color: '#4A5568', lineHeight: 1.7 }}>只查不锁时，两个事务可能同时查到"无冲突"再各自插入。行锁把同一会议室上的判定串行化，后到事务能看到已提交记录，自然得到 409。</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 566, width: 620, height: 62, background: '#E8EFF8', display: 'flex', alignItems: 'center', padding: '0 20px' }}>
+        <Text style={{ fontSize: 17, color: '#1A2230' }}>同一套判定式，需求写明、SQL 落地、测试用例逐条命中。</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 660, width: 1160, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>智能会议室管理系统 V1.0 · 第 4 组答辩</Text>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>06 / 10</Text>
+    </Box>
+</Slide>

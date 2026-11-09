@@ -1,0 +1,10 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', fontFamily: '"Microsoft YaHei", Arial, sans-serif', position: 'relative' }}>
+    <Box style={{ position: 'absolute', left: 0, top: 0, width: 1280, height: 8, background: '#1E4FA8' }} />
+    <Text style={{ position: 'absolute', left: 96, top: 150, fontSize: 220, fontWeight: 'bold', color: '#E8EFF8', lineHeight: 1 }}>03</Text>
+    <Box style={{ position: 'absolute', left: 100, top: 372, width: 720, display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <Text style={{ fontSize: 52, fontWeight: 'bold', color: '#1A2230' }}>详细设计</Text>
+        <Text style={{ fontSize: 18, color: '#8B97A8', letterSpacing: 2 }}>DETAILED DESIGN</Text>
+        <Box style={{ width: 640, height: 1, background: '#D6DCE5' }} />
+        <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.9 }}>4 张表、4 个关键决策、一次事务内的冲突判定<br />并发场景下只允许生成一条有效预约</Text>
+    </Box>
+</Slide>

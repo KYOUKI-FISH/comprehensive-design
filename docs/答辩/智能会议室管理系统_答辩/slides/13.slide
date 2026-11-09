@@ -1,0 +1,44 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', fontFamily: '"Microsoft YaHei", Arial, sans-serif', position: 'relative' }}>
+    <Box style={{ position: 'absolute', left: 0, top: 0, width: 1280, height: 76, background: '#1E4FA8', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '0 60px' }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>数据库：4 张表撑起 20 条功能需求</Text>
+        <Text style={{ fontSize: 16, color: '#BFD0EA' }}>03 · 详细设计</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 100, width: 520, height: 394, border: '1px solid #E5E7EB' }}>
+        <Image src="assets/er.png" style={{ width: 518, height: 392, objectFit: 'contain' }} />
+    </Box>
+    <Text style={{ position: 'absolute', left: 60, top: 500, width: 520, fontSize: 14, color: '#8B97A8' }}>图：E-R 图——user 与 meeting_room 各对 reservation 一对多；user 对 operation_log 一对多</Text>
+
+    <Box style={{ position: 'absolute', left: 620, top: 96, width: 600, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230' }}>四张表的职责</Text>
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 12 }}>
+            <Text style={{ width: 150, fontSize: 16, fontWeight: 'bold', color: '#1E4FA8' }}>user</Text>
+            <Text style={{ flex: 1, fontSize: 16, color: '#4A5568', lineHeight: 1.6 }}>账号、BCrypt 口令摘要、角色、启停状态</Text>
+        </Box>
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 12 }}>
+            <Text style={{ width: 150, fontSize: 16, fontWeight: 'bold', color: '#1E4FA8' }}>meeting_room</Text>
+            <Text style={{ flex: 1, fontSize: 16, color: '#4A5568', lineHeight: 1.6 }}>房间名称（唯一）、位置、容量、设备、启用状态</Text>
+        </Box>
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 12 }}>
+            <Text style={{ width: 150, fontSize: 16, fontWeight: 'bold', color: '#1E4FA8' }}>reservation</Text>
+            <Text style={{ flex: 1, fontSize: 16, color: '#4A5568', lineHeight: 1.6 }}>核心表：房间 × 日期 × 时段、主题/人数/联系人、四态状态</Text>
+        </Box>
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 12 }}>
+            <Text style={{ width: 150, fontSize: 16, fontWeight: 'bold', color: '#1E4FA8' }}>operation_log</Text>
+            <Text style={{ flex: 1, fontSize: 16, color: '#4A5568', lineHeight: 1.6 }}>操作人、角色快照、对象、结果，供审计（NF-14）</Text>
+        </Box>
+
+        <Box style={{ width: 600, height: 1, background: '#E5E7EB', marginTop: 4 }} />
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230' }}>约束与索引</Text>
+        <Text style={{ fontSize: 16, color: '#4A5568', lineHeight: 1.8 }}>uk_room_name(name)：房间名唯一<br />idx_reservation_room_time(room_id, reserve_date, start_time)：冲突查询与占用聚合<br />ck_reservation_date_match：reserve_date 必须等于 start_time 的日期<br />外键全部 RESTRICT：有预约的房间、有日志的账号都删不掉</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 566, width: 1160, height: 66, background: '#F7F9FC', borderLeft: '4px solid #1E4FA8', display: 'flex', alignItems: 'center', padding: '0 24px' }}>
+        <Text style={{ fontSize: 19, color: '#1A2230' }}>相对第 6 周骨架只做两处变动：reservation 补 3 个必填业务字段，新增 operation_log——每一处都有需求编号。</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 660, width: 1160, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>智能会议室管理系统 V1.0 · 第 4 组答辩</Text>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>13 / 20</Text>
+    </Box>
+</Slide>
