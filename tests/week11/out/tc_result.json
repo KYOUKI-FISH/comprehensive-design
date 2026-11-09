@@ -1,7 +1,7 @@
 {
-  "executedAt": "2026-11-04T16:42:41",
+  "executedAt": "2026-11-09T16:33:01",
   "baseUrl": "http://localhost:8080/api",
-  "baseDate": "2026-12-14",
+  "baseDate": "2026-12-19",
   "passed": 6,
   "total": 6,
   "cases": [
@@ -9,9 +9,9 @@
       "no": "TC-01",
       "category": "功能",
       "name": "提交 09:00—11:00 预约",
-      "steps": "user1 登录 → POST /api/bookings（room1，2026-12-14 09:00-11:00）→ GET /api/bookings/mine",
+      "steps": "user1 登录 → POST /api/bookings（room1，2026-12-19 09:00-11:00）→ GET /api/bookings/mine",
       "expected": "提示成功；我的预约出现该条；库内可查",
-      "actual": "HTTP 200，编号 MR20261214151，mine 中可见（状态 PENDING）",
+      "actual": "HTTP 200，编号 MR20261219159，mine 中可见（状态 PENDING）",
       "conclusion": "通过",
       "evidence": {
         "request": {
@@ -19,9 +19,9 @@
           "path": "/api/bookings",
           "body": {
             "roomId": 1,
-            "date": "2026-12-14",
-            "startTime": "2026-12-14 09:00:00",
-            "endTime": "2026-12-14 11:00:00",
+            "date": "2026-12-19",
+            "startTime": "2026-12-19 09:00:00",
+            "endTime": "2026-12-19 11:00:00",
             "topic": "W11-TC01",
             "attendeeCount": 4,
             "contact": "虞业宸"
@@ -33,21 +33,21 @@
             "code": 200,
             "message": "ok",
             "data": {
-              "id": 151,
-              "reservationNo": "MR20261214151",
+              "id": 159,
+              "reservationNo": "MR20261219159",
               "status": "PENDING"
             }
           }
         },
-        "bookingId": 151
+        "bookingId": 159
       },
-      "executedAt": "2026-11-04T16:42:40"
+      "executedAt": "2026-11-09T16:33:00"
     },
     {
       "no": "TC-02",
       "category": "功能",
       "name": "管理员强制取消（填原因）",
-      "steps": "admin 登录 → PUT /api/admin/bookings/151/cancel {\"reason\":...} → GET /api/admin/logs",
+      "steps": "admin 登录 → PUT /api/admin/bookings/159/cancel {\"reason\":...} → GET /api/admin/logs",
       "expected": "提示成功；状态变已取消；操作日志可查",
       "actual": "HTTP 200，状态=CANCELLED，日志命中 5 条",
       "conclusion": "通过",
@@ -58,15 +58,15 @@
             "code": 200,
             "message": "ok",
             "data": {
-              "id": 151,
-              "reservationNo": "MR20261214151",
+              "id": 159,
+              "reservationNo": "MR20261219159",
               "userId": 2,
               "userName": "张三",
               "roomId": 1,
               "roomName": "逸夫楼A101会议室",
-              "reserveDate": "2026-12-14",
-              "startTime": "2026-12-14 09:00:00",
-              "endTime": "2026-12-14 11:00:00",
+              "reserveDate": "2026-12-19",
+              "startTime": "2026-12-19 09:00:00",
+              "endTime": "2026-12-19 11:00:00",
               "topic": "W11-TC01",
               "attendeeCount": 4,
               "contact": "虞业宸",
@@ -74,8 +74,8 @@
               "status": "CANCELLED",
               "cancelReason": "第11周用例：该预约属测试数据，强制取消",
               "operatorName": "admin",
-              "createdAt": "2026-11-04 16:42:40",
-              "updatedAt": "2026-11-04 16:42:41"
+              "createdAt": "2026-11-09 16:33:00",
+              "updatedAt": "2026-11-09 16:33:01"
             }
           }
         },
@@ -83,6 +83,21 @@
           "status": 200,
           "count": 5,
           "items": [
+            {
+              "id": 6,
+              "operatorUsername": "admin",
+              "operatorName": "系统管理员",
+              "operatorRole": "ADMIN",
+              "operationType": "BOOKING_FORCE_CANCEL",
+              "targetType": "BOOKING",
+              "targetId": 159,
+              "beforeData": "{\"status\": \"PENDING\", \"reservationNo\": \"MR20261219159\"}",
+              "afterData": "{\"status\": \"CANCELLED\", \"cancelReason\": \"第11周用例：该预约属测试数据，强制取消\", \"reservationNo\": \"MR20261219159\"}",
+              "remark": "管理员强制取消异常预约",
+              "detail": "管理员强制取消异常预约",
+              "ip": null,
+              "createdAt": "2026-11-09 16:33:00"
+            },
             {
               "id": 5,
               "operatorUsername": "admin",
@@ -142,41 +157,26 @@
               "detail": "管理员强制取消异常预约",
               "ip": null,
               "createdAt": "2026-11-04 16:25:39"
-            },
-            {
-              "id": 1,
-              "operatorUsername": "admin",
-              "operatorName": "系统管理员",
-              "operatorRole": "ADMIN",
-              "operationType": "BOOKING_FORCE_CANCEL",
-              "targetType": "BOOKING",
-              "targetId": 5,
-              "beforeData": "{\"status\": \"PENDING\", \"reservationNo\": \"MR20261102005\"}",
-              "afterData": "{\"status\": \"CANCELLED\", \"cancelReason\": \"主讲人临时出差，管理员强制取消\"}",
-              "remark": "演示数据：管理员强制取消异常预约",
-              "detail": "演示数据：管理员强制取消异常预约",
-              "ip": null,
-              "createdAt": "2026-11-02 09:30:00"
             }
           ]
         }
       },
-      "executedAt": "2026-11-04T16:42:41"
+      "executedAt": "2026-11-09T16:33:00"
     },
     {
       "no": "TC-03",
       "category": "异常",
       "name": "提交跨天预约",
-      "steps": "POST /api/bookings（2026-12-16 23:00 → 2026-12-17 01:00）",
+      "steps": "POST /api/bookings（2026-12-21 23:00 → 2026-12-22 01:00）",
       "expected": "提示不能跨天，不入库",
       "actual": "HTTP 200 code=400 message=预约不能跨天，且单次不能超过 8 小时；mine 中未出现",
       "conclusion": "通过",
       "evidence": {
         "request": {
           "roomId": 1,
-          "date": "2026-12-16",
-          "startTime": "2026-12-16 23:00:00",
-          "endTime": "2026-12-17 01:00:00",
+          "date": "2026-12-21",
+          "startTime": "2026-12-21 23:00:00",
+          "endTime": "2026-12-22 01:00:00",
           "topic": "W11-TC03",
           "attendeeCount": 4,
           "contact": "虞业宸"
@@ -190,22 +190,22 @@
           }
         }
       },
-      "executedAt": "2026-11-04T16:42:41"
+      "executedAt": "2026-11-09T16:33:01"
     },
     {
       "no": "TC-04",
       "category": "异常",
       "name": "结束时间早于开始",
-      "steps": "POST /api/bookings（2026-12-17 15:00 → 14:00）",
+      "steps": "POST /api/bookings（2026-12-22 15:00 → 14:00）",
       "expected": "提示时间不合法，不入库",
       "actual": "HTTP 200 code=400 message=结束时间必须晚于开始时间",
       "conclusion": "通过",
       "evidence": {
         "request": {
           "roomId": 1,
-          "date": "2026-12-17",
-          "startTime": "2026-12-17 15:00:00",
-          "endTime": "2026-12-17 14:00:00",
+          "date": "2026-12-22",
+          "startTime": "2026-12-22 15:00:00",
+          "endTime": "2026-12-22 14:00:00",
           "topic": "W11-TC04",
           "attendeeCount": 4,
           "contact": "虞业宸"
@@ -219,7 +219,7 @@
           }
         }
       },
-      "executedAt": "2026-11-04T16:42:41"
+      "executedAt": "2026-11-09T16:33:01"
     },
     {
       "no": "TC-05",
@@ -236,8 +236,8 @@
             "code": 200,
             "message": "ok",
             "data": {
-              "id": 152,
-              "reservationNo": "MR20261218152",
+              "id": 160,
+              "reservationNo": "MR20261223160",
               "status": "PENDING"
             }
           }
@@ -248,14 +248,14 @@
             "code": 200,
             "message": "ok",
             "data": {
-              "id": 153,
-              "reservationNo": "MR20261218153",
+              "id": 161,
+              "reservationNo": "MR20261223161",
               "status": "PENDING"
             }
           }
         }
       },
-      "executedAt": "2026-11-04T16:42:41"
+      "executedAt": "2026-11-09T16:33:01"
     },
     {
       "no": "TC-06",
@@ -268,9 +268,9 @@
       "evidence": {
         "request": {
           "roomId": 3,
-          "date": "2026-12-19",
-          "startTime": "2026-12-19 09:00:00",
-          "endTime": "2026-12-19 10:00:00",
+          "date": "2026-12-24",
+          "startTime": "2026-12-24 09:00:00",
+          "endTime": "2026-12-24 10:00:00",
           "topic": "W11-TC06",
           "attendeeCount": 4,
           "contact": "虞业宸"
@@ -284,7 +284,7 @@
           }
         }
       },
-      "executedAt": "2026-11-04T16:42:41"
+      "executedAt": "2026-11-09T16:33:01"
     }
   ]
 }
