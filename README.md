@@ -364,7 +364,7 @@ comprehensive-design/
 
 ---
 
-## 1. 小组信息
+## 1. 第 1 周： 小组信息
 
 | 项目 | 内容 |
 |------|------|
@@ -711,6 +711,37 @@ comprehensive-design/
 进入**系统设计阶段**：确定系统架构与分层（表现层／业务逻辑层／数据层）；依据第 5 周 DFD 的 D1～D3 数据存储细化 ER 图与表结构（字段、类型、约束、索引）形成建表脚本草案；依据用例规约与数据流定义前后端接口清单；确认工程结构（`backend/`、`frontend/`、`database/`、`tests/`）与技术栈定稿。
 
 > 第 6 周任务书下发后请放入 `docs/week06/`（任务书不纳入版本管理），README 再行对齐。
+> ---
+## 第 6 周目标目录结构
+
+```text
+comprehensive-design/
+├── README.md                 # 本文件（快速启动置顶）
+├── backend/                  # 后端骨架（Spring Boot 3.2 + JDK 17 + MyBatis + MySQL 8.0）
+│   ├── pom.xml
+│   └── src/main/
+│       ├── java/com/meetingroom/
+│       │   ├── MeetingRoomApplication.java
+│       │   ├── common/       # 统一返回体、业务异常、全局异常处理
+│       │   ├── config/       # CORS 跨域配置
+│       │   ├── controller/   # AuthController / MeetingRoomController / HealthController
+│       │   ├── service/      # AuthService / MeetingRoomService
+│       │   ├── mapper/       # UserMapper / MeetingRoomMapper
+│       │   ├── entity/       # User（D1）/ MeetingRoom（D2）
+│       │   └── dto/          # LoginRequest / LoginResponse / RoomVO / OccupiedSlotDTO
+│       └── resources/
+│           ├── application.yml
+│           └── mapper/       # UserMapper.xml / MeetingRoomMapper.xml
+├── database/                 # ★ 虞业宸
+│   ├── 01_schema.sql         # user(D1) / meeting_room(D2) / reservation(D3) / operation_log(NF-14)，密码为 BCrypt 摘要
+│   └── 02_seed.sql           # 默认账号 3 个 + 会议室 3 间（2 启用 / 1 停用）+ 预约 7 条（冲突组+首尾相接组）+ 日志 1 条
+├── frontend/                 # 前端（Vue3 + TS + Element Plus + Vite）★ 李知渔提供，2026-10-14 入库
+├── tests/                    # 冒烟脚本 + 种子校验 SQL（第 7 周起补完整用例集）
+└── docs/                     # 每周过程材料
+```
+
+---
+
 
 ## 12. 第 6 周内容
 
@@ -941,3 +972,4 @@ cd frontend && npm install && npm run dev
 
 见上文「## 默认账号」一节（第 120 行）。
 
+## 14. 第 9—11 周更新内容

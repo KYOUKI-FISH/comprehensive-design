@@ -1,0 +1,133 @@
+
+> meetingroom-week10-sunruopu@1.0.0 e2e
+> node scripts/e2e.mjs
+
+[mock] 
+[mock] 智能会议室管理系统 · 第10周本地 mock 后端
+  API: http://localhost:18080/api
+  令牌有效期: 1800 秒
+  演示账号（仅本地 mock，不是生产账号）：
+    口令由启动参数注入，本次运行不在日志中输出
+  种子预约：2026-10-29 学术报告厅 10:00-11:00、3号楼301 14:00-16:00
+            2026-10-30 行政楼小会议室 09:00-10:00
+            2026-10-27 学术报告厅 14:00-15:00（已结束，供管理员强制取消演示）
+  按 Ctrl+C 停止。数据仅存内存，重启即重置。
+
+[mock] GET /api/health -> 200
+[web] 
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m393[22m[2m[0m ms[22m
+
+[web]   [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5199[22m/[39m
+[PASS] 第1步：未登录访问会议室列表被重定向登录页并带 redirect
+[mock] POST /api/auth/login -> 401
+[PASS] 第1步：错误口令返回 401
+[PASS] 第1步：登录失败显示中文业务提示（NF-10）
+[mock] POST /api/auth/login -> 200
+[mock] GET /api/rooms -> 200
+[PASS] 第2步：普通用户登录后进入会议室列表
+[PASS] 第2步：普通用户菜单包含“会议室查询”“我的预约”
+[PASS] 第2步：普通用户菜单不显示管理入口（FR-02）：会议室查询 / 我的预约
+[PASS] 第2步：会议室列表显示后端返回的 6 间会议室
+[mock] GET /api/rooms?name=301 -> 200
+[PASS] 第3步：按名称筛选命中 3号楼301（FR-05）
+[mock] GET /api/rooms -> 200
+[mock] GET /api/rooms?minCapacity=100 -> 200
+[PASS] 第3步：按最小容量 100 人筛选命中 120 人报告厅（FR-05）
+[mock] GET /api/rooms -> 200
+[mock] GET /api/rooms -> 200
+[mock] GET /api/rooms/1/occupancy?date=2026-10-28 -> 200
+[PASS] 第3步：详情页显示名称与基本信息（D1 组合供数）
+[mock] GET /api/rooms/1/occupancy?date=2026-10-29 -> 200
+[PASS] 第3步：选择明天后显示种子占用 10:00–11:00（FR-17）
+[PASS] 第3步：详情页同时显示空闲时段
+[mock] GET /api/rooms -> 200
+[PASS] 第4步：从详情页进入预约表单自动带入会议室和日期
+[PASS] 第4步：缺必填项时行内中文提示（NF-09）：请填写会议主题。 / 请填写参会人数。 / 请填写联系人。
+[mock] POST /api/bookings -> 409
+[PASS] 第5步：冲突提示包含中文原因与被占用时段（FR-10）：该时段已被占用，请选择其他时间 /  / 以下时段已被占用： /  / 2026-10-29 10:00 — 11:00 /  / 请调整开始或结束时间后重新提交，已填写的信息不会丢失。
+[PASS] 第5步：冲突失败后完整保留已填信息（FR-18）
+[mock] POST /api/bookings -> 200
+[PASS] 第5步：预约成功并返回预约编号：MR202610290005
+[PASS] 第5步：预约时间为 11:00–12:00（与 10:00–11:00 首尾相接）
+[mock] GET /api/bookings/mine -> 200
+[PASS] 第6步：我的预约显示当前账号的 3 条记录（2 条种子 + 1 条新建）
+[PASS] 第6步：预约状态以后端四态展示（当前均为待开始）
+[PASS] 第6步：待开始预约展示“修改”“取消”按钮（FR-12/FR-13）
+[PASS] 第6步：修改弹窗缺必填项行内校验
+[mock] PUT /api/bookings/5 -> 200
+[mock] GET /api/bookings/mine -> 200
+[PASS] 第6步：修改预约成功并显示中文提示
+[PASS] 第6步：修改后列表显示新时段 12:00–13:00
+[mock] DELETE /api/bookings/5 -> 200
+[mock] GET /api/bookings/mine -> 200
+[PASS] 第7步：取消成功提示明确说明时段已释放
+[PASS] 第7步：取消后状态变为已取消并展示取消原因：MR202610290005	学术报告厅 /  / E2E 周会（已改期） /  / 取消原因：用户主动取消（user001） /  / 	2026-10-29 12:00 — 13:00	10 人	 / 已取消 / 	无
+[PASS] 第7步：已取消预约不再展示修改/取消按钮
+[mock] GET /api/rooms -> 200
+[mock] GET /api/rooms/1/occupancy?date=2026-10-28 -> 200
+[mock] GET /api/rooms/1/occupancy?date=2026-10-29 -> 200
+[PASS] 第8步：取消后 12:00–13:00 不再出现在已占用时段
+[PASS] 第8步：取消后 12:00–13:00 立即恢复为空闲时段（NF-08）：08:00 – 10:00 / 11:00 – 22:00
+[PASS] 普通用户访问管理页面被前端路由拦截到 403
+[mock] GET /api/rooms -> 200
+[mock] POST /api/auth/logout -> 200
+[PASS] 登出后本地令牌被清除
+[mock] POST /api/auth/login -> 403
+[PASS] 停用账号登录被拒并提示中文原因
+[mock] POST /api/auth/login -> 200
+[mock] GET /api/rooms -> 200
+[PASS] 管理员第1步：菜单显示四个管理入口（FR-02）
+[PASS] 管理员第1步：菜单不显示“我的预约”（角色权限矩阵）
+[PASS] 管理员访问“我的预约”被路由拦截到 403
+[mock] GET /api/admin/rooms -> 200
+[mock] GET /api/admin/bookings -> 200
+[PASS] 管理员第2步：全部预约列表返回 5 条记录：5
+[mock] GET /api/admin/bookings?roomId=2&date=2026-10-29 -> 200
+[PASS] 管理员第2步：按会议室 + 日期筛选命中课题组周会（FR-19）
+[mock] GET /api/admin/bookings -> 200
+[PASS] 管理员第2步：重置筛选恢复全部 5 条记录
+[PASS] 管理员第3步：未填原因时前端拒绝提交并提示（FR-16）
+[mock] PUT /api/admin/bookings/4/cancel -> 200
+[mock] GET /api/admin/bookings -> 200
+[PASS] 管理员第3步：填写原因后强制取消成功并提示日志已记录
+[PASS] 管理员第3步：已结束异常预约被强制取消并展示原因
+[mock] GET /api/admin/rooms -> 200
+[PASS] 会议室管理：列表显示 6 间会议室
+[mock] POST /api/admin/rooms -> 200
+[mock] GET /api/admin/rooms -> 200
+[PASS] 会议室管理：新增会议室成功并出现在列表
+[mock] PUT /api/admin/rooms/7 -> 200
+[mock] GET /api/admin/rooms -> 200
+[PASS] 会议室管理：编辑名称并将状态改为已停用成功
+[mock] DELETE /api/admin/rooms/7 -> 200
+[mock] GET /api/admin/rooms -> 200
+[PASS] 会议室管理：删除无预约的会议室成功
+[mock] DELETE /api/admin/rooms/1 -> 409
+[PASS] 会议室管理：存在有效预约时删除被拒并显示 409 中文原因（FR-03）：该会议室存在有效预约，请先处理预约
+[PASS] 会议室管理：删除失败时弹窗保持打开，不误关闭
+[mock] GET /api/admin/users -> 200
+[PASS] 用户管理：列表显示 4 个种子账号
+[mock] POST /api/admin/users -> 200
+[mock] GET /api/admin/users -> 200
+[PASS] 用户管理：新增用户成功并提示可使用初始密码登录
+[mock] PUT /api/admin/users/5 -> 200
+[mock] GET /api/admin/users -> 200
+[PASS] 用户管理：停用账号成功（NF-14 会记日志）
+[mock] PUT /api/admin/users/5 -> 200
+[mock] GET /api/admin/users -> 200
+[PASS] 用户管理：变更角色成功（NF-14 会记角色变更日志）
+[PASS] 用户管理：当前登录账号的角色与状态不可修改（自我保护）
+[mock] GET /api/admin/logs -> 200
+[PASS] 管理员第4步：操作日志记录 7 条敏感操作：7
+[PASS] 管理员第4步：日志字段完整（操作人/时间/类型/对象/摘要/变更前后）：操作时间 操作人 类型 对象 摘要 变更前后 
+[PASS] 管理员第4步：四类敏感操作日志均可在页面查到
+[PASS] 管理员第4步：变更前后数据可展开查看 JSON：{   "id": 5,   "username": "e2e_user_01",   "name": "E2E测试用户",   "department": "
+[PASS] 1366×768 下操作日志页无横向溢出：scrollWidth=1366
+[PASS] 1366×768 下管理员菜单完整可见
+[PASS] 1920×1080 下操作日志页无横向溢出：scrollWidth=1920
+[PASS] 1920×1080 下管理员菜单完整可见
+[PASS] 页面可见文本未出现本学期禁写 9 项
+[PASS] 浏览器控制台无报错
+[PASS] 无失败的网络请求
+
+全部 63 项浏览器端到端检查通过。

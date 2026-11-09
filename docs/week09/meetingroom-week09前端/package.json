@@ -1,0 +1,20 @@
+{
+  "name": "meetingroom-week09-sunruopu",
+  "private": true,
+  "version": "0.9.0",
+  "type": "module",
+  "scripts": {
+    "setup": "npm --prefix frontend install",
+    "dev": "node scripts/dev.mjs",
+    "dev:web": "npm --prefix frontend run dev",
+    "dev:mock": "node mock-server/server.mjs",
+    "build": "npm --prefix frontend run build",
+    "typecheck": "npm --prefix frontend run typecheck",
+    "preview": "npm --prefix frontend run preview",
+    "smoke": "node scripts/smoke.mjs",
+    "e2e": "node scripts/e2e.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.64.1"
+  }
+}

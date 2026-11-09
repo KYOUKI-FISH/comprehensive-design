@@ -1,0 +1,1646 @@
+{
+  "type": "concurrency",
+  "concurrency": 50,
+  "database": "meeting_room_week11_test_lmy_20261104",
+  "database_before_target_count": "0",
+  "same_calendar_second": true,
+  "conflicts_missing_occupied_slots": [],
+  "responses": [
+    {
+      "index": 0,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-00",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.051446+08:00",
+      "started_epoch": 1793783084.051446,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 84.9287999999433
+    },
+    {
+      "index": 1,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-01",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.052565+08:00",
+      "started_epoch": 1793783084.0525646,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 47.89440000013201
+    },
+    {
+      "index": 2,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-02",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.052104+08:00",
+      "started_epoch": 1793783084.0521045,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 72.90580000017144
+    },
+    {
+      "index": 3,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-03",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.056194+08:00",
+      "started_epoch": 1793783084.0561938,
+      "http_status": 200,
+      "body": {
+        "code": 200,
+        "message": "ok",
+        "data": {
+          "id": 9,
+          "reservationNo": "MR20270104009",
+          "status": "PENDING"
+        }
+      },
+      "elapsed_ms": 28.447199999845907
+    },
+    {
+      "index": 4,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-04",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.055781+08:00",
+      "started_epoch": 1793783084.055781,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 81.64070000020729
+    },
+    {
+      "index": 5,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-05",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.053950+08:00",
+      "started_epoch": 1793783084.0539503,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 50.76590000044234
+    },
+    {
+      "index": 6,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-06",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.054790+08:00",
+      "started_epoch": 1793783084.0547905,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 83.23229999996329
+    },
+    {
+      "index": 7,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-07",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.054390+08:00",
+      "started_epoch": 1793783084.0543902,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 78.77140000027794
+    },
+    {
+      "index": 8,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-08",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.055337+08:00",
+      "started_epoch": 1793783084.0553374,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 59.788900000057765
+    },
+    {
+      "index": 9,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-09",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.063313+08:00",
+      "started_epoch": 1793783084.0633135,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 72.38629999983459
+    },
+    {
+      "index": 10,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-10",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.056610+08:00",
+      "started_epoch": 1793783084.0566099,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 73.97549999996045
+    },
+    {
+      "index": 11,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-11",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.056940+08:00",
+      "started_epoch": 1793783084.0569396,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 70.75450000002093
+    },
+    {
+      "index": 12,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-12",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.063398+08:00",
+      "started_epoch": 1793783084.063398,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 42.358600000170554
+    },
+    {
+      "index": 13,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-13",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.058199+08:00",
+      "started_epoch": 1793783084.0581994,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 30.68570000004911
+    },
+    {
+      "index": 14,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-14",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.057590+08:00",
+      "started_epoch": 1793783084.05759,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 64.30180000006658
+    },
+    {
+      "index": 15,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-15",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.058995+08:00",
+      "started_epoch": 1793783084.0589955,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 33.11660000008487
+    },
+    {
+      "index": 16,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-16",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.057898+08:00",
+      "started_epoch": 1793783084.0578976,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 76.86629999989236
+    },
+    {
+      "index": 17,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-17",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.053036+08:00",
+      "started_epoch": 1793783084.0530357,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 90.56199999986347
+    },
+    {
+      "index": 18,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-18",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.058475+08:00",
+      "started_epoch": 1793783084.0584748,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 43.40570000022126
+    },
+    {
+      "index": 19,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-19",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.053485+08:00",
+      "started_epoch": 1793783084.053485,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 77.82789999964734
+    },
+    {
+      "index": 20,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-20",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.063946+08:00",
+      "started_epoch": 1793783084.063946,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 78.89820000036707
+    },
+    {
+      "index": 21,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-21",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.057275+08:00",
+      "started_epoch": 1793783084.0572746,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 75.03449999967415
+    },
+    {
+      "index": 22,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-22",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.058737+08:00",
+      "started_epoch": 1793783084.058737,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 89.68300000015006
+    },
+    {
+      "index": 23,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-23",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.059265+08:00",
+      "started_epoch": 1793783084.0592647,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 50.57729999998628
+    },
+    {
+      "index": 24,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-24",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.059732+08:00",
+      "started_epoch": 1793783084.0597317,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 52.82549999992625
+    },
+    {
+      "index": 25,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-25",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.059946+08:00",
+      "started_epoch": 1793783084.0599456,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 65.973600000234
+    },
+    {
+      "index": 26,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-26",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.059495+08:00",
+      "started_epoch": 1793783084.0594947,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 47.444399999676534
+    },
+    {
+      "index": 27,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-27",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.060157+08:00",
+      "started_epoch": 1793783084.0601573,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 56.12229999996998
+    },
+    {
+      "index": 28,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-28",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.060831+08:00",
+      "started_epoch": 1793783084.0608308,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 53.23920000000726
+    },
+    {
+      "index": 29,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-29",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.060589+08:00",
+      "started_epoch": 1793783084.0605888,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 47.83479999969131
+    },
+    {
+      "index": 30,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-30",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.060377+08:00",
+      "started_epoch": 1793783084.0603771,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 42.92940000004819
+    },
+    {
+      "index": 31,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-31",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.061400+08:00",
+      "started_epoch": 1793783084.0614004,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 84.82349999985672
+    },
+    {
+      "index": 32,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-32",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.061210+08:00",
+      "started_epoch": 1793783084.0612104,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 77.64240000005884
+    },
+    {
+      "index": 33,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-33",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.061020+08:00",
+      "started_epoch": 1793783084.06102,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 56.14729999979318
+    },
+    {
+      "index": 34,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-34",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.065222+08:00",
+      "started_epoch": 1793783084.0652218,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 76.49829999991198
+    },
+    {
+      "index": 35,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-35",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.061593+08:00",
+      "started_epoch": 1793783084.0615928,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 68.36079999993672
+    },
+    {
+      "index": 36,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-36",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.061774+08:00",
+      "started_epoch": 1793783084.0617735,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 57.760899999721005
+    },
+    {
+      "index": 37,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-37",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.061935+08:00",
+      "started_epoch": 1793783084.0619354,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 66.838899999766
+    },
+    {
+      "index": 38,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-38",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.062102+08:00",
+      "started_epoch": 1793783084.0621023,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 71.95420000016384
+    },
+    {
+      "index": 39,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-39",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.062424+08:00",
+      "started_epoch": 1793783084.0624237,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 61.0077999999703
+    },
+    {
+      "index": 40,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-40",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.063069+08:00",
+      "started_epoch": 1793783084.0630686,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 57.35370000002149
+    },
+    {
+      "index": 41,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-41",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.062228+08:00",
+      "started_epoch": 1793783084.0622284,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 84.88160000024436
+    },
+    {
+      "index": 42,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-42",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.062642+08:00",
+      "started_epoch": 1793783084.062642,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 28.088900000057038
+    },
+    {
+      "index": 43,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-43",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.065617+08:00",
+      "started_epoch": 1793783084.065617,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 61.29830000008951
+    },
+    {
+      "index": 44,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-44",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.062837+08:00",
+      "started_epoch": 1793783084.0628374,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 77.00969999996232
+    },
+    {
+      "index": 45,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-45",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.065429+08:00",
+      "started_epoch": 1793783084.0654287,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 79.10309999988385
+    },
+    {
+      "index": 46,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-46",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.062953+08:00",
+      "started_epoch": 1793783084.0629528,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 82.43910000010146
+    },
+    {
+      "index": 47,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-47",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.064218+08:00",
+      "started_epoch": 1793783084.0642178,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 23.207799999909184
+    },
+    {
+      "index": 48,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-48",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.066454+08:00",
+      "started_epoch": 1793783084.0664544,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 74.20920000004116
+    },
+    {
+      "index": 49,
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings",
+        "body": {
+          "roomId": 1,
+          "date": "2027-01-04",
+          "startTime": "2027-01-04 21:00",
+          "endTime": "2027-01-04 22:00",
+          "topic": "第11周并发-49",
+          "attendeeCount": 3,
+          "contact": "并发测试"
+        }
+      },
+      "started_at": "2026-11-04T17:04:44.050766+08:00",
+      "started_epoch": 1793783084.050766,
+      "http_status": 200,
+      "body": {
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "21:00",
+              "endTime": "22:00"
+            }
+          ]
+        }
+      },
+      "elapsed_ms": 67.46759999987262
+    }
+  ],
+  "target": {
+    "roomId": 1,
+    "date": "2027-01-04",
+    "start": "2027-01-04 21:00",
+    "end": "2027-01-04 22:00"
+  },
+  "fired_span_ms": 15.69,
+  "success": [
+    {
+      "index": 3,
+      "no": "MR20270104009"
+    }
+  ],
+  "conflict_count": 49,
+  "conflict_sample": {
+    "code": 409,
+    "message": "该会议室在此时间段已被占用",
+    "data": {
+      "occupiedSlots": [
+        {
+          "startTime": "21:00",
+          "endTime": "22:00"
+        }
+      ]
+    }
+  },
+  "other_count": 0,
+  "others": [],
+  "unique_key_errors": 0,
+  "db_rows": [
+    [
+      "MR20270104009",
+      "2",
+      "21:00",
+      "22:00",
+      "PENDING"
+    ]
+  ],
+  "verdict": "PASS"
+}
