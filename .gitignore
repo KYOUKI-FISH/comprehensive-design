@@ -46,3 +46,7 @@ build/
 target/
 *.class
 .mvn/wrapper/maven-wrapper.jar
+
+# 答辩演示材料（PPT/PDF/讲稿/工程缓存）：个人演示材料，按组内 2026-11-11 约定
+# 走网盘/群文件分发，不入组队仓库（上方"不忽略交付材料"不适用于本条）
+docs/答辩/
