@@ -1,0 +1,348 @@
+{
+  "title": "BUG-07 回归：九组冲突逐组复跑（HTTP 状态行 == body.code）",
+  "executed_at": "2026-11-11 18:18:52",
+  "base_url": "http://localhost:8080/api",
+  "db": "meeting_room",
+  "db_checked": true,
+  "day_offset": 50,
+  "passed": 9,
+  "total": 9,
+  "http_code_mismatch_groups": [],
+  "groups": [
+    {
+      "group": 1,
+      "scene": "完全重叠",
+      "date": "2027-01-01",
+      "room": 1,
+      "target_room": 1,
+      "pre_slot": "09:00-11:00",
+      "test_slot": "09:00-11:00",
+      "expect_code": 409,
+      "pre_http": 200,
+      "pre_code": 200,
+      "pre_id": 180,
+      "test_http": 409,
+      "test_code": 409,
+      "occupied_slots": [
+        [
+          "09:00",
+          "11:00"
+        ]
+      ],
+      "db_alive": "1",
+      "checks": [
+        {
+          "item": "HTTP 状态行 == 期望",
+          "ok": true
+        },
+        {
+          "item": "HTTP 状态行 == body.code",
+          "ok": true
+        },
+        {
+          "item": "occupiedSlots 含真实占用时段 09:00-11:00",
+          "ok": true
+        },
+        {
+          "item": "库内未新增（仍 1 条）",
+          "ok": true
+        }
+      ],
+      "verdict": "通过"
+    },
+    {
+      "group": 2,
+      "scene": "前段重叠",
+      "date": "2027-01-02",
+      "room": 1,
+      "target_room": 1,
+      "pre_slot": "09:00-11:00",
+      "test_slot": "08:00-09:30",
+      "expect_code": 409,
+      "pre_http": 200,
+      "pre_code": 200,
+      "pre_id": 181,
+      "test_http": 409,
+      "test_code": 409,
+      "occupied_slots": [
+        [
+          "09:00",
+          "11:00"
+        ]
+      ],
+      "db_alive": "1",
+      "checks": [
+        {
+          "item": "HTTP 状态行 == 期望",
+          "ok": true
+        },
+        {
+          "item": "HTTP 状态行 == body.code",
+          "ok": true
+        },
+        {
+          "item": "occupiedSlots 含真实占用时段 09:00-11:00",
+          "ok": true
+        },
+        {
+          "item": "库内未新增（仍 1 条）",
+          "ok": true
+        }
+      ],
+      "verdict": "通过"
+    },
+    {
+      "group": 3,
+      "scene": "后段重叠",
+      "date": "2027-01-03",
+      "room": 1,
+      "target_room": 1,
+      "pre_slot": "09:00-11:00",
+      "test_slot": "10:30-12:00",
+      "expect_code": 409,
+      "pre_http": 200,
+      "pre_code": 200,
+      "pre_id": 182,
+      "test_http": 409,
+      "test_code": 409,
+      "occupied_slots": [
+        [
+          "09:00",
+          "11:00"
+        ]
+      ],
+      "db_alive": "1",
+      "checks": [
+        {
+          "item": "HTTP 状态行 == 期望",
+          "ok": true
+        },
+        {
+          "item": "HTTP 状态行 == body.code",
+          "ok": true
+        },
+        {
+          "item": "occupiedSlots 含真实占用时段 09:00-11:00",
+          "ok": true
+        },
+        {
+          "item": "库内未新增（仍 1 条）",
+          "ok": true
+        }
+      ],
+      "verdict": "通过"
+    },
+    {
+      "group": 4,
+      "scene": "新预约包含已有",
+      "date": "2027-01-04",
+      "room": 1,
+      "target_room": 1,
+      "pre_slot": "10:00-10:30",
+      "test_slot": "09:00-11:00",
+      "expect_code": 409,
+      "pre_http": 200,
+      "pre_code": 200,
+      "pre_id": 183,
+      "test_http": 409,
+      "test_code": 409,
+      "occupied_slots": [
+        [
+          "10:00",
+          "10:30"
+        ]
+      ],
+      "db_alive": "1",
+      "checks": [
+        {
+          "item": "HTTP 状态行 == 期望",
+          "ok": true
+        },
+        {
+          "item": "HTTP 状态行 == body.code",
+          "ok": true
+        },
+        {
+          "item": "occupiedSlots 含真实占用时段 10:00-10:30",
+          "ok": true
+        },
+        {
+          "item": "库内未新增（仍 1 条）",
+          "ok": true
+        }
+      ],
+      "verdict": "通过"
+    },
+    {
+      "group": 5,
+      "scene": "新预约被包含",
+      "date": "2027-01-05",
+      "room": 1,
+      "target_room": 1,
+      "pre_slot": "09:00-11:00",
+      "test_slot": "10:00-10:30",
+      "expect_code": 409,
+      "pre_http": 200,
+      "pre_code": 200,
+      "pre_id": 184,
+      "test_http": 409,
+      "test_code": 409,
+      "occupied_slots": [
+        [
+          "09:00",
+          "11:00"
+        ]
+      ],
+      "db_alive": "1",
+      "checks": [
+        {
+          "item": "HTTP 状态行 == 期望",
+          "ok": true
+        },
+        {
+          "item": "HTTP 状态行 == body.code",
+          "ok": true
+        },
+        {
+          "item": "occupiedSlots 含真实占用时段 09:00-11:00",
+          "ok": true
+        },
+        {
+          "item": "库内未新增（仍 1 条）",
+          "ok": true
+        }
+      ],
+      "verdict": "通过"
+    },
+    {
+      "group": 6,
+      "scene": "首尾相接（后）",
+      "date": "2027-01-06",
+      "room": 1,
+      "target_room": 1,
+      "pre_slot": "09:00-11:00",
+      "test_slot": "11:00-12:00",
+      "expect_code": 200,
+      "pre_http": 200,
+      "pre_code": 200,
+      "pre_id": 185,
+      "test_http": 200,
+      "test_code": 200,
+      "occupied_slots": [],
+      "db_alive": "2",
+      "checks": [
+        {
+          "item": "HTTP 状态行 == 期望",
+          "ok": true
+        },
+        {
+          "item": "HTTP 状态行 == body.code",
+          "ok": true
+        },
+        {
+          "item": "返回预约编号",
+          "ok": true
+        },
+        {
+          "item": "库内新增（2 条）",
+          "ok": true
+        }
+      ],
+      "verdict": "通过"
+    },
+    {
+      "group": 7,
+      "scene": "首尾相接（前）",
+      "date": "2027-01-07",
+      "room": 1,
+      "target_room": 1,
+      "pre_slot": "09:00-11:00",
+      "test_slot": "08:00-09:00",
+      "expect_code": 200,
+      "pre_http": 200,
+      "pre_code": 200,
+      "pre_id": 187,
+      "test_http": 200,
+      "test_code": 200,
+      "occupied_slots": [],
+      "db_alive": "2",
+      "checks": [
+        {
+          "item": "HTTP 状态行 == 期望",
+          "ok": true
+        },
+        {
+          "item": "HTTP 状态行 == body.code",
+          "ok": true
+        },
+        {
+          "item": "返回预约编号",
+          "ok": true
+        },
+        {
+          "item": "库内新增（2 条）",
+          "ok": true
+        }
+      ],
+      "verdict": "通过"
+    },
+    {
+      "group": 8,
+      "scene": "同日不同会议室",
+      "date": "2027-01-08",
+      "room": 1,
+      "target_room": 2,
+      "pre_slot": "09:00-11:00",
+      "test_slot": "09:00-11:00",
+      "expect_code": 200,
+      "pre_http": 200,
+      "pre_code": 200,
+      "pre_id": 189,
+      "test_http": 200,
+      "test_code": 200,
+      "occupied_slots": [],
+      "db_alive": "1",
+      "db_home": "1",
+      "checks": [
+        {
+          "item": "HTTP 状态行 == 期望",
+          "ok": true
+        },
+        {
+          "item": "HTTP 状态行 == body.code",
+          "ok": true
+        },
+        {
+          "item": "返回预约编号",
+          "ok": true
+        },
+        {
+          "item": "两个会议室各 1 条（房1=1 / 房2=1）",
+          "ok": true
+        }
+      ],
+      "verdict": "通过"
+    },
+    {
+      "group": 9,
+      "scene": "取消后重订",
+      "date": "2027-01-09",
+      "room": 1,
+      "target_room": 1,
+      "pre_slot": "09:00-11:00",
+      "test_slot": "09:00-11:00",
+      "expect_code": 200,
+      "pre_http": 200,
+      "pre_code": 200,
+      "pre_id": 191,
+      "cancel_http": 200,
+      "cancel_code": 200,
+      "cancel_db_status": "CANCELLED",
+      "resubmit_http": 200,
+      "resubmit_code": 200,
+      "db_alive": "1",
+      "db_cancelled": "1",
+      "verdict": "通过"
+    }
+  ]
+}

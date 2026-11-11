@@ -1,0 +1,49 @@
+{
+  "type": "concurrency",
+  "concurrency": 50,
+  "target": {
+    "roomId": 1,
+    "date": "2026-12-21",
+    "start": "2026-12-21 21:00",
+    "end": "2026-12-21 22:00"
+  },
+  "fired_span_ms": 5.27,
+  "success": [
+    {
+      "index": 19,
+      "no": "MR20261221193"
+    }
+  ],
+  "conflict_count": 49,
+  "http_status_distribution": {
+    "409": 49,
+    "200": 1
+  },
+  "status_code_mismatches": [],
+  "http_500_count": 0,
+  "conflict_sample": {
+    "code": 409,
+    "message": "该会议室在此时间段已被占用",
+    "data": {
+      "occupiedSlots": [
+        {
+          "startTime": "21:00",
+          "endTime": "22:00"
+        }
+      ]
+    }
+  },
+  "other_count": 0,
+  "others": [],
+  "unique_key_errors": 0,
+  "db_rows": [
+    [
+      "MR20261221193",
+      "2",
+      "21:00",
+      "22:00",
+      "PENDING"
+    ]
+  ],
+  "verdict": "PASS"
+}

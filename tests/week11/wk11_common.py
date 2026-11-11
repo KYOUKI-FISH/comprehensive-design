@@ -80,11 +80,17 @@ def _parse(text):
 def db(sql):
     """执行一条 SQL，返回按行拆好的列表；口令缺失时返回 None（= 未核对）。"""
     pwd = os.environ.get("DB_PASSWORD")
-    if not pwd:
+    if pwd is None:
         return None
+    # ★ 区分「未配置」与「空口令」：变量没设置（None）才跳过核对；
+    #   设为空字符串表示本机 MySQL 口令为空（组内部分开发机如此），照常查库，不传 -p。
     cmd = [
         MYSQL_EXE, "--protocol=TCP", "-h", "127.0.0.1", "-P", "3306",
-        "-u", os.environ.get("DB_USERNAME", "root"), "-p" + pwd,
+        "-u", os.environ.get("DB_USERNAME", "root"),
+    ]
+    if pwd:
+        cmd.append("-p" + pwd)
+    cmd += [
         "--ssl-mode=DISABLED", "--get-server-public-key",
         "--default-character-set=utf8mb4", "-N", "-B", "-e",
         "USE %s; %s" % (DB_NAME, sql),
