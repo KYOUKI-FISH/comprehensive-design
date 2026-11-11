@@ -47,8 +47,9 @@ import java.util.List;
  * 成功  ：{ "code":200, "data":{ "id":8, "status":"CANCELLED" } }
  * </pre>
  *
- * <p>★ 业务失败一律 HTTP 200、靠 {@code code} 区分——这是第 6 周定下的前后端约定，
- * 前端只判断一处，不必在 HTTP 状态码和业务码之间来回切换。</p>
+ * <p>★ 第 12 周口径（BUG-07）：HTTP 状态行与 {@code code} 双写且数值一致，
+ * 冲突响应为 {@code HTTP 409} ＋ {@code code:409} ＋ {@code data.occupiedSlots}。
+ * 前端仍只判断 body 里的 {@code code} 一处，不必在 HTTP 状态码和业务码之间来回切换。</p>
  */
 @RestController
 @RequestMapping("/api/bookings")

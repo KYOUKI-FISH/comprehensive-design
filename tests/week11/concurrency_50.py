@@ -3,10 +3,11 @@
 
 判据（任务书第三节 + 周推进计划 §2.1.2.1）：
   1. **恰好 1 条成功**（业务码 200）；
-  2. **49 条明确失败**——返回冲突提示（业务码 409 且带 occupiedSlots），
+  2. **49 条明确失败**——HTTP 409 ＋ 冲突提示（body.code 409 且带 occupiedSlots），
      **不是 500、不是超时、不是空响应**；
   3. 库内该时段有效预约**只有 1 条**（要查库，光看返回值不够）；
-  4. 50 条响应里**没有唯一键冲突报错**（验编号生成方案）。
+  4. 50 条响应里**没有唯一键冲突报错**（验编号生成方案）；
+  5. ★ BUG-07 回归：**每条响应 HTTP status == body.code**，分布恰为 200×1 ＋ 409×49，无 500。
 
 ★ 为什么用 threading.Barrier：
   "同一秒发起"不是"快速连续发"。Barrier 让 50 个线程全部就位后由一个闸门同时放行，
@@ -81,9 +82,15 @@ span_ms = (max(fired_at) - min(fired_at)) * 1000
 
 
 def biz(r):
-    """业务码：本项目后端把业务结果放在响应体 code 里（HTTP 常为 200），
-    这里按业务码分类，同时把 HTTP 状态码分布单独统计——两者都留，报告里不混淆。"""
+    """业务码：响应体里的 code。第 12 周 BUG-07 修复后，HTTP 状态码与它同值，
+    这里仍分别统计（body.code 分类 + HTTP 分布 + 逐条一致性），报告里不混淆。"""
     return ((r[1] or {}).get("code") if r else None)
+
+
+# ★ BUG-07 回归：逐条核对「HTTP status == body.code」，并单独盯住 500
+mismatch = [(i, r[0], (r[1] or {}).get("code"))
+            for i, r in enumerate(results) if not r or r[0] != (r[1] or {}).get("code")]
+http_500 = [i for i, r in enumerate(results) if r and r[0] == 500]
 
 
 success = [(i, r) for i, r in enumerate(results) if biz(r) == 200]
@@ -98,8 +105,13 @@ for r in results:
 
 W.say()
 W.say("起跑跨度（%d 条请求的实际发出时刻差）：%.1f ms" % (CONCURRENCY, span_ms))
-W.say("HTTP 状态码分布：%s（★ 业务结果在响应体 code 里，HTTP 恒 200 属已知缺陷 BUG-07）"
-      % ", ".join("%s×%s" % (k, v) for k, v in sorted(http_dist.items(), key=lambda x: str(x[0]))))
+W.say("HTTP 状态码分布：%s（★ BUG-07 修复后应为 200×1 ＋ 409×%d）"
+      % (", ".join("%s×%s" % (k, v) for k, v in sorted(http_dist.items(), key=lambda x: str(x[0]))),
+         CONCURRENCY - 1))
+W.say("HTTP status 与 body.code 不一致：%d 条（判据要求 0）；其中 HTTP 500：%d 条（判据要求 0）"
+      % (len(mismatch), len(http_500)))
+for i, status, code in mismatch[:5]:
+    W.say("    #%02d HTTP=%s body.code=%s" % (i, status, code))
 W.say("成功（业务码 200）  ：%d 条" % len(success))
 for i, r in success:
     W.say("    #%02d 预约号 %s" % (i, (r[1].get("data") or {}).get("reservationNo")))
@@ -143,6 +155,15 @@ if len(success) != 1:
     reasons.append("成功条数 %d ≠ 1" % len(success))
 if len(conflict) != CONCURRENCY - 1:
     reasons.append("冲突条数 %d ≠ %d" % (len(conflict), CONCURRENCY - 1))
+# ★ BUG-07 回归判据：HTTP 分布必须恰好 200×1 + 409×(N-1)，且没有 500 / 双写不一致
+if http_dist.get(200) != 1 or http_dist.get(409) != CONCURRENCY - 1 or len(http_dist) != 2:
+    reasons.append("HTTP 状态码分布 %s ≠ 200×1 + 409×%d"
+                   % (http_dist, CONCURRENCY - 1))
+if http_500:
+    reasons.append("出现 %d 条 HTTP 500" % len(http_500))
+if mismatch:
+    reasons.append("HTTP status 与 body.code 不一致 %d 条（样例：%s）"
+                   % (len(mismatch), mismatch[:3]))
 if others:
     reasons.append("存在 %d 条非 200/409 响应" % len(others))
 if db_count is not None and db_count != 1:
@@ -155,8 +176,9 @@ if span_ms > 1000:
 if reasons:
     W.say("判定：★ 未通过 —— " + "；".join(reasons))
 else:
-    W.say("判定：★ 通过 —— 1 条成功 / %d 条明确失败 / 库内仅 1 条 / 无撞键 / 起跑跨度 %.0f ms"
-          % (len(conflict), span_ms))
+    W.say("判定：★ 通过 —— 1 条成功 / %d 条明确失败 / 库内仅 1 条 / 无撞键 / "
+          "HTTP 200×1＋409×%d 且 status==code / 起跑跨度 %.0f ms"
+          % (len(conflict), CONCURRENCY - 1, span_ms))
 W.say("=" * 78)
 
 W.save_json(
@@ -170,6 +192,9 @@ W.save_json(
         "success": [{"index": i, "no": (r[1].get("data") or {}).get("reservationNo")}
                     for i, r in success],
         "conflict_count": len(conflict),
+        "http_status_distribution": {str(k): v for k, v in http_dist.items()},
+        "status_code_mismatches": mismatch,
+        "http_500_count": len(http_500),
         "conflict_sample": conflict[0][1][1] if conflict else None,
         "other_count": len(others),
         "others": [{"index": i, "status": r[0], "body": r[1]} for i, r in others],

@@ -14,15 +14,21 @@ import { getToken, clearToken } from '@/store/session'
  *       {@code Authorization: Bearer <token>}（FR-01、NF-04）。</li>
  * </ol>
  *
- * <p>注意后端约定：业务失败也返回 HTTP 200，靠 body 里的 {@code code} 区分结果，
- * 因此这里判的是 code 而不是 HTTP 状态码。</p>
+ * <p>后端约定：HTTP 状态码与 body.code 双写且数值一致（第 12 周 BUG-07 修复后）；
+ * 本封装仍统一按 body 里的 {@code code} 判成败，页面逻辑不需要两套判断。</p>
  */
 const baseURL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/api'
 
 const http = axios.create({
   baseURL,
   timeout: 10000,
-  headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' },
+  // ★ BUG-07（第 12 周）：后端改为 HTTP 状态码与 body.code 双写后，
+  //   4xx/5xx 默认会被 axios 判为失败而抛错、跳过 then 分支。
+  //   这里放行所有状态码，继续走统一的「按 body.code 判成败」路径，
+  //   页面组件与 ApiBusinessError 用法零改动。
+  //   已知取舍：业务失败不再进入 axios error 分支，将来若加全局错误监控需自行在响应拦截器里做。
+  validateStatus: () => true
 })
 
 /**

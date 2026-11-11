@@ -1,0 +1,9 @@
+HTTP/1.1 409 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Mon, 09 Nov 2026 13:09:48 GMT
+
+{"code":409,"message":"该会议室在此时间段已被占用","data":{"occupiedSlots":[{"startTime":"10:00","endTime":"11:00"}]}}

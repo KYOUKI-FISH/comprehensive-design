@@ -11,8 +11,8 @@ package com.meetingroom.common;
  * }
  * </pre>
  *
- * <p>约定：业务失败也返回 HTTP 200，靠 {@code code} 区分结果，
- * 避免前端在 HTTP 状态码与业务码之间来回判断（技术选型报告"预测问题"提到的接口不一致风险）。</p>
+ * <p>约定（第 12 周 BUG-07 修复后）：HTTP 状态行与 {@code code} <b>双写且数值一致</b>，
+ * 传输层能直接看出成败；前端仍只按 {@code code} 判一次，不必在两套码之间来回切换。</p>
  */
 public class ApiResponse<T> {
 
@@ -26,7 +26,7 @@ public class ApiResponse<T> {
     public static final int CODE_FORBIDDEN = 403;
     /** 资源不存在 */
     public static final int CODE_NOT_FOUND = 404;
-    /** 业务冲突：如预约时段已被占用（FR-09／FR-10），HTTP 仍返回 200，靠 code 区分 */
+    /** 业务冲突：如预约时段已被占用（FR-09／FR-10），HTTP 与 code 同为 409，data 回带被占用时段 */
     public static final int CODE_CONFLICT = 409;
     /** 服务器内部错误 */
     public static final int CODE_SERVER_ERROR = 500;

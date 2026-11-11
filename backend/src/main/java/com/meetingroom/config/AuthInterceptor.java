@@ -59,6 +59,15 @@ public class AuthInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String path = request.getRequestURI();
 
+        // ★ BUG-07（第 12 周）必须放行的一种请求：CORS 预检（OPTIONS）不携带令牌，
+        //   由 Spring MVC 的预检处理器直接应答 CORS 头，不会执行任何 Controller 方法。
+        //   修复前 writeJson 写 HTTP 200，预检恰好能过；改成 401 后若继续在这里拦，
+        //   浏览器会判定预检失败，所有带 Authorization 的跨域业务请求都发不出去（页面级全废）。
+        //   放行只影响 OPTIONS，不放宽 GET/POST/PUT/DELETE 的鉴权边界。
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+
         // 公开接口放行
         for (String publicPath : PUBLIC_PATHS) {
             if (publicPath.equals(path)) {
@@ -119,9 +128,11 @@ public class AuthInterceptor implements HandlerInterceptor {
         writeJson(response, ApiResponse.CODE_FORBIDDEN, message);
     }
 
-    /** 直接写出统一返回体（与 {@code ApiResponse} 结构一致） */
+    /** 直接写出统一返回体（与 {@code ApiResponse} 结构一致）。
+     *  ★ BUG-07（第 12 周）：HTTP 状态行与 body.code 双写——业务码数值与 HTTP 状态码一致，
+     *    401/403 在传输层也可见。body 结构与提示文案不变。 */
     private void writeJson(HttpServletResponse response, int code, String message) {
-        response.setStatus(HttpServletResponse.SC_OK);
+        response.setStatus(code);
         response.setContentType("application/json;charset=UTF-8");
         try {
             String json = "{\"code\":" + code + ",\"message\":\"" + message + "\",\"data\":null}";

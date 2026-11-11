@@ -1,0 +1,58 @@
+{
+  "generated_at": "2026-11-09T13:08:54.283Z",
+  "frontend": "http://localhost:5173",
+  "test_date": "2026-12-24",
+  "steps": [
+    {
+      "name": "登录页渲染",
+      "value": "{\"url\":\"http://localhost:5173/login\",\"title\":\"智能会议室管理系统 V1.0\",\"inputs\":[\"user1\",\"<演示账号口令>\"]}"
+    },
+    {
+      "name": "点击登录后",
+      "value": "{\"url\":\"http://localhost:5173/rooms\",\"hasToken\":true,\"body\":\"智能会议室管理系统 V1.0\\n功能\\n会议室查询\\n提交预约\\n我的预约\\n普通用户\\n张三\\n退出登录\\n会议室查询\\n对应 FR-05 按条件查询 / FR-06 只显示启用中的会议室\\nV1.0 会议室查询\\n\\n本页可按位置／容量／日期筛选会议室。点「进详情」看该会议室所选日期的已占用时段，再点「去预约」提交预约——提交时若时间重叠会给出明确提示与被占用的具体时段（FR-09、FR-10）。\\n\\n位置关键字\\n最小容纳人数\\n日期\\n查询\\n重置\\nID\\n\\t\\n会议室\\n\\t\\n位置\\n\\t\\n容纳人数\\n\\t\\n设备\\n\\t\\n状态\\n\\t\\n当日已占用时段\\n\\t\\n操作\\n\"}"
+    },
+    {
+      "name": "FR-10：真实 request() 收到 409 后的错误对象",
+      "value": {
+        "name": "ApiBusinessError",
+        "code": 409,
+        "message": "该会议室在此时间段已被占用",
+        "data": {
+          "occupiedSlots": [
+            {
+              "startTime": "10:00",
+              "endTime": "11:00"
+            }
+          ]
+        },
+        "isApiBusinessError": true
+      }
+    },
+    {
+      "name": "NF-04：401 后的清令牌与页面 URL（§5.5-5 疑点实测）",
+      "value": {
+        "tokenBefore": "invalid-token-for-regression",
+        "urlBefore": "http://localhost:5173/rooms",
+        "name": "ApiBusinessError",
+        "code": 401,
+        "message": "未登录或登录已过期，请重新登录",
+        "tokenAfter": null,
+        "urlAfter": "http://localhost:5173/rooms"
+      }
+    },
+    {
+      "name": "刷新后（令牌已被清）",
+      "value": "{\"url\":\"http://localhost:5173/login?redirect=/rooms\",\"hasToken\":false,\"body\":\"智能会议室管理系统 V1.0\\n智能会议室管理系统\\n\\nV1.0 基础预约与管理平台 · 第 4 组\\n\\n账号\\n密码\\n登录\\n\\n演示账号与口令见仓库根目录 README.md 的「默认账号」一节。\"}"
+    },
+    {
+      "name": "FR-10 UI 层：冲突后页面是否展示被占用时段",
+      "value": {
+        "foundComponent": true,
+        "url": "http://localhost:5173/bookings/new",
+        "conflictSlots": "[{\"startTime\":\"10:00\",\"endTime\":\"11:00\"}]",
+        "body": "智能会议室管理系统 V1.0\n功能\n会议室查询\n提交预约\n我的预约\n普通用户\n张三\n退出登录\n提交预约\n对应 FR-07 提交预约 / FR-09 冲突检测 / FR-10 冲突提示 / FR-18 失败保留已填信息\n会议室\n逸夫楼A101会议室（逸夫楼A座1层，20人）\n停用的会议室不会出现在这里（FR-06）。\n预约日期\n开始时间\n结束时间\n会议主题\n11 / 100\n参会人数\n联系人\n用途说明\n0 / 255\n提交预约\n返回\n2026-12-24 该会议室已被占用的时段\n15:00-16:00\n本次冲突的时段\n该会议室在此时间段已被占用\n\n下面是被占用的具体时段，请调整时间后重新提交（已填内容已保留）。\n\n10:00-11:00\n\n该会议室在此时间段已被占用"
+      }
+    }
+  ],
+  "verdict": "COLLECTED"
+}

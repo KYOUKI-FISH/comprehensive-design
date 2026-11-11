@@ -1,0 +1,324 @@
+{
+  "type": "bug07_status_code_regression",
+  "generated_at": "2026-11-09T21:09:37",
+  "base": "http://localhost:8080/api",
+  "test_date": "2026-12-24",
+  "room_id": 1,
+  "note": "verdict=PASS 表示无双写不一致失败；500 兜底在该脚本中未被畸形参数触发，另由 curl_500_fallback.txt 断库实测坐实。",
+  "cases": [
+    {
+      "case": "登录成功（管理员）",
+      "method": "POST",
+      "path": "/auth/login",
+      "expect_http": 200,
+      "http_status": 200,
+      "body_code": 200,
+      "message": "ok",
+      "data": {
+        "userId": 1,
+        "username": "admin",
+        "realName": "系统管理员",
+        "role": "ADMIN",
+        "token": "<redacted>"
+      },
+      "raw_body": "{\"code\":200,\"message\":\"ok\",\"data\":{\"userId\":1,\"username\":\"admin\",\"realName\":\"系统管理员\",\"role\":\"ADMIN\",\"token\":\"<redacted>\"}}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "登录成功（公开接口）",
+      "method": "POST",
+      "path": "/auth/login",
+      "expect_http": 200,
+      "http_status": 200,
+      "body_code": 200,
+      "message": "ok",
+      "data": {
+        "userId": 2,
+        "username": "user1",
+        "realName": "张三",
+        "role": "USER",
+        "token": "<redacted>"
+      },
+      "raw_body": "{\"code\":200,\"message\":\"ok\",\"data\":{\"userId\":2,\"username\":\"user1\",\"realName\":\"张三\",\"role\":\"USER\",\"token\":\"<redacted>\"}}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "查询会议室成功",
+      "method": "GET",
+      "path": "/rooms",
+      "expect_http": 200,
+      "http_status": 200,
+      "body_code": 200,
+      "message": "ok",
+      "data": [
+        {
+          "id": 1,
+          "name": "逸夫楼A101会议室",
+          "location": "逸夫楼A座1层",
+          "capacity": 20,
+          "equipment": "投影仪、白板、视频会议终端",
+          "status": "ENABLED",
+          "occupiedSlots": []
+        },
+        {
+          "id": 2,
+          "name": "逸夫楼A202会议室",
+          "location": "逸夫楼A座2层",
+          "capacity": 12,
+          "equipment": "投影仪、白板",
+          "status": "ENABLED",
+          "occupiedSlots": []
+        },
+        {
+          "id": 3,
+          "name": "图书馆B301报告厅",
+          "location": "图书馆B座3层",
+          "capacity": 40,
+          "equipment": "投影仪、音响、话筒",
+          "status": "DISABLED",
+          "occupiedSlots": []
+        }
+      ],
+      "raw_body": "{\"code\":200,\"message\":\"ok\",\"data\":[{\"id\":1,\"name\":\"逸夫楼A101会议室\",\"location\":\"逸夫楼A座1层\",\"capacity\":20,\"equipment\":\"投影仪、白板、视频会议终端\",\"status\":\"ENABLED\",\"occupiedSlots\":[]},{\"id\":2,\"name\":\"逸夫楼A202会议室\",\"location\":\"逸夫楼A座2层\",\"capacity\":12,\"equipment\":\"投影仪、白板\",\"status\":\"ENABLED\",\"occupiedSlots\":[]},{\"id\":3,\"name\":\"图书馆B301报告厅\",\"location\":\"图书馆B座3层\",\"capacity\":40,\"equipment\":\"投影仪、音响、话筒\",\"status\":\"DISABLED\",\"occupiedSlots\":[]}]}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "健康检查成功",
+      "method": "GET",
+      "path": "/health",
+      "expect_http": 200,
+      "http_status": 200,
+      "body_code": 200,
+      "message": "ok",
+      "data": {
+        "application": "meeting-room-backend",
+        "timestamp": "2026-11-09T21:09:37.125755300",
+        "database": "UP"
+      },
+      "raw_body": "{\"code\":200,\"message\":\"ok\",\"data\":{\"application\":\"meeting-room-backend\",\"timestamp\":\"2026-11-09T21:09:37.125755300\",\"database\":\"UP\"}}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "400 日期参数类型错误",
+      "method": "GET",
+      "path": "/rooms?date=not-a-date",
+      "expect_http": 400,
+      "http_status": 400,
+      "body_code": 400,
+      "message": "请求参数不合法：Failed to convert value of type 'java.lang.String' to required type 'java.time.LocalDate'; Failed to convert from type [java.lang.String] to type [@org.springframework.web.bind.annotation.RequestParam @org.springframework.format.annotation.DateTimeFormat java.time.LocalDate] for value [not-a-date]",
+      "data": null,
+      "raw_body": "{\"code\":400,\"message\":\"请求参数不合法：Failed to convert value of type 'java.lang.String' to required type 'java.time.LocalDate'; Failed to convert from type [java.lang.String] to type [@org.springframework.web.bind.annotation.RequestParam @org.springframework.format.annotation.DateTimeFormat java.time.LocalDate] for value [not-a-date]\",\"data\":null}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "400 结束时间早于开始",
+      "method": "POST",
+      "path": "/bookings",
+      "expect_http": 400,
+      "http_status": 400,
+      "body_code": 400,
+      "message": "结束时间必须晚于开始时间",
+      "data": null,
+      "raw_body": "{\"code\":400,\"message\":\"结束时间必须晚于开始时间\",\"data\":null}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "400 缺必填参会人数",
+      "method": "POST",
+      "path": "/bookings",
+      "expect_http": 400,
+      "http_status": 400,
+      "body_code": 400,
+      "message": "参会人数必须是大于 0 的整数",
+      "data": null,
+      "raw_body": "{\"code\":400,\"message\":\"参会人数必须是大于 0 的整数\",\"data\":null}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "400 请求体不是合法 JSON",
+      "method": "POST",
+      "path": "/bookings",
+      "expect_http": 400,
+      "http_status": 400,
+      "body_code": 400,
+      "message": "请求参数不合法：JSON parse error: Unexpected character ('n' (code 110)): was expecting double-quote to start field name",
+      "data": null,
+      "raw_body": "{\"code\":400,\"message\":\"请求参数不合法：JSON parse error: Unexpected character ('n' (code 110)): was expecting double-quote to start field name\",\"data\":null}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "401 不带令牌",
+      "method": "GET",
+      "path": "/rooms",
+      "expect_http": 401,
+      "http_status": 401,
+      "body_code": 401,
+      "message": "未登录或登录已过期，请重新登录",
+      "data": null,
+      "raw_body": "{\"code\":401,\"message\":\"未登录或登录已过期，请重新登录\",\"data\":null}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "401 伪造令牌",
+      "method": "GET",
+      "path": "/rooms",
+      "expect_http": 401,
+      "http_status": 401,
+      "body_code": 401,
+      "message": "未登录或登录已过期，请重新登录",
+      "data": null,
+      "raw_body": "{\"code\":401,\"message\":\"未登录或登录已过期，请重新登录\",\"data\":null}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "403 普通用户调管理接口（拦截器）",
+      "method": "GET",
+      "path": "/admin/logs",
+      "expect_http": 403,
+      "http_status": 403,
+      "body_code": 403,
+      "message": "无权访问该功能",
+      "data": null,
+      "raw_body": "{\"code\":403,\"message\":\"无权访问该功能\",\"data\":null}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "404 业务异常（会议室不存在）",
+      "method": "GET",
+      "path": "/rooms/999999",
+      "expect_http": 404,
+      "http_status": 404,
+      "body_code": 404,
+      "message": "会议室不存在",
+      "data": null,
+      "raw_body": "{\"code\":404,\"message\":\"会议室不存在\",\"data\":null}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "404 未匹配路径",
+      "method": "GET",
+      "path": "/nope",
+      "expect_http": 404,
+      "http_status": 404,
+      "body_code": 404,
+      "message": "请求的接口不存在：api/nope",
+      "data": null,
+      "raw_body": "{\"code\":404,\"message\":\"请求的接口不存在：api/nope\",\"data\":null}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "准备：user2 创建预约 C 16:00-17:00",
+      "method": "POST",
+      "path": "/bookings",
+      "expect_http": 200,
+      "http_status": 200,
+      "body_code": 200,
+      "message": "ok",
+      "data": {
+        "id": 77,
+        "reservationNo": "MR20261224077",
+        "status": "PENDING"
+      },
+      "raw_body": "{\"code\":200,\"message\":\"ok\",\"data\":{\"id\":77,\"reservationNo\":\"MR20261224077\",\"status\":\"PENDING\"}}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "403 业务异常（改他人预约）",
+      "method": "PUT",
+      "path": "/bookings/77",
+      "expect_http": 403,
+      "http_status": 403,
+      "body_code": 403,
+      "message": "只能修改本人提交的预约",
+      "data": null,
+      "raw_body": "{\"code\":403,\"message\":\"只能修改本人提交的预约\",\"data\":null}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "准备：创建占用 A 10:00-11:00",
+      "method": "POST",
+      "path": "/bookings",
+      "expect_http": 200,
+      "http_status": 200,
+      "body_code": 200,
+      "message": "ok",
+      "data": {
+        "id": 78,
+        "reservationNo": "MR20261224078",
+        "status": "PENDING"
+      },
+      "raw_body": "{\"code\":200,\"message\":\"ok\",\"data\":{\"id\":78,\"reservationNo\":\"MR20261224078\",\"status\":\"PENDING\"}}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "准备：创建占用 B 14:00-15:00",
+      "method": "POST",
+      "path": "/bookings",
+      "expect_http": 200,
+      "http_status": 200,
+      "body_code": 200,
+      "message": "ok",
+      "data": {
+        "id": 79,
+        "reservationNo": "MR20261224079",
+        "status": "PENDING"
+      },
+      "raw_body": "{\"code\":200,\"message\":\"ok\",\"data\":{\"id\":79,\"reservationNo\":\"MR20261224079\",\"status\":\"PENDING\"}}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "409 重叠预约（FR-10）",
+      "method": "POST",
+      "path": "/bookings",
+      "expect_http": 409,
+      "http_status": 409,
+      "body_code": 409,
+      "message": "该会议室在此时间段已被占用",
+      "data": {
+        "occupiedSlots": [
+          {
+            "startTime": "10:00",
+            "endTime": "11:00"
+          }
+        ]
+      },
+      "raw_body": "{\"code\":409,\"message\":\"该会议室在此时间段已被占用\",\"data\":{\"occupiedSlots\":[{\"startTime\":\"10:00\",\"endTime\":\"11:00\"}]}}",
+      "verdict": "PASS",
+      "extra_check": "occupiedSlots=[('10:00', '11:00')]（应为且仅为 10:00~11:00，不含 14:00~15:00）"
+    },
+    {
+      "case": "半开区间：11:00-12:00 与 A 首尾相接不冲突",
+      "method": "POST",
+      "path": "/bookings",
+      "expect_http": 200,
+      "http_status": 200,
+      "body_code": 200,
+      "message": "ok",
+      "data": {
+        "id": 80,
+        "reservationNo": "MR20261224080",
+        "status": "PENDING"
+      },
+      "raw_body": "{\"code\":200,\"message\":\"ok\",\"data\":{\"id\":80,\"reservationNo\":\"MR20261224080\",\"status\":\"PENDING\"}}",
+      "verdict": "PASS"
+    },
+    {
+      "case": "500 兜底（畸形参数触发尝试）",
+      "method": "GET",
+      "path": "/rooms/999999999999999999999999999999",
+      "expect_http": "500（仅在真正触发兜底时）",
+      "http_status": 400,
+      "body_code": 400,
+      "message": "请求参数不合法：Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"999999999999999999999999999999\"",
+      "data": null,
+      "raw_body": "{\"code\":400,\"message\":\"请求参数不合法：Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \\\"999999999999999999999999999999\\\"\",\"data\":null}",
+      "extra_check": "未触发兜底异常时该项标 NOT_TRIGGERED：按计划 §3 仅核对代码路径，不宣称实测通过",
+      "verdict": "NOT_TRIGGERED"
+    }
+  ],
+  "failures": [],
+  "verdict": "PASS",
+  "pass_count": 19,
+  "fail_count": 0,
+  "not_triggered_count": 1
+}
