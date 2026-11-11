@@ -1,0 +1,43 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', fontFamily: '"Microsoft YaHei", Arial, sans-serif', position: 'relative' }}>
+    <Box style={{ position: 'absolute', left: 0, top: 0, width: 1280, height: 76, background: '#1E4FA8', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '0 60px' }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>评审意见逐条落地：5 条采纳，1 条不采纳</Text>
+        <Text style={{ fontSize: 16, color: '#BFD0EA' }}>01 · 需求分析</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 100, width: 1160 }}>
+        <Table
+            style={{ width: 1160, height: 420 }}
+            defaultTextStyle={{ fontSize: 17, textAlign: 'left', color: '#1A2230' }}
+            defaultCellStyle={{ border: { bottom: { width: 1, color: '#E5E7EB' } }, padding: 14 }}
+            cells={[
+                [
+                    { text: '编号', textStyle: { bold: true, color: '#FFFFFF', fontSize: 17 }, cellStyle: { background: { color: '#1E4FA8' } } },
+                    { text: '评审发现的问题', textStyle: { bold: true, color: '#FFFFFF' }, cellStyle: { background: { color: '#1E4FA8' } } },
+                    { text: '处理决定与落点', textStyle: { bold: true, color: '#FFFFFF' }, cellStyle: { background: { color: '#1E4FA8' } } }
+                ],
+                ['R-01', '停用会议室仍可能被选为新预约', '采纳　→ FR-06 明确停用房间不作为新预约选项'],
+                ['R-02', '提交预约未写明哪些字段必填', '采纳　→ FR-07 补写主题、人数、联系人'],
+                ['R-03', '预约时长无上限，可一次约整天', '采纳　→ FR-08 增加不跨天、不超过 8 小时'],
+                ['R-04', '首尾相接算不算冲突未写明', '采纳　→ FR-09 定为半开区间，相接不算冲突'],
+                ['R-05', '改／取消的时间限制三处表述不一致', '采纳　→ FR-12、FR-13 统一为距开始 30 分钟'],
+                [{ text: 'R-06', textStyle: { color: '#D9534F', bold: true } }, { text: '建议增加预约成功短信通知', textStyle: { color: '#D9534F' } }, { text: '不采纳　→ 属消息推送，列入本学期 9 项不做范围', textStyle: { color: '#D9534F' } }]
+            ]}
+        />
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 540, width: 1160, display: 'flex', flexDirection: 'row', gap: 32 }}>
+        <Box style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 16, borderTop: '2px solid #1E4FA8' }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1A2230' }}>不采纳也要留痕</Text>
+            <Text style={{ fontSize: 17, color: '#4A5568', lineHeight: 1.7 }}>R-06 在变更对照表保留一行，写明理由与"本学期不实现"的边界，评审记录可追溯到条目。</Text>
+        </Box>
+        <Box style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 16, borderTop: '2px solid #1E4FA8' }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1A2230' }}>采纳要落到编号</Text>
+            <Text style={{ fontSize: 17, color: '#4A5568', lineHeight: 1.7 }}>5 条采纳意见全部改到具体 FR 条目上，后续用例、接口、测试都能反查依据。</Text>
+        </Box>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 660, width: 1160, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>智能会议室管理系统 V1.0 · 第 4 组答辩</Text>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>07 / 20</Text>
+    </Box>
+</Slide>

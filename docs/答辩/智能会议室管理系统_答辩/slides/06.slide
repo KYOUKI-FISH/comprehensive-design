@@ -1,0 +1,60 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', fontFamily: '"Microsoft YaHei", Arial, sans-serif', position: 'relative' }}>
+    <Box style={{ position: 'absolute', left: 0, top: 0, width: 1280, height: 76, background: '#1E4FA8', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '0 60px' }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>核心规则：半开区间，首尾相接不算冲突</Text>
+        <Text style={{ fontSize: 16, color: '#BFD0EA' }}>01 · 需求分析</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 96, width: 690, height: 84, background: '#F7F9FC', border: '1px solid #D6DCE5', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 24px', gap: 8 }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8', letterSpacing: 1 }}>冲突判定式（FR-09，三份文档同一句话）</Text>
+        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1E4FA8' }}>start_new &lt; end_old　且　end_new &gt; start_old</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 196, width: 690, height: 250, border: '1px solid #E5E7EB', background: '#FFFFFF', padding: 0 }}>
+        <SVG width={688} height={248} viewBox="0 0 688 248">
+            <text x="24" y="34" fontSize="16" fill="#4A5568">情形一：首尾相接 —— 允许</text>
+            <rect x="110" y="48" width="230" height="38" fill="#1E4FA8" />
+            <text x="225" y="72" fontSize="15" fill="#FFFFFF" textAnchor="middle">10:00–11:00 已预约</text>
+            <rect x="340" y="48" width="230" height="38" fill="#A9C4E8" />
+            <text x="455" y="72" fontSize="15" fill="#1A2230" textAnchor="middle">11:00–12:00 新提交</text>
+            <line x1="340" y1="42" x2="340" y2="92" stroke="#1E4FA8" strokeWidth="2" />
+            <text x="340" y="110" fontSize="14" fill="#1E4FA8" textAnchor="middle">相接点 11:00</text>
+
+            <text x="24" y="158" fontSize="16" fill="#4A5568">情形二：部分重叠 —— 拒绝</text>
+            <rect x="110" y="172" width="230" height="38" fill="#1E4FA8" />
+            <text x="225" y="196" fontSize="15" fill="#FFFFFF" textAnchor="middle">10:00–11:00 已预约</text>
+            <rect x="225" y="172" width="230" height="38" fill="#D9534F" opacity="0.55" />
+            <rect x="225" y="172" width="115" height="38" fill="#D9534F" opacity="0.45" />
+            <text x="470" y="196" fontSize="15" fill="#D9534F" textAnchor="middle">10:30–11:30</text>
+            <text x="282" y="232" fontSize="14" fill="#D9534F">重叠区 10:30–11:00</text>
+        </SVG>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 790, top: 96, width: 430, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230' }}>配套的时间规则</Text>
+        <Box style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1A2230' }}>不跨天</Text>
+            <Text style={{ fontSize: 16, color: '#4A5568' }}>单次预约只能落在同一天内</Text>
+        </Box>
+        <Box style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1A2230' }}>不超过 8 小时</Text>
+            <Text style={{ fontSize: 16, color: '#4A5568' }}>防止一次占满整天</Text>
+        </Box>
+        <Box style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1A2230' }}>开始时间晚于当前</Text>
+            <Text style={{ fontSize: 16, color: '#4A5568' }}>不允许追溯提交</Text>
+        </Box>
+        <Box style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1A2230' }}>改／取消提前 30 分钟</Text>
+            <Text style={{ fontSize: 16, color: '#4A5568' }}>距开始不足 30 分钟即拒绝</Text>
+        </Box>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 470, width: 1160, height: 66, background: '#E8EFF8', display: 'flex', alignItems: 'center', padding: '0 24px' }}>
+        <Text style={{ fontSize: 19, color: '#1A2230' }}>这条口径由需求评审 R-04 定下，写进需求清单、用例规约、接口文档与 SQL 判定，四处一致。</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 660, width: 1160, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>智能会议室管理系统 V1.0 · 第 4 组答辩</Text>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>06 / 20</Text>
+    </Box>
+</Slide>

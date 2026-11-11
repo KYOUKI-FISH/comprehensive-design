@@ -1,0 +1,45 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', fontFamily: '"Microsoft YaHei", Arial, sans-serif', position: 'relative' }}>
+    <Box style={{ position: 'absolute', left: 0, top: 0, width: 1280, height: 76, background: '#1E4FA8', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '0 60px' }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>详细设计：4 张表与四个关键决策</Text>
+        <Text style={{ fontSize: 16, color: '#BFD0EA' }}>03 · 详细设计</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 96, width: 520, height: 396, border: '1px solid #E5E7EB' }}>
+        <Image src="assets/er.png" style={{ width: 518, height: 394, objectFit: 'contain' }} />
+    </Box>
+    <Text style={{ position: 'absolute', left: 60, top: 500, width: 520, fontSize: 14, color: '#8B97A8' }}>图：E-R 图——user 与 meeting_room 各对 reservation 一对多</Text>
+
+    <Box style={{ position: 'absolute', left: 620, top: 96, width: 600, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230' }}>表的职责一句话说清</Text>
+        <Text style={{ fontSize: 16, color: '#4A5568', lineHeight: 1.7 }}><span style={{ fontWeight: 'bold', color: '#1E4FA8' }}>user</span>　账号 / BCrypt 摘要 / 角色 / 启停<br /><span style={{ fontWeight: 'bold', color: '#1E4FA8' }}>meeting_room</span>　名称（唯一）/ 位置 / 容量 / 设备 / 状态<br /><span style={{ fontWeight: 'bold', color: '#1E4FA8' }}>reservation</span>　核心表：房间 × 日期 × 时段 + 四态<br /><span style={{ fontWeight: 'bold', color: '#1E4FA8' }}>operation_log</span>　操作人 / 角色快照 / 结果，供审计</Text>
+
+        <Box style={{ width: 600, height: 1, background: '#E5E7EB', marginTop: 2 }} />
+        <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230' }}>四个设计决策与理由</Text>
+
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 14 }}>
+            <Text style={{ width: 170, fontSize: 16, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.5 }}>外键全用 RESTRICT</Text>
+            <Text style={{ flex: 1, fontSize: 15, color: '#4A5568', lineHeight: 1.5 }}>有预约的房间、有日志的账号删不掉，业务数据不静默丢</Text>
+        </Box>
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 14 }}>
+            <Text style={{ width: 170, fontSize: 16, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.5 }}>reserve_date 冗余列</Text>
+            <Text style={{ flex: 1, fontSize: 15, color: '#4A5568', lineHeight: 1.5 }}>占用聚合按日查走索引；用 CHECK 约束保证与 start_time 同日期</Text>
+        </Box>
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 14 }}>
+            <Text style={{ width: 170, fontSize: 16, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.5 }}>不写定时器改状态</Text>
+            <Text style={{ flex: 1, fontSize: 15, color: '#4A5568', lineHeight: 1.5 }}>状态在读写时按时间推导 + 一次校正 SQL，单机部署不留后台僵尸任务</Text>
+        </Box>
+        <Box style={{ display: 'flex', flexDirection: 'row', gap: 14 }}>
+            <Text style={{ width: 170, fontSize: 16, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.5 }}>日志不级联删除</Text>
+            <Text style={{ flex: 1, fontSize: 15, color: '#4A5568', lineHeight: 1.5 }}>审计记录独立留存，保留操作时的角色快照而非引用当前值</Text>
+        </Box>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 566, width: 1160, height: 62, background: '#F7F9FC', borderLeft: '4px solid #1E4FA8', display: 'flex', alignItems: 'center', padding: '0 24px' }}>
+        <Text style={{ fontSize: 19, color: '#1A2230' }}>相对第 6 周骨架只动两处：reservation 补 3 个必填业务字段，新增 operation_log——每一处都挂需求编号。</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 660, width: 1160, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>智能会议室管理系统 V1.0 · 第 4 组答辩</Text>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>05 / 10</Text>
+    </Box>
+</Slide>

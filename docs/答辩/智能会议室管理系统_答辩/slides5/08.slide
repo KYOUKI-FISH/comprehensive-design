@@ -1,0 +1,56 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', fontFamily: '"Microsoft YaHei", Arial, sans-serif', position: 'relative' }}>
+    <Box style={{ position: 'absolute', left: 0, top: 0, width: 1280, height: 76, background: '#1E4FA8', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: '0 60px' }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>验证：能跑、能测、数字对得上</Text>
+        <Text style={{ fontSize: 16, color: '#BFD0EA' }}>04 · 验证与结论</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 96, width: 430, height: 258, border: '1px solid #E5E7EB' }}>
+        <Image src="assets/shot_conflict.png" style={{ width: 428, height: 256, objectFit: 'cover' }} />
+    </Box>
+    <Text style={{ position: 'absolute', left: 60, top: 360, width: 430, fontSize: 14, color: '#8B97A8' }}>重叠时段提交被拒，页面直接给出已占用时段</Text>
+
+    <Box style={{ position: 'absolute', left: 60, top: 396, width: 430, height: 200, border: '1px solid #E5E7EB' }}>
+        <Image src="assets/shot_login.png" style={{ width: 428, height: 198, objectFit: 'cover' }} />
+    </Box>
+    <Text style={{ position: 'absolute', left: 60, top: 602, width: 430, fontSize: 14, color: '#8B97A8' }}>菜单按角色渲染，普通用户看不到管理入口</Text>
+
+    <Box style={{ position: 'absolute', left: 540, top: 96, width: 680, display: 'flex', flexDirection: 'row', gap: 28 }}>
+        <Box style={{ width: 326, borderTop: '3px solid #1E4FA8', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <Text style={{ fontSize: 52, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1 }}>43</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1A2230' }}>项接口回归全通过</Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.55 }}>第 10 周 V1.0 现场走通，前后端逐条核对</Text>
+        </Box>
+        <Box style={{ width: 326, borderTop: '3px solid #1E4FA8', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <Text style={{ fontSize: 52, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1 }}>6 / 6</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1A2230' }}>功能异常用例</Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.55 }}>冲突、跨天、反向时段、首尾相接、停用房间、强制取消</Text>
+        </Box>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 540, top: 268, width: 680, display: 'flex', flexDirection: 'row', gap: 28 }}>
+        <Box style={{ width: 326, borderTop: '3px solid #1E4FA8', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <Text style={{ fontSize: 52, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1 }}>16 / 16</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1A2230' }}>SQL 注入载荷未生效</Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.55 }}>4 类载荷 × 4 个入口，全按普通字符串处理，表结构完好</Text>
+        </Box>
+        <Box style={{ width: 326, borderTop: '3px solid #1E4FA8', paddingTop: 12, display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <Text style={{ fontSize: 52, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1 }}>1 / 49</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1A2230' }}>50 并发成功与失败</Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.55 }}>一条落库，49 条明确 409，无第二条有效预约</Text>
+        </Box>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 540, top: 442, width: 680, padding: 18, background: '#F7F9FC', borderLeft: '3px solid #D9534F', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1A2230' }}>如实标出的两项短板</Text>
+        <Text style={{ fontSize: 15, color: '#4A5568', lineHeight: 1.7 }}>业务失败统一回 HTTP 200、由 body 的 code 区分，与任务书"409"判据不一致，已列入预答辩前修复；Edge 全流程与干净机部署复现由同组同学补测。</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 540, top: 578, width: 680, height: 56, background: '#E8EFF8', display: 'flex', alignItems: 'center', padding: '0 20px' }}>
+        <Text style={{ fontSize: 17, color: '#1A2230' }}>测试脚本与原始响应都在仓库 tests/ 下，可当场重跑。</Text>
+    </Box>
+
+    <Box style={{ position: 'absolute', left: 60, top: 660, width: 1160, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>智能会议室管理系统 V1.0 · 第 4 组答辩</Text>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>08 / 10</Text>
+    </Box>
+</Slide>

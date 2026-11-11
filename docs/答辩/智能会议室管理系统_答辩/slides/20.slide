@@ -1,0 +1,8 @@
+<Slide style={{ width: 1280, height: 720, background: '#FFFFFF', fontFamily: '"Microsoft YaHei", Arial, sans-serif', position: 'relative' }}>
+    <Box style={{ position: 'absolute', left: 0, top: 0, width: 1280, height: 8, background: '#1E4FA8' }} />
+    <Box style={{ position: 'absolute', left: 96, top: 236, width: 900, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <Text style={{ fontSize: 56, fontWeight: 'bold', color: '#1A2230' }}>谢谢，请老师和同学批评指正</Text>
+        <Box style={{ width: 640, height: 1, background: '#D6DCE5' }} />
+        <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.9 }}>第 4 组　李知渔　虞业宸　李牧远　孙若普<br />智能会议室管理系统 V1.0　2026 年 11 月</Text>
+    </Box>
+</Slide>
