@@ -1,0 +1,96 @@
+{
+  "startedAt": "2026-11-11T10:46:08.610Z",
+  "base": "http://localhost:5173",
+  "steps": [
+    {
+      "name": "打开登录页",
+      "detail": "预填账号 user1",
+      "at": "2026-11-11T10:46:09.757Z"
+    },
+    {
+      "name": "登录成功",
+      "detail": "进入会议室列表，2 间启用会议室",
+      "at": "2026-11-11T10:46:09.944Z"
+    },
+    {
+      "name": "按位置筛选「逸夫楼」",
+      "detail": "命中 2 间",
+      "at": "2026-11-11T10:46:11.490Z"
+    },
+    {
+      "name": "详情页选择日期",
+      "detail": "2026-11-12",
+      "at": "2026-11-11T10:46:14.255Z"
+    },
+    {
+      "name": "填写预约表单",
+      "detail": "09:00–10:00，主题「TC-11 组仓实测-预约」",
+      "at": "2026-11-11T10:46:16.354Z"
+    },
+    {
+      "name": "提交预约",
+      "detail": "预约成功，预约号：MR20261112008",
+      "at": "2026-11-11T10:46:16.523Z"
+    },
+    {
+      "name": "我的预约",
+      "detail": "找到 MR20261112008，状态待开始",
+      "at": "2026-11-11T10:46:18.034Z"
+    },
+    {
+      "name": "触发取消",
+      "detail": "弹出确认框",
+      "at": "2026-11-11T10:46:18.659Z"
+    },
+    {
+      "name": "确认取消",
+      "detail": "已取消，该时段已释放",
+      "at": "2026-11-11T10:46:20.504Z"
+    },
+    {
+      "name": "回详情页",
+      "detail": "确认该时段重新空闲",
+      "at": "2026-11-11T10:46:22.440Z"
+    }
+  ],
+  "screenshots": [
+    "截图/01_登录页_预填user1.png",
+    "截图/02_登录成功_会议室列表.png",
+    "截图/03_查询_逸夫楼.png",
+    "截图/04_会议室详情_今日占用.png",
+    "截图/05_会议室详情_所选日期占用.png",
+    "截图/06_预约表单_初始.png",
+    "截图/07_预约表单_已填写.png",
+    "截图/08_预约成功.png",
+    "截图/09_我的预约_待开始.png",
+    "截图/10_取消确认对话框.png",
+    "截图/11_取消成功_状态已取消.png",
+    "截图/12_详情_取消后时段已释放.png"
+  ],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "edgeVersion": "157.0.4341.42",
+  "loginPrefill": {
+    "username": "user1",
+    "password": "123456"
+  },
+  "filteredRows": 2,
+  "detailUrl": "http://localhost:5173/rooms/1?date=2026-11-11",
+  "bookingUrl": "http://localhost:5173/bookings/new?roomId=1&date=2026-11-12",
+  "formValues": {
+    "start": "09:00",
+    "end": "10:00",
+    "topic": "TC-11 组仓实测-预约",
+    "contact": "张三"
+  },
+  "submitMessage": "预约成功，预约号：MR20261112008",
+  "bookingNo": "MR20261112008",
+  "pendingStatus": "MR20261112008\n\t\n逸夫楼A101会议室\n\t\n2026-11-12\n\t\n09:00 – 10:00\n\t\nTC-11 组仓实测-预约\n\t\n5\n\t\n待开始\n\t\n修改\n取消\n看占用",
+  "cancelMessage": "已取消，该时段已释放",
+  "cancelledStatus": "MR20261112008\n\t\n逸夫楼A101会议室\n\t\n2026-11-12\n\t\n09:00 – 10:00\n\t\nTC-11 组仓实测-预约\n\t\n5\n\t\n已取消\n\t\n看占用",
+  "detailAfterUrl": "http://localhost:5173/rooms/1?date=2026-11-12",
+  "occupancyAfterCancel": "2026-11-12 的占用情况\n去预约\n开始时间\n\t\n结束时间\n\t\n状态\n\n当日无占用，全天可预约",
+  "pass": true,
+  "finishedAt": "2026-11-11T10:46:22.507Z"
+}
