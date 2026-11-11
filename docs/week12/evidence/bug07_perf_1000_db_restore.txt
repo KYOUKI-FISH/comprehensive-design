@@ -1,0 +1,6 @@
+第 12 周 BUG-07 性能回归：数据恢复后库内核对（2026-11-11 20:13，只读）
+---- SQL: SELECT COUNT/MAX/perf/AUTO_INCREMENT ----
+rows=15 perf_rows=0 max_id=67 distinct_no=15
+auto_increment=82
+---- HTTP ----
+{"code":200,"message":"ok","data":{"application":"meeting-room-backend","timestamp":"2026-11-11T20:15:32.218031400","database":"UP"}}
