@@ -40,9 +40,9 @@
         </Box>
     </Box>
 
-    <Box style={{ position: 'absolute', left: 540, top: 442, width: 680, padding: 18, background: '#F7F9FC', borderLeft: '3px solid #D9534F', display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1A2230' }}>如实标出的两项短板</Text>
-        <Text style={{ fontSize: 15, color: '#4A5568', lineHeight: 1.7 }}>业务失败统一回 HTTP 200、由 body 的 code 区分，与任务书"409"判据不一致，已列入预答辩前修复；Edge 全流程与干净机部署复现由同组同学补测。</Text>
+    <Box style={{ position: 'absolute', left: 540, top: 442, width: 680, padding: 18, background: '#F7F9FC', borderLeft: '3px solid #1E4FA8', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1A2230' }}>状态码口径已闭环，两项复现待补测</Text>
+        <Text style={{ fontSize: 15, color: '#4A5568', lineHeight: 1.7 }}>业务失败已改为真实状态码，HTTP 状态行与 body.code 双写一致：九组冲突 9/9、50 并发 200×1＋409×49 已复跑。Edge 全流程与干净机部署由同组同学补测。</Text>
     </Box>
 
     <Box style={{ position: 'absolute', left: 540, top: 578, width: 680, height: 56, background: '#E8EFF8', display: 'flex', alignItems: 'center', padding: '0 20px' }}>

@@ -8,17 +8,17 @@
         <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230' }}>已经做到的</Text>
         <Text style={{ fontSize: 18, color: '#1A2230', lineHeight: 1.7 }}>① 20 条功能需求都有接口、页面与测试对应，范围外 9 项没有偷偷实现。</Text>
         <Text style={{ fontSize: 18, color: '#1A2230', lineHeight: 1.7 }}>② 半开区间口径从需求一路对到 SQL，首尾相接可用、部分重叠必拒。</Text>
-        <Text style={{ fontSize: 18, color: '#1A2230', lineHeight: 1.7 }}>③ 并发抢同一时段只生成一条有效预约，失败一律给出明确原因。</Text>
+        <Text style={{ fontSize: 18, color: '#1A2230', lineHeight: 1.7 }}>③ 并发抢同一时段只生成一条有效预约，失败一律返回 409 与真实占用时段。</Text>
         <Box style={{ width: 640, height: 1, background: '#E5E7EB', marginTop: 2 }} />
         <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230' }}>还不够的</Text>
-        <Text style={{ fontSize: 16, color: '#4A5568', lineHeight: 1.75 }}>失败的 HTTP 状态码仍是 200；浏览器兼容与干净机部署两项复现待补；性能只在 1000 条量级验证过。</Text>
+        <Text style={{ fontSize: 16, color: '#4A5568', lineHeight: 1.75 }}>状态码变更后页面级 12 步仍待复跑；浏览器兼容与干净机部署两项复现待补；性能只在 1000 条量级验证过。</Text>
     </Box>
 
     <Box style={{ position: 'absolute', left: 760, top: 100, width: 460, display: 'flex', flexDirection: 'column', gap: 14 }}>
         <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230' }}>下一步</Text>
         <Box style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1E4FA8' }}>状态码口径统一</Text>
-            <Text style={{ fontSize: 15, color: '#4A5568', lineHeight: 1.6 }}>异常处理器返回对应状态码，前端同步适配冲突提示</Text>
+            <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1E4FA8' }}>页面链路收口</Text>
+            <Text style={{ fontSize: 15, color: '#4A5568', lineHeight: 1.6 }}>状态码变更后走完 12 步，确认冲突提示与令牌失效无退化</Text>
         </Box>
         <Box style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1E4FA8' }}>补齐两项复现</Text>
