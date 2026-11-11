@@ -9,7 +9,7 @@ spring:
     # 库名 meeting_room 由 database/01_schema.sql 创建；时区与编码参数不可省，否则中文乱码/时间差 8 小时
     url: jdbc:mysql://localhost:3306/meeting_room?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: ${DB_USERNAME:root}
-    # ★★ 第 9 周起去掉了默认值（原为 ${DB_PASSWORD:123456}）：
+    # ★★ 第 9 周起去掉了默认值（原写法含明文口令，已删除，不在仓库留痕）：
     #    配置文件进了仓库，带默认值的明文口令等于把数据库口令公开（NF-05、任务书第七节
     #    "仓库里不许出现明文口令、数据库账号和部署地址"）。
     #    现在必须启动前设环境变量，README「启动后端」一节有具体写法：
