@@ -17,6 +17,7 @@ const router = useRouter()
 
 const loading = ref(false)
 const rooms = ref<RoomVO[]>([])
+const loadError = ref('')
 
 /** 取本机当天日期，格式 yyyy-MM-dd（后端 date 参数按 ISO 日期解析） */
 function today(): string {
@@ -33,6 +34,7 @@ const query = reactive<{ location: string; minCapacity: number | undefined; date
 
 async function load(): Promise<void> {
   loading.value = true
+  loadError.value = ''
   try {
     rooms.value = await listRooms({
       location: query.location.trim() || undefined,
@@ -42,7 +44,9 @@ async function load(): Promise<void> {
       date: query.date || undefined
     })
   } catch (error) {
-    ElMessage.error(error instanceof Error ? error.message : '查询失败')
+    rooms.value = []
+    loadError.value = error instanceof Error ? error.message : '查询失败，请稍后重试'
+    ElMessage.error(loadError.value)
   } finally {
     loading.value = false
   }
@@ -146,11 +150,11 @@ onMounted(() => {
         </template>
       </el-table-column>
       <template #empty>
-        <el-empty description="没有符合条件的会议室（停用中的会议室不会出现在这里）" />
+        <el-empty :description="loadError || '没有符合条件的会议室（停用中的会议室不会出现在这里）'" />
       </template>
     </el-table>
 
-    <p class="page-hint" style="margin-top: 12px">
+    <p v-if="!loadError" class="page-hint" style="margin-top: 12px">
       共 {{ rooms.length }} 间（{{ query.date }}）。种子数据里特意留了 1 间停用会议室（图书馆B301报告厅），按 FR-06 它不应出现在上表。
     </p>
   </div>
