@@ -1,0 +1,241 @@
+{
+  "title": "重放攻击复测（HTTP 状态行 == body.code）",
+  "executed_at": "2026-11-18 21:36:41",
+  "base_url": "http://localhost:8080/api",
+  "db": "meeting_room",
+  "db_checked": true,
+  "target": {
+    "roomId": 1,
+    "date": "2026-12-29",
+    "slot": "15:00-16:00"
+  },
+  "cases": [
+    {
+      "case": "R-1",
+      "title": "重放提交预约（同一 body ×5）",
+      "expect": "200×1 + 409×4，库内 1 条、编号唯一",
+      "steps": [
+        {
+          "replay": 1,
+          "http": 200,
+          "code": 200,
+          "elapsed_ms": 150.5,
+          "occupiedSlots": null
+        },
+        {
+          "replay": 2,
+          "http": 409,
+          "code": 409,
+          "elapsed_ms": 44.7,
+          "occupiedSlots": [
+            {
+              "startTime": "15:00",
+              "endTime": "16:00"
+            }
+          ]
+        },
+        {
+          "replay": 3,
+          "http": 409,
+          "code": 409,
+          "elapsed_ms": 40.6,
+          "occupiedSlots": [
+            {
+              "startTime": "15:00",
+              "endTime": "16:00"
+            }
+          ]
+        },
+        {
+          "replay": 4,
+          "http": 409,
+          "code": 409,
+          "elapsed_ms": 33.3,
+          "occupiedSlots": [
+            {
+              "startTime": "15:00",
+              "endTime": "16:00"
+            }
+          ]
+        },
+        {
+          "replay": 5,
+          "http": 409,
+          "code": 409,
+          "elapsed_ms": 31.7,
+          "occupiedSlots": [
+            {
+              "startTime": "15:00",
+              "endTime": "16:00"
+            }
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "item": "首次成功、其后全部 409",
+          "expect": "[200, 409, 409, 409, 409]",
+          "actual": "[200, 409, 409, 409, 409]",
+          "ok": true
+        },
+        {
+          "item": "HTTP 状态行与 body.code 一致",
+          "expect": "逐条相等",
+          "actual": "[200, 409, 409, 409, 409]",
+          "ok": true
+        },
+        {
+          "item": "库内该时段有效预约数",
+          "expect": "1",
+          "actual": "1",
+          "ok": true
+        },
+        {
+          "item": "预约编号去重数 / 行数",
+          "expect": "1 / 1",
+          "actual": "1 / 1",
+          "ok": true
+        }
+      ],
+      "passed": true,
+      "note": "重放未产生第二条记录；第 2—5 次由半开区间冲突判定拦下（409 带真实占用时段）"
+    },
+    {
+      "case": "R-2",
+      "title": "重放取消预约（DELETE ×3）",
+      "expect": "200×1 + 明确业务拒绝×2，状态仍 CANCELLED，不新增行",
+      "steps": [
+        {
+          "replay": 1,
+          "http": 200,
+          "code": 200,
+          "message": "ok",
+          "elapsed_ms": 50.0
+        },
+        {
+          "replay": 2,
+          "http": 400,
+          "code": 400,
+          "message": "该预约已取消，无需再取消",
+          "elapsed_ms": 31.8
+        },
+        {
+          "replay": 3,
+          "http": 400,
+          "code": 400,
+          "message": "该预约已取消，无需再取消",
+          "elapsed_ms": 39.0
+        }
+      ],
+      "checks": [
+        {
+          "item": "首次成功、重放被明确拒绝（400/404/409）",
+          "expect": "200 后非 200 且 <500",
+          "actual": "[200, 400, 400]",
+          "ok": true
+        },
+        {
+          "item": "库内状态",
+          "expect": "CANCELLED",
+          "actual": "CANCELLED",
+          "ok": true
+        },
+        {
+          "item": "未产生 5xx",
+          "expect": "0 条",
+          "actual": "0",
+          "ok": true
+        }
+      ],
+      "passed": true,
+      "note": "取消是状态迁移，重复取消被状态机拒绝；不产生二次审计/二次释放"
+    },
+    {
+      "case": "R-3",
+      "title": "重放已吊销令牌（登出后重放 GET + 原 POST）",
+      "expect": "两次均 401，令牌不可重放，库无新增",
+      "steps": [
+        {
+          "replay": "GET /bookings/mine",
+          "http": 401,
+          "code": 401
+        },
+        {
+          "replay": "POST /bookings（原 body）",
+          "http": 401,
+          "code": 401
+        }
+      ],
+      "checks": [
+        {
+          "item": "吊销令牌 GET",
+          "expect": "401",
+          "actual": "401",
+          "ok": true
+        },
+        {
+          "item": "吊销令牌重放写请求",
+          "expect": "401",
+          "actual": "401",
+          "ok": true
+        },
+        {
+          "item": "库内该主题记录数",
+          "expect": "1（仍只有 R-1 那条）",
+          "actual": "1",
+          "ok": true
+        }
+      ],
+      "passed": true,
+      "note": "会话吊销后令牌立即失效，重放无任何作用（NF-04）"
+    },
+    {
+      "case": "R-4",
+      "title": "重放管理端停用账号（PUT ×2，已恢复 ACTIVE）",
+      "expect": "无 5xx；账号状态一致；每次动作都留痕",
+      "steps": [
+        {
+          "replay": 1,
+          "http": 200,
+          "code": 200,
+          "message": "ok"
+        },
+        {
+          "replay": 2,
+          "http": 200,
+          "code": 200,
+          "message": "ok"
+        }
+      ],
+      "checks": [
+        {
+          "item": "两次均无 5xx",
+          "expect": "0 条 5xx",
+          "actual": "0",
+          "ok": true
+        },
+        {
+          "item": "账号最终状态（已手工恢复）",
+          "expect": "ACTIVE",
+          "actual": "ACTIVE",
+          "ok": true
+        },
+        {
+          "item": "操作日志新增条数",
+          "expect": "≥1（重复动作同样留痕）",
+          "actual": "8 → 11",
+          "ok": true
+        }
+      ],
+      "passed": true,
+      "note": "管理端重复停用不产生坏状态；审计留痕不丢（NF-14）"
+    }
+  ],
+  "passed": 4,
+  "total": 4,
+  "baseline": {
+    "reservation_before": "26",
+    "reservation_after": "26"
+  },
+  "boundary": "无 nonce/时间戳去重；靠业务规则（冲突判定/状态机/唯一编号/归属校验）与令牌吊销消除重放副作用；无副作用 GET 重放不拦截"
+}
